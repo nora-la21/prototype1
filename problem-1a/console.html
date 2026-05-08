@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitPulse Console — Gamification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .slide-panel { transform: translateX(100%); transition: transform 0.3s ease; }
+    .slide-panel.open { transform: translateX(0); }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-60 min-h-screen bg-slate-800 border-r border-slate-700 flex flex-col fixed top-0 left-0 bottom-0 z-20">
+    <div class="p-5 border-b border-slate-700">
+      <div class="text-lg font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">FitPulse Console</div>
+      <div class="text-slate-500 text-xs mt-0.5">Gamification Dashboard</div>
+    </div>
+
+    <nav class="flex-1 p-3 overflow-y-auto">
+      <div class="text-slate-600 text-[10px] font-bold uppercase tracking-widest px-2 mb-2">Overview</div>
+      <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 transition-all" data-section="overview" onclick="showSection('overview')">
+        <i data-lucide="bar-chart-2" class="w-4 h-4"></i><span>Overview</span>
+      </button>
+
+      <div class="text-slate-600 text-[10px] font-bold uppercase tracking-widest px-2 mb-2 mt-4">Engagement</div>
+      <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 transition-all" data-section="challenges" onclick="showSection('challenges')">
+        <i data-lucide="zap" class="w-4 h-4"></i><span>Challenges</span>
+      </button>
+      <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 transition-all" data-section="leaderboard" onclick="showSection('leaderboard')">
+        <i data-lucide="trophy" class="w-4 h-4"></i><span>Leaderboard Config</span>
+      </button>
+
+      <div class="text-slate-600 text-[10px] font-bold uppercase tracking-widest px-2 mb-2 mt-4">Retention</div>
+      <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 transition-all" data-section="atrisk" onclick="showSection('atrisk')">
+        <i data-lucide="alert-triangle" class="w-4 h-4"></i><span>At-Risk Members</span>
+      </button>
+    </nav>
+
+    <div class="p-4 border-t border-slate-700">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">O</div>
+        <div>
+          <div class="text-slate-200 text-xs font-semibold">Gym Owner</div>
+          <div class="inline-flex items-center text-[10px] text-indigo-400 border border-indigo-800 bg-indigo-950 rounded-full px-2 py-0.5">Owner</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ml-60 flex-1 min-h-screen overflow-y-auto">
+
+    <!-- ── OVERVIEW ── -->
+    <div id="section-overview" class="section p-8">
+      <div class="mb-8">
+        <h1 class="text-2xl font-black text-slate-100">Gamification Overview</h1>
+        <p class="text-slate-400 text-sm mt-1">January 2025 · 10,000 members</p>
+      </div>
+
+      <!-- 4 Stat Cards -->
+      <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="bg-slate-800 rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-xs font-semibold uppercase tracking-wide">App Adoption</span>
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+              <i data-lucide="smartphone" class="w-4 h-4 text-indigo-400"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-black text-slate-100">68.4%</div>
+          <div class="text-slate-500 text-xs mt-1">6,840 / 10,000 members</div>
+          <div class="mt-2 w-full bg-slate-700 rounded-full h-1.5">
+            <div class="h-1.5 rounded-full bg-indigo-500" style="width:68.4%"></div>
+          </div>
+        </div>
+        <div class="bg-slate-800 rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-xs font-semibold uppercase tracking-wide">Avg Streak</span>
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+              <i data-lucide="flame" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-black text-slate-100">9.2 <span class="text-base font-semibold text-slate-400">days</span></div>
+          <div class="text-slate-500 text-xs mt-1">Across all active members</div>
+        </div>
+        <div class="bg-slate-800 rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-xs font-semibold uppercase tracking-wide">Challenge Rate</span>
+            <div class="w-8 h-8 rounded-xl bg-violet-500/20 flex items-center justify-center">
+              <i data-lucide="users" class="w-4 h-4 text-violet-400"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-black text-slate-100">43%</div>
+          <div class="text-slate-500 text-xs mt-1">Members in ≥1 challenge</div>
+        </div>
+        <div class="bg-slate-800 rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-xs font-semibold uppercase tracking-wide">Points Redeemed</span>
+            <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center">
+              <i data-lucide="gift" class="w-4 h-4 text-amber-400"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-black text-slate-100">48,200</div>
+          <div class="text-slate-500 text-xs mt-1">Points this month</div>
+        </div>
+      </div>
+
+      <!-- Retention by Engagement Chart -->
+      <div class="bg-slate-800 rounded-2xl p-6 shadow-lg mb-6">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h2 class="text-slate-100 font-bold text-base">App Engagement vs. Retention Rate</h2>
+            <p class="text-slate-500 text-xs mt-0.5">Higher engagement = significantly higher retention</p>
+          </div>
+          <div class="bg-indigo-950 border border-indigo-800 rounded-xl p-3 max-w-xs">
+            <p class="text-indigo-300 text-xs font-semibold">App users retain at 82% vs 54% for non-users — a 28-point gap worth <span class="text-indigo-400 font-black">$1.6M/year</span> in this gym.</p>
+          </div>
+        </div>
+        <div class="space-y-4" id="retention-chart"></div>
+      </div>
+
+      <!-- Badges & Milestones Row -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-slate-800 rounded-2xl p-5 shadow-lg flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="trophy" class="w-6 h-6 text-amber-400"></i>
+          </div>
+          <div>
+            <div class="text-3xl font-black text-slate-100">1,243</div>
+            <div class="text-slate-400 text-sm">Badges earned this month</div>
+          </div>
+        </div>
+        <div class="bg-slate-800 rounded-2xl p-5 shadow-lg flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="check-circle-2" class="w-6 h-6 text-emerald-400"></i>
+          </div>
+          <div>
+            <div class="text-3xl font-black text-slate-100">312</div>
+            <div class="text-slate-400 text-sm">Members completed 90-day milestone journey</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI Insight Card -->
+      <div class="bg-indigo-950 border-l-4 border-indigo-500 rounded-2xl p-6 shadow-lg">
+        <h3 class="text-slate-100 font-black text-base mb-4">💡 Why Gamification Pays Off</h3>
+        <div class="grid grid-cols-3 gap-6">
+          <div>
+            <div class="text-3xl font-black text-indigo-400 mb-1">30%</div>
+            <div class="text-slate-100 text-sm font-semibold mb-1">higher retention</div>
+            <div class="text-slate-400 text-xs">Members using a branded app consistently vs. non-users</div>
+          </div>
+          <div class="border-l border-indigo-800 pl-6">
+            <div class="text-3xl font-black text-indigo-400 mb-1">60%</div>
+            <div class="text-slate-100 text-sm font-semibold mb-1">more likely to stay past 90 days</div>
+            <div class="text-slate-400 text-xs">Members who hit early fitness milestones in their first 90 days</div>
+          </div>
+          <div class="border-l border-indigo-800 pl-6">
+            <div class="text-3xl font-black text-indigo-400 mb-1">~$1.6M</div>
+            <div class="text-slate-100 text-sm font-semibold mb-1">per year retained</div>
+            <div class="text-slate-400 text-xs">Estimated value of closing the 28-point retention gap at this gym (10,000 members · $58/month)</div>
+          </div>
+        </div>
+        <div class="mt-4 text-right text-slate-600 text-xs">Source: IHRSA industry benchmarks + QArea analysis</div>
+      </div>
+    </div>
+
+    <!-- ── CHALLENGES ── -->
+    <div id="section-challenges" class="section p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-black text-slate-100">Challenges</h1>
+          <p class="text-slate-400 text-sm mt-1">Active and past challenge performance</p>
+        </div>
+        <button onclick="openCreatePanel()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2.5 rounded-xl transition">
+          <i data-lucide="plus" class="w-4 h-4"></i> Create New Challenge
+        </button>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl shadow-lg overflow-hidden mb-6">
+        <table class="w-full" id="challenges-table">
+          <thead>
+            <tr class="border-b border-slate-700">
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-6 py-4">Challenge</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Type</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Participants</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Completion</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Retention Lift</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Status</th>
+            </tr>
+          </thead>
+          <tbody id="challenges-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="bg-indigo-950 border-l-4 border-indigo-500 rounded-2xl p-5">
+        <p class="text-indigo-300 text-sm font-semibold mb-1">💡 Challenge Insight</p>
+        <p class="text-slate-400 text-sm">Social challenges (Bring a Buddy) show the highest retention lift at +31% — members who complete social challenges are 3× more likely to still be active at 6 months.</p>
+      </div>
+    </div>
+
+    <!-- ── LEADERBOARD CONFIG ── -->
+    <div id="section-leaderboard" class="section p-8">
+      <div class="mb-8">
+        <h1 class="text-2xl font-black text-slate-100">Leaderboard Configuration</h1>
+        <p class="text-slate-400 text-sm mt-1">Configure scoring, display, and reset schedules</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-800 rounded-2xl p-6 shadow-lg">
+          <h3 class="text-slate-100 font-bold mb-4 flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-indigo-400"></i> Scoring Rules</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between py-2 border-b border-slate-700">
+              <span class="text-slate-300 text-sm">Check-in</span>
+              <span class="text-indigo-400 font-bold text-sm">10 pts</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-slate-700">
+              <span class="text-slate-300 text-sm">Class attended</span>
+              <span class="text-indigo-400 font-bold text-sm">25 pts</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-slate-700">
+              <span class="text-slate-300 text-sm">Challenge completed</span>
+              <span class="text-indigo-400 font-bold text-sm">100–300 pts</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-slate-700">
+              <span class="text-slate-300 text-sm">Referral joined</span>
+              <span class="text-indigo-400 font-bold text-sm">500 pts</span>
+            </div>
+            <div class="flex items-center justify-between py-2">
+              <span class="text-slate-300 text-sm">Streak milestone</span>
+              <span class="text-indigo-400 font-bold text-sm">50–200 pts</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-800 rounded-2xl p-6 shadow-lg">
+          <h3 class="text-slate-100 font-bold mb-4 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-violet-400"></i> Reset Schedule</h3>
+          <div class="space-y-3">
+            <div class="bg-slate-700/50 rounded-xl p-3">
+              <div class="text-slate-300 text-sm font-semibold mb-1">Monthly Reset</div>
+              <div class="text-slate-500 text-xs">Leaderboard resets on the 1st of each month. All-time rankings preserved separately.</div>
+            </div>
+            <div class="bg-slate-700/50 rounded-xl p-3">
+              <div class="text-slate-300 text-sm font-semibold mb-1">Tier Evaluation</div>
+              <div class="text-slate-500 text-xs">Bronze / Silver / Gold tier reviewed quarterly based on cumulative points.</div>
+            </div>
+            <div class="bg-emerald-950 border border-emerald-800 rounded-xl p-3">
+              <div class="text-emerald-400 text-sm font-semibold mb-1">Next Reset: Feb 1, 2025</div>
+              <div class="text-slate-500 text-xs">24 days remaining in current cycle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl p-6 shadow-lg">
+        <h3 class="text-slate-100 font-bold mb-4 flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4 text-amber-400"></i> Tier Thresholds</h3>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-amber-900/30 border border-amber-800/50 rounded-xl p-4 text-center">
+            <div class="text-2xl font-black text-amber-600 mb-1">Bronze</div>
+            <div class="text-slate-300 text-sm">0 – 999 pts</div>
+            <div class="text-slate-500 text-xs mt-2">4,200 members</div>
+          </div>
+          <div class="bg-slate-600/30 border border-slate-500/50 rounded-xl p-4 text-center">
+            <div class="text-2xl font-black text-slate-300 mb-1">Silver</div>
+            <div class="text-slate-300 text-sm">1,000 – 1,999 pts</div>
+            <div class="text-slate-500 text-xs mt-2">3,800 members</div>
+          </div>
+          <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-center">
+            <div class="text-2xl font-black text-amber-400 mb-1">Gold</div>
+            <div class="text-slate-300 text-sm">2,000+ pts</div>
+            <div class="text-slate-500 text-xs mt-2">2,000 members</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AT-RISK MEMBERS ── -->
+    <div id="section-atrisk" class="section p-8">
+      <div class="mb-8">
+        <h1 class="text-2xl font-black text-slate-100">Members Losing Engagement</h1>
+        <p class="text-slate-400 text-sm mt-1">Members whose streak dropped to 0 and haven't checked in recently — most likely to churn in the next 30 days.</p>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl shadow-lg overflow-hidden mb-6">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-slate-700">
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-6 py-4">Member</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Last Seen</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Current Streak</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Points</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Risk Score</th>
+              <th class="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide px-4 py-4">Action</th>
+            </tr>
+          </thead>
+          <tbody id="atrisk-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="bg-indigo-950 border-l-4 border-indigo-500 rounded-2xl p-5">
+        <p class="text-indigo-300 text-sm font-semibold mb-1">💡 Retention Insight</p>
+        <p class="text-slate-400 text-sm">Members who lose their streak for 14+ days are <strong class="text-slate-200">68% more likely to cancel</strong>. A personalised re-engagement offer sent within 48 hours recovers <strong class="text-slate-200">15–25%</strong> of this group.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Slide-in Create Challenge Panel -->
+  <div id="panel-overlay" class="fixed inset-0 bg-black/50 z-30 hidden" onclick="closeCreatePanel()"></div>
+  <div id="create-panel" class="slide-panel fixed top-0 right-0 bottom-0 w-96 bg-slate-800 border-l border-slate-700 z-40 p-6 overflow-y-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-slate-100 font-black text-lg">New Challenge</h2>
+      <button onclick="closeCreatePanel()" class="text-slate-400 hover:text-slate-200 transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wide block mb-1.5">Challenge Name</label>
+        <input id="new-name" type="text" placeholder="e.g. Spring Warrior" class="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wide block mb-1.5">Type</label>
+        <select id="new-type" class="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500">
+          <option value="Group">Group</option>
+          <option value="Individual">Individual</option>
+          <option value="Social">Social</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wide block mb-1.5">Goal Description</label>
+        <input id="new-goal" type="text" placeholder="e.g. 15 check-ins in March" class="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wide block mb-1.5">Duration (days)</label>
+        <input id="new-duration" type="number" placeholder="30" class="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wide block mb-1.5">Points Reward</label>
+        <input id="new-points" type="number" placeholder="200" class="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+      </div>
+    </div>
+    <button onclick="createChallenge()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition">
+      Create Challenge
+    </button>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-xl text-sm font-semibold opacity-0 transition-opacity duration-300 z-50 shadow-lg"></div>
+
+  <script>
+    // ── DATA ──
+    const gymStats = {
+      totalMembers: 10000, appUsers: 6840, avgStreakDays: 9.2,
+      challengeParticipation: 43, retentionAppUsers: 82,
+      retentionNonUsers: 54, pointsRedeemedThisMonth: 48200,
+      badgesEarnedThisMonth: 1243
+    };
+
+    const retentionByEngagement = [
+      { segment: "High (daily app use)", retention: 91, members: 1820 },
+      { segment: "Medium (2–4x/week)", retention: 78, members: 3200 },
+      { segment: "Low (once/week)", retention: 61, members: 1820 },
+      { segment: "No app use", retention: 54, members: 3160 }
+    ];
+
+    let topChallenges = [
+      { name: "January Warrior", type: "Group", participants: 312, completionRate: 34, retentionLift: "+18%", status: "Active" },
+      { name: "Yoga 5x Challenge", type: "Group", participants: 87, completionRate: 61, retentionLift: "+22%", status: "Active" },
+      { name: "Morning Riser", type: "Individual", participants: 145, completionRate: 28, retentionLift: "+14%", status: "Active" },
+      { name: "Bring a Buddy", type: "Social", participants: 54, completionRate: 44, retentionLift: "+31%", status: "Active" }
+    ];
+
+    const atRiskData = [
+      { name: "Oliver S.", streak: 0, lastSeen: "12 days ago", points: 420, riskScore: 78, offerSent: false },
+      { name: "Fatima A.", streak: 0, lastSeen: "18 days ago", points: 210, riskScore: 85, offerSent: false },
+      { name: "Ben C.", streak: 2, lastSeen: "3 days ago", points: 890, riskScore: 45, offerSent: false }
+    ];
+
+    // ── TOAST ──
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('opacity-0');
+      t.classList.add('opacity-100');
+      setTimeout(() => { t.classList.remove('opacity-100'); t.classList.add('opacity-0'); }, 2800);
+    }
+
+    // ── NAVIGATION ──
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + id).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        const isActive = btn.dataset.section === id;
+        btn.className = `nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 transition-all ${
+          isActive ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+        }`;
+      });
+      lucide.createIcons();
+    }
+
+    // ── RETENTION CHART ──
+    function renderRetentionChart() {
+      const colors = ['bg-emerald-500', 'bg-indigo-500', 'bg-amber-500', 'bg-red-500'];
+      const textColors = ['text-emerald-400', 'text-indigo-400', 'text-amber-400', 'text-red-400'];
+      const container = document.getElementById('retention-chart');
+      if (!container) return;
+      container.innerHTML = retentionByEngagement.map((item, i) => `
+        <div class="flex items-center gap-4">
+          <div class="w-44 text-slate-300 text-sm text-right flex-shrink-0">${item.segment}</div>
+          <div class="flex-1 bg-slate-700 rounded-full h-6 relative">
+            <div class="${colors[i]} h-6 rounded-full flex items-center justify-end pr-3 transition-all" style="width:${item.retention}%">
+              <span class="text-white text-xs font-bold">${item.retention}%</span>
+            </div>
+          </div>
+          <div class="w-28 text-slate-500 text-xs flex-shrink-0">${item.members.toLocaleString()} members</div>
+        </div>
+      `).join('');
+    }
+
+    // ── CHALLENGES TABLE ──
+    function renderChallengesTable() {
+      const tbody = document.getElementById('challenges-tbody');
+      if (!tbody) return;
+      const typeColors = { Group: 'bg-blue-500/20 text-blue-300', Individual: 'bg-purple-500/20 text-purple-300', Social: 'bg-pink-500/20 text-pink-300' };
+      tbody.innerHTML = topChallenges.map((c, i) => `
+        <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 transition">
+          <td class="px-6 py-4 text-slate-200 text-sm font-semibold">${c.name}</td>
+          <td class="px-4 py-4">
+            <span class="text-xs px-2 py-1 rounded-full ${typeColors[c.type] || 'bg-slate-700 text-slate-400'}">${c.type}</span>
+          </td>
+          <td class="px-4 py-4 text-slate-300 text-sm">${c.participants.toLocaleString()}</td>
+          <td class="px-4 py-4">
+            <div class="flex items-center gap-2">
+              <div class="w-24 bg-slate-700 rounded-full h-1.5">
+                <div class="bg-indigo-500 h-1.5 rounded-full" style="width:${c.completionRate}%"></div>
+              </div>
+              <span class="text-slate-300 text-sm">${c.completionRate}%</span>
+            </div>
+          </td>
+          <td class="px-4 py-4">
+            <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full">${c.retentionLift}</span>
+          </td>
+          <td class="px-4 py-4">
+            <span class="bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-full">${c.status}</span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ── AT-RISK TABLE ──
+    function renderAtRiskTable() {
+      const tbody = document.getElementById('atrisk-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = atRiskData.map((m, i) => {
+        let riskPill, riskLabel;
+        if (m.riskScore >= 70) {
+          riskPill = 'bg-red-500/20 text-red-400'; riskLabel = 'High';
+        } else if (m.riskScore >= 40) {
+          riskPill = 'bg-amber-500/20 text-amber-400'; riskLabel = 'Medium';
+        } else {
+          riskPill = 'bg-emerald-500/20 text-emerald-400'; riskLabel = 'Low';
+        }
+        return `
+          <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 transition" id="atrisk-row-${i}">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-sm font-bold">${m.name[0]}</div>
+                <span class="text-slate-200 text-sm font-semibold">${m.name}</span>
+              </div>
+            </td>
+            <td class="px-4 py-4 text-slate-400 text-sm">${m.lastSeen}</td>
+            <td class="px-4 py-4">
+              <span class="${m.streak === 0 ? 'text-red-400' : 'text-amber-400'} text-sm font-semibold">
+                ${m.streak === 0 ? '🔴 Broken' : `🔥 ${m.streak} days`}
+              </span>
+            </td>
+            <td class="px-4 py-4 text-slate-300 text-sm">${m.points.toLocaleString()} pts</td>
+            <td class="px-4 py-4">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full ${riskPill}">${m.riskScore} · ${riskLabel}</span>
+            </td>
+            <td class="px-4 py-4" id="action-${i}">
+              ${m.offerSent
+                ? `<span class="text-emerald-400 text-sm font-semibold">✅ Offer Sent</span>`
+                : `<button onclick="sendOffer(${i}, '${m.name}')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition">
+                    Send Re-engagement Offer
+                  </button>`
+              }
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function sendOffer(idx, name) {
+      atRiskData[idx].offerSent = true;
+      document.getElementById(`action-${idx}`).innerHTML = `<span class="text-emerald-400 text-sm font-semibold">✅ Offer Sent</span>`;
+      showToast(`Re-engagement sequence triggered for ${name}`);
+    }
+
+    // ── CREATE CHALLENGE PANEL ──
+    function openCreatePanel() {
+      document.getElementById('panel-overlay').classList.remove('hidden');
+      document.getElementById('create-panel').classList.add('open');
+      lucide.createIcons();
+    }
+
+    function closeCreatePanel() {
+      document.getElementById('panel-overlay').classList.add('hidden');
+      document.getElementById('create-panel').classList.remove('open');
+    }
+
+    function createChallenge() {
+      const name = document.getElementById('new-name').value.trim() || 'New Challenge';
+      const type = document.getElementById('new-type').value;
+      const points = parseInt(document.getElementById('new-points').value) || 0;
+      topChallenges.push({ name, type, participants: 0, completionRate: 0, retentionLift: '—', status: 'Draft' });
+      closeCreatePanel();
+      renderChallengesTable();
+      lucide.createIcons();
+      showToast(`Challenge "${name}" created as Draft`);
+    }
+
+    // ── INIT ──
+    function init() {
+      showSection('overview');
+      renderRetentionChart();
+      renderChallengesTable();
+      renderAtRiskTable();
+      lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <!-- Footer -->
+  <footer class="fixed bottom-0 left-60 right-0 text-center text-slate-600 text-xs py-3 bg-slate-900 border-t border-slate-800">
+    Prototype by <a href="https://qarea.com" target="_blank" class="hover:text-slate-400 underline">QArea</a> / <a href="https://testfort.com" target="_blank" class="hover:text-slate-400 underline">TestFort</a> · Software Testing &amp; Development ·
+    This is what your member app could look like — designed, built, and quality-tested by QArea.
+  </footer>
+
+</body>
+</html>

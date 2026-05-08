@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitPulse — Member App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex flex-col items-center py-8">
+
+  <!-- Phone Frame -->
+  <div class="w-[390px] rounded-3xl border-4 border-slate-700 bg-slate-900 overflow-hidden shadow-2xl flex flex-col" style="height:844px;">
+
+    <!-- Scrollable content area -->
+    <div class="flex-1 overflow-y-auto" id="app-content">
+      <!-- TAB CONTENTS HERE -->
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bg-slate-800 border-t border-slate-700 flex" style="min-height:64px;">
+      <!-- 4 nav items -->
+    </nav>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold opacity-0 transition-opacity duration-300 z-50 max-w-xs text-center"></div>
+
+  <!-- Modal overlay -->
+  <div id="modal-overlay" class="fixed inset-0 bg-black/60 z-40 hidden flex items-center justify-center">
+    <div id="modal-box" class="bg-slate-800 rounded-2xl p-6 mx-4 w-full max-w-xs shadow-2xl z-50"></div>
+  </div>
+
+  <!-- Badge tooltip -->
+  <div id="badge-tooltip" class="fixed bg-slate-700 text-slate-100 text-xs px-3 py-2 rounded-lg z-50 hidden shadow-lg max-w-[150px] text-center"></div>
+
+  <!-- Footer -->
+  <footer class="mt-8 text-center text-slate-500 text-xs pb-4">
+    <p>Prototype by <a href="https://qarea.com" target="_blank" class="hover:text-slate-300 underline">QArea</a> / <a href="https://testfort.com" target="_blank" class="hover:text-slate-300 underline">TestFort</a> · Software Testing &amp; Development</p>
+    <p class="mt-1">This is what your member app could look like — designed, built, and quality-tested by QArea.</p>
+  </footer>
+
+  <script>
+  // ── DATA ──
+  const currentMember = {
+    name: "Sara", streakDays: 14, streakAtRisk: false,
+    totalPoints: 1240, tier: "Silver", nextTierPoints: 2000,
+    badges: [
+      { id: 1, name: "First Workout", icon: "zap", earned: true, date: "Jan 3" },
+      { id: 2, name: "7-Day Streak", icon: "flame", earned: true, date: "Jan 10" },
+      { id: 3, name: "First Class", icon: "users", earned: true, date: "Jan 5" },
+      { id: 4, name: "Goal Setter", icon: "target", earned: true, date: "Jan 3" },
+      { id: 5, name: "30-Day Streak", icon: "trophy", earned: false, date: null },
+      { id: 6, name: "Class Regular", icon: "calendar", earned: false, date: null },
+      { id: 7, name: "Referral Hero", icon: "heart", earned: false, date: null },
+      { id: 8, name: "100 Workouts", icon: "award", earned: false, date: null }
+    ],
+    weeklyActivity: [true, true, false, true, true, true, true],
+    completedMilestones: ["First Workout", "First Class", "First Goal", "7-Day Streak"],
+    nextMilestone: "First Trainer Check-in"
+  };
+
+  const challenges = [
+    { id: 1, name: "January Warrior", type: "group", participants: 312, goal: "20 check-ins in January", progress: 14, target: 20, daysLeft: 8, reward: 200, joined: true },
+    { id: 2, name: "Yoga 5x Challenge", type: "group", participants: 87, goal: "Attend 5 yoga classes", progress: 3, target: 5, daysLeft: 14, reward: 150, joined: true },
+    { id: 3, name: "Morning Riser", type: "individual", participants: 145, goal: "10 pre-9am workouts", progress: 0, target: 10, daysLeft: 22, reward: 100, joined: false },
+    { id: 4, name: "Bring a Buddy", type: "social", participants: 54, goal: "Invite 2 friends to class", progress: 1, target: 2, daysLeft: 30, reward: 300, joined: false }
+  ];
+
+  const leaderboard = [
+    { rank: 1, name: "Mike T.", points: 2840, streak: 31, avatar: "M", tier: "Gold" },
+    { rank: 2, name: "Anna K.", points: 2310, streak: 22, avatar: "A", tier: "Gold" },
+    { rank: 3, name: "James R.", points: 1980, streak: 18, avatar: "J", tier: "Silver" },
+    { rank: 4, name: "Sara (You)", points: 1240, streak: 14, avatar: "S", tier: "Silver", isCurrentUser: true },
+    { rank: 5, name: "Priya M.", points: 1100, streak: 9, avatar: "P", tier: "Silver" },
+    { rank: 6, name: "Tom H.", points: 890, streak: 6, avatar: "T", tier: "Bronze" },
+    { rank: 7, name: "Lisa W.", points: 760, streak: 5, avatar: "L", tier: "Bronze" },
+    { rank: 8, name: "Chris B.", points: 610, streak: 3, avatar: "C", tier: "Bronze" },
+    { rank: 9, name: "Emma D.", points: 480, streak: 2, avatar: "E", tier: "Bronze" },
+    { rank: 10, name: "Dan F.", points: 310, streak: 1, avatar: "D", tier: "Bronze" }
+  ];
+
+  const rewards = [
+    { id: 1, name: "Free Smoothie", cost: 300, icon: "coffee" },
+    { id: 2, name: "1 Guest Pass", cost: 500, icon: "ticket" },
+    { id: 3, name: "Protein Bar Pack", cost: 200, icon: "package" },
+    { id: 4, name: "PT Session (30 min)", cost: 1500, icon: "user-check" },
+    { id: 5, name: "1 Month Free", cost: 5000, icon: "star" }
+  ];
+
+  // ── MUTABLE STATE ──
+  let currentPoints = 1240;
+  let streakFreezeUsed = false;
+  let streakFreezeCount = 1;
+  let challengeState = challenges.map(c => ({ ...c }));
+  let expandedChallenge = null;
+  let leaderboardFilter = 'points';
+  let redeemedRewards = new Set();
+  let activeTab = 'home';
+
+  // ── AVATAR COLOR MAP ──
+  const avatarColors = { M: 'bg-blue-600', A: 'bg-pink-600', J: 'bg-green-600', S: 'bg-indigo-600', P: 'bg-purple-600', T: 'bg-orange-600', L: 'bg-teal-600', C: 'bg-cyan-600', E: 'bg-rose-600', D: 'bg-yellow-600' };
+  function avatarColor(letter) { return avatarColors[letter] || 'bg-indigo-600'; }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('opacity-0');
+    t.classList.add('opacity-100');
+    setTimeout(() => { t.classList.remove('opacity-100'); t.classList.add('opacity-0'); }, 2500);
+  }
+
+  // ── MODAL ──
+  function showModal(html, onConfirm) {
+    const overlay = document.getElementById('modal-overlay');
+    const box = document.getElementById('modal-box');
+    box.innerHTML = html;
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    if (onConfirm) {
+      const confirmBtn = box.querySelector('#modal-confirm');
+      if (confirmBtn) confirmBtn.addEventListener('click', () => { hideModal(); onConfirm(); });
+    }
+    const cancelBtn = box.querySelector('#modal-cancel');
+    if (cancelBtn) cancelBtn.addEventListener('click', hideModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) hideModal(); });
+    lucide.createIcons();
+  }
+  function hideModal() {
+    document.getElementById('modal-overlay').classList.add('hidden');
+    document.getElementById('modal-overlay').classList.remove('flex');
+  }
+
+  // ── NAVIGATION ──
+  function switchTab(tabId) {
+    activeTab = tabId;
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      const isActive = b.dataset.tab === tabId;
+      b.querySelector('.nav-icon').style.color = isActive ? '#6366f1' : '#94a3b8';
+      b.querySelector('.nav-label').style.color = isActive ? '#6366f1' : '#94a3b8';
+      const indicator = b.querySelector('.nav-indicator');
+      if (indicator) indicator.style.backgroundColor = isActive ? '#6366f1' : 'transparent';
+    });
+    document.getElementById('app-content').scrollTop = 0;
+    lucide.createIcons();
+  }
+
+  // ── RENDER HOME TAB ──
+  function renderHome() {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const heatmap = currentMember.weeklyActivity.map((active, i) => {
+      const isToday = i === 6;
+      let cls = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ';
+      if (isToday) cls += 'bg-amber-500 text-white animate-pulse';
+      else if (active) cls += 'bg-emerald-500 text-white';
+      else cls += 'bg-slate-700 text-slate-500';
+      return `<div class="flex flex-col items-center gap-1">
+        <div class="${cls}">${days[i].charAt(0)}</div>
+        <span class="text-slate-500 text-[10px]">${days[i]}</span>
+      </div>`;
+    }).join('');
+
+    const badgeRow = currentMember.badges.map((b, idx) => {
+      if (b.earned) {
+        return `<button class="flex-shrink-0 flex flex-col items-center gap-1 badge-btn" data-idx="${idx}">
+          <div class="w-12 h-12 rounded-full bg-indigo-900 flex items-center justify-center border-2 border-indigo-500">
+            <i data-lucide="${b.icon}" class="w-5 h-5 text-indigo-400"></i>
+          </div>
+          <span class="text-[10px] text-slate-400 max-w-[52px] text-center leading-tight">${b.name}</span>
+        </button>`;
+      } else {
+        return `<button class="flex-shrink-0 flex flex-col items-center gap-1 badge-btn" data-idx="${idx}">
+          <div class="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center relative border-2 border-slate-600">
+            <i data-lucide="${b.icon}" class="w-5 h-5 text-slate-600"></i>
+            <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-slate-600 rounded-full flex items-center justify-center">
+              <i data-lucide="lock" class="w-2.5 h-2.5 text-slate-400"></i>
+            </div>
+          </div>
+          <span class="text-[10px] text-slate-600 max-w-[52px] text-center leading-tight">${b.name}</span>
+        </button>`;
+      }
+    }).join('');
+
+    const milestones = [
+      { label: "First Workout", done: true },
+      { label: "First Class", done: true },
+      { label: "First Goal", done: true },
+      { label: "7-Day Streak", done: true },
+      { label: "Trainer Meet", done: false }
+    ];
+    const milestoneHtml = milestones.map((m, i) => `
+      <div class="flex flex-col items-center flex-1">
+        <div class="relative">
+          ${m.done
+            ? `<div class="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-white"></i></div>`
+            : `<div class="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center pulse-dot"><div class="w-2.5 h-2.5 rounded-full bg-white"></div></div>`
+          }
+        </div>
+        <span class="text-[9px] text-center mt-1 ${m.done ? 'text-emerald-400' : 'text-indigo-400'} leading-tight max-w-[50px]">${m.label}</span>
+      </div>
+      ${i < milestones.length - 1 ? `<div class="flex-1 h-0.5 ${m.done ? 'bg-emerald-500' : 'bg-slate-600'} mt-3.5 -mx-1"></div>` : ''}
+    `).join('');
+
+    const streakBanner = currentMember.streakAtRisk && !streakFreezeUsed
+      ? `<div class="mx-4 mb-3 bg-amber-900/50 border border-amber-500/50 rounded-xl p-3 flex items-center gap-3">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+          <div class="flex-1">
+            <p class="text-amber-300 text-sm font-semibold">Streak at risk!</p>
+            <p class="text-amber-400/80 text-xs">Work out today or use a Streak Freeze (${streakFreezeCount} left)</p>
+          </div>
+          <button onclick="useStreakFreeze()" class="bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0">Use Freeze</button>
+        </div>`
+      : streakFreezeUsed
+      ? `<div class="mx-4 mb-3 bg-emerald-900/50 border border-emerald-500/50 rounded-xl p-3 flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+          <p class="text-emerald-300 text-sm font-semibold">Streak protected for today!</p>
+        </div>`
+      : '';
+
+    document.getElementById('tab-home').innerHTML = `
+      <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+        <span class="text-xl font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">FitPulse</span>
+        <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">S</div>
+      </div>
+
+      ${streakBanner}
+
+      <div class="mx-4 mb-3 bg-slate-800 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
+            <span class="text-2xl">🔥</span>
+          </div>
+          <div>
+            <p class="text-white text-xl font-black">14-Day Streak</p>
+            <p class="text-slate-400 text-xs">Keep it going — work out today!</p>
+          </div>
+        </div>
+        <div class="flex justify-between">${heatmap}</div>
+      </div>
+
+      <div class="mx-4 mb-3 bg-slate-800 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <span class="text-white text-2xl font-black">${currentPoints.toLocaleString()} pts</span>
+            <span class="ml-2 bg-slate-400/20 text-slate-300 text-xs font-semibold px-2 py-0.5 rounded-full">Silver</span>
+          </div>
+          <span class="text-amber-400 text-xs font-semibold">${(currentMember.nextTierPoints - currentPoints).toLocaleString()} to Gold</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-2.5 mb-1">
+          <div class="h-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all" style="width:${Math.round((currentPoints / currentMember.nextTierPoints) * 100)}%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-slate-500">
+          <span>Silver · ${currentPoints.toLocaleString()} pts</span>
+          <span>Gold · ${currentMember.nextTierPoints.toLocaleString()} pts</span>
+        </div>
+      </div>
+
+      <div class="mx-4 mb-3 bg-slate-800 rounded-2xl p-4 shadow-lg">
+        <p class="text-slate-400 text-xs font-semibold mb-3 uppercase tracking-wide">Your Journey</p>
+        <div class="flex items-start">${milestoneHtml}</div>
+        <button onclick="switchTab('challenges')" class="mt-3 w-full text-center text-indigo-400 text-xs font-semibold hover:text-indigo-300">
+          Next: Book Your Trainer →
+        </button>
+      </div>
+
+      <div class="mx-4 mb-4">
+        <p class="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Your Badges</p>
+        <div class="flex gap-3 overflow-x-auto pb-2">${badgeRow}</div>
+      </div>
+    `;
+
+    document.querySelectorAll('.badge-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(btn.dataset.idx);
+        const badge = currentMember.badges[idx];
+        const tooltip = document.getElementById('badge-tooltip');
+        tooltip.innerHTML = badge.earned
+          ? `<strong>${badge.name}</strong><br>Earned ${badge.date}`
+          : `<strong>${badge.name}</strong><br>Not yet earned — keep going!`;
+        const rect = btn.getBoundingClientRect();
+        tooltip.style.top = (rect.top - 60 + window.scrollY) + 'px';
+        tooltip.style.left = (rect.left - 30) + 'px';
+        tooltip.classList.remove('hidden');
+        setTimeout(() => tooltip.classList.add('hidden'), 2000);
+        e.stopPropagation();
+      });
+    });
+    document.addEventListener('click', () => document.getElementById('badge-tooltip').classList.add('hidden'));
+  }
+
+  function useStreakFreeze() {
+    streakFreezeUsed = true;
+    streakFreezeCount = 0;
+    renderHome();
+    lucide.createIcons();
+  }
+
+  // ── RENDER CHALLENGES TAB ──
+  function renderChallenges() {
+    const typeColors = { group: 'bg-blue-500/20 text-blue-300', individual: 'bg-purple-500/20 text-purple-300', social: 'bg-pink-500/20 text-pink-300' };
+
+    function challengeCard(c, joined) {
+      const pct = Math.round((c.progress / c.target) * 100);
+      const miniLeaderboard = joined && expandedChallenge === c.id
+        ? `<div class="mt-3 pt-3 border-t border-slate-700">
+            <p class="text-slate-400 text-xs mb-2 font-semibold">Top participants</p>
+            ${['Mike T.', 'Anna K.', 'James R.'].map((n, i) => `
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="text-slate-500 text-xs w-4">${i+1}</span>
+                <div class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold">${n[0]}</div>
+                <span class="text-slate-300 text-xs">${n}</span>
+                <span class="ml-auto text-slate-400 text-xs">${[18, 15, 13][i]} check-ins</span>
+              </div>
+            `).join('')}
+          </div>`
+        : '';
+      return `
+        <div class="mb-3 bg-slate-800 rounded-2xl p-4 shadow-lg border ${joined ? 'border-emerald-500/30' : 'border-transparent'}">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <span class="text-white font-bold text-sm">${c.name}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded-full ${typeColors[c.type]}">${c.type}</span>
+                ${joined ? '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">Joined ✓</span>' : ''}
+              </div>
+              <p class="text-slate-400 text-xs">${c.goal}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-400 mb-3 flex-wrap">
+            <span><i data-lucide="users" class="w-3 h-3 inline mr-1"></i>${c.participants} joined</span>
+            <span><i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>${c.daysLeft} days left</span>
+            <span class="text-amber-400"><i data-lucide="trophy" class="w-3 h-3 inline mr-1"></i>${c.reward} pts</span>
+          </div>
+          ${joined ? `
+            <div class="mb-3">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Progress</span>
+                <span class="text-indigo-400 font-semibold">${c.progress} / ${c.target}</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-2">
+                <div class="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all" style="width:${pct}%"></div>
+              </div>
+            </div>
+            <button onclick="toggleExpand(${c.id})" class="w-full text-center text-indigo-400 text-xs font-semibold py-1 hover:text-indigo-300">
+              ${expandedChallenge === c.id ? 'Hide Details ▲' : 'View Details ▼'}
+            </button>
+            ${miniLeaderboard}
+          ` : `
+            <button onclick="joinChallenge(${c.id})" id="join-btn-${c.id}" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold py-2 rounded-xl transition">
+              Join Challenge →
+            </button>
+          `}
+        </div>`;
+    }
+
+    const joined = challengeState.filter(c => c.joined);
+    const available = challengeState.filter(c => !c.joined);
+
+    document.getElementById('tab-challenges').innerHTML = `
+      <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+        <h2 class="text-white font-black text-lg">Active Challenges</h2>
+        <span class="text-indigo-400 text-sm font-semibold">${joined.length} joined</span>
+      </div>
+      <div class="px-4">
+        ${joined.map(c => challengeCard(c, true)).join('')}
+        ${available.length > 0 ? `<p class="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-3 mt-1">Available to Join</p>` : ''}
+        ${available.map(c => challengeCard(c, false)).join('')}
+        <div class="h-4"></div>
+      </div>
+    `;
+    lucide.createIcons();
+  }
+
+  function toggleExpand(id) {
+    expandedChallenge = expandedChallenge === id ? null : id;
+    renderChallenges();
+  }
+
+  function joinChallenge(id) {
+    const c = challengeState.find(c => c.id === id);
+    if (c) { c.joined = true; c.participants++; }
+    renderChallenges();
+    showToast(`💪 You joined ${c.name}!`);
+  }
+
+  // ── RENDER LEADERBOARD TAB ──
+  function renderLeaderboard() {
+    const sorted = leaderboardFilter === 'points'
+      ? [...leaderboard].sort((a, b) => b.points - a.points)
+      : [...leaderboard].sort((a, b) => b.streak - a.streak);
+
+    const tierColors = { Gold: 'bg-amber-500/20 text-amber-300', Silver: 'bg-slate-400/20 text-slate-300', Bronze: 'bg-amber-700/20 text-amber-700' };
+    const rankColors = ['bg-amber-400', 'bg-slate-400', 'bg-amber-700'];
+
+    const rows = sorted.map((m, i) => {
+      const rank = i + 1;
+      const isTop3 = rank <= 3;
+      const val = leaderboardFilter === 'points' ? `${m.points.toLocaleString()} pts` : `${m.streak}d streak`;
+      return `
+        <div class="flex items-center gap-3 p-3 rounded-xl ${m.isCurrentUser ? 'bg-indigo-900/40 border border-indigo-500/40' : isTop3 ? 'bg-slate-700/50' : 'hover:bg-slate-700/30'} ${isTop3 ? 'mb-1' : 'mb-0.5'} relative">
+          ${m.isCurrentUser ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-l-xl"></div>' : ''}
+          <div class="w-7 h-7 rounded-full ${isTop3 ? rankColors[rank-1] : 'bg-slate-700'} flex items-center justify-center text-white text-xs font-black">${rank}</div>
+          <div class="w-9 h-9 rounded-full ${avatarColor(m.avatar)} flex items-center justify-center text-white text-sm font-bold">${m.avatar}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1 flex-wrap">
+              <span class="text-white text-sm font-semibold">${m.name}</span>
+              ${m.isCurrentUser ? '<span class="text-[10px] bg-indigo-500/30 text-indigo-300 px-1.5 py-0.5 rounded-full">You</span>' : ''}
+            </div>
+            <span class="text-xs px-1.5 py-0.5 rounded-full ${tierColors[m.tier]}">${m.tier}</span>
+          </div>
+          <span class="text-indigo-400 text-sm font-bold flex-shrink-0">${val}</span>
+        </div>`;
+    }).join('');
+
+    document.getElementById('tab-leaderboard').innerHTML = `
+      <div class="px-4 pt-4 pb-2">
+        <h2 class="text-white font-black text-lg mb-3">This Month's Leaderboard</h2>
+        <div class="flex gap-2 mb-4">
+          <button onclick="setLeaderboardFilter('points')" class="flex-1 py-2 rounded-xl text-sm font-bold transition ${leaderboardFilter === 'points' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}">Points</button>
+          <button onclick="setLeaderboardFilter('streak')" class="flex-1 py-2 rounded-xl text-sm font-bold transition ${leaderboardFilter === 'streak' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}">Streak</button>
+        </div>
+      </div>
+      <div class="px-4">${rows}</div>
+      <p class="text-center text-slate-500 text-xs px-4 py-4 mt-2">Rankings update daily · Scores based on check-ins, classes attended, and challenges completed</p>
+    `;
+    lucide.createIcons();
+  }
+
+  function setLeaderboardFilter(filter) {
+    leaderboardFilter = filter;
+    renderLeaderboard();
+  }
+
+  // ── RENDER REWARDS TAB ──
+  function renderRewards() {
+    const rewardCards = rewards.map(r => {
+      const affordable = currentPoints >= r.cost;
+      const redeemed = redeemedRewards.has(r.id);
+      return `
+        <div class="bg-slate-800 rounded-2xl p-4 shadow-lg flex flex-col items-center text-center gap-2 ${redeemed ? 'border border-emerald-500/30' : ''}">
+          <div class="w-12 h-12 rounded-xl ${redeemed ? 'bg-emerald-500/20' : affordable ? 'bg-indigo-500/20' : 'bg-slate-700'} flex items-center justify-center">
+            <i data-lucide="${r.icon}" class="w-6 h-6 ${redeemed ? 'text-emerald-400' : affordable ? 'text-indigo-400' : 'text-slate-500'}"></i>
+          </div>
+          <p class="text-white text-sm font-bold leading-tight">${r.name}</p>
+          <p class="${affordable && !redeemed ? 'text-indigo-400' : 'text-slate-500'} text-xs font-semibold">${r.cost.toLocaleString()} pts</p>
+          ${redeemed
+            ? `<div class="w-full bg-emerald-500/20 text-emerald-400 text-xs font-bold py-2 rounded-xl">Claimed ✓</div>`
+            : affordable
+            ? `<button onclick="redeemReward(${r.id}, '${r.name}', ${r.cost})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-xl transition">Redeem</button>`
+            : `<div class="w-full text-center text-slate-500 text-xs py-2">Need ${(r.cost - currentPoints).toLocaleString()} more pts</div>`
+          }
+        </div>`;
+    }).join('');
+
+    document.getElementById('tab-rewards').innerHTML = `
+      <div class="px-4 pt-4 pb-2">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-white font-black text-lg">Redeem Points</h2>
+          <span id="points-display" class="text-indigo-400 font-bold text-sm">${currentPoints.toLocaleString()} pts available</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3">${rewardCards}</div>
+        <div class="h-4"></div>
+      </div>
+    `;
+    lucide.createIcons();
+  }
+
+  function redeemReward(id, name, cost) {
+    showModal(`
+      <h3 class="text-white font-black text-lg mb-2">Confirm Redemption</h3>
+      <p class="text-slate-400 text-sm mb-1">Redeem <strong class="text-white">${name}</strong> for <strong class="text-indigo-400">${cost.toLocaleString()} pts</strong>?</p>
+      <div class="flex justify-between text-xs text-slate-500 my-4 bg-slate-700/50 rounded-xl p-3">
+        <div class="text-center"><p class="text-slate-400 mb-1">Before</p><p class="text-white font-bold">${currentPoints.toLocaleString()} pts</p></div>
+        <div class="text-center text-2xl text-slate-600 leading-tight">→</div>
+        <div class="text-center"><p class="text-slate-400 mb-1">After</p><p class="text-indigo-400 font-bold">${(currentPoints - cost).toLocaleString()} pts</p></div>
+      </div>
+      <div class="flex gap-3 mt-4">
+        <button id="modal-cancel" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2.5 rounded-xl transition">Cancel</button>
+        <button id="modal-confirm" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl transition">Confirm</button>
+      </div>
+    `, () => {
+      currentPoints -= cost;
+      redeemedRewards.add(id);
+      renderRewards();
+      showToast('Redeemed! Show this screen at reception.');
+    });
+  }
+
+  // ── RENDER NAV ──
+  function renderNav() {
+    const tabs = [
+      { id: 'home', icon: 'home', label: 'Home' },
+      { id: 'challenges', icon: 'zap', label: 'Challenges' },
+      { id: 'leaderboard', icon: 'trophy', label: 'Leaderboard' },
+      { id: 'rewards', icon: 'gift', label: 'Rewards' }
+    ];
+    document.querySelector('nav').innerHTML = tabs.map(t => `
+      <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-2 relative" data-tab="${t.id}" onclick="switchTab('${t.id}')">
+        <div class="nav-indicator absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full transition-colors"></div>
+        <i data-lucide="${t.icon}" class="nav-icon w-5 h-5" style="color:#94a3b8"></i>
+        <span class="nav-label text-[10px] font-semibold" style="color:#94a3b8">${t.label}</span>
+      </button>
+    `).join('');
+  }
+
+  // ── INIT ──
+  function init() {
+    // Build tab containers
+    const content = document.getElementById('app-content');
+    content.innerHTML = `
+      <div id="tab-home" class="tab-content active"></div>
+      <div id="tab-challenges" class="tab-content"></div>
+      <div id="tab-leaderboard" class="tab-content"></div>
+      <div id="tab-rewards" class="tab-content"></div>
+    `;
+
+    renderNav();
+    renderHome();
+    renderChallenges();
+    renderLeaderboard();
+    renderRewards();
+    switchTab('home');
+    lucide.createIcons();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitPulse Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    :root { --indigo: #6366f1; }
+    body { background: #0f172a; color: #f1f5f9; font-family: 'Inter', system-ui, sans-serif; }
+    .sidebar { width: 240px; min-width: 240px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #94a3b8; transition: all 0.15s; }
+    .nav-item:hover { background: rgba(99,102,241,0.12); color: #f1f5f9; }
+    .nav-item.active { background: #6366f1; color: #fff; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; }
+    .stat-card { background: #1e293b; border-radius: 12px; padding: 20px; }
+    .lever-card { background: #1e293b; border-radius: 12px; padding: 20px; border-left: 4px solid; }
+    .bar-track { background: #0f172a; border-radius: 6px; height: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+    .funnel-step { display: flex; flex-direction: column; align-items: center; }
+    .funnel-bar { display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 13px; font-weight: 600; color: #fff; transition: width 0.6s; }
+    .risk-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .toast { position: fixed; bottom: 28px; right: 28px; background: #10b981; color: #fff; padding: 14px 22px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 9999; opacity: 0; transform: translateY(12px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .modal { background: #1e293b; border-radius: 14px; padding: 32px; width: 420px; max-width: 95vw; }
+    .badge-sent { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(16,185,129,0.18); color: #10b981; border: 1px solid #10b981; }
+    .vertical-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+    .vertical-bar-track { width: 100%; background: #0f172a; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; height: 140px; }
+    .vertical-bar-fill { width: 100%; border-radius: 6px 6px 0 0; }
+    .gradient-text { background: linear-gradient(90deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .roi-card { background: #1e0c4e; border-left: 4px solid #6366f1; border-radius: 12px; padding: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 10px 12px; border-bottom: 1px solid #334155; }
+    td { padding: 12px 12px; border-bottom: 1px solid #1e293b; font-size: 14px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; padding: 16px 12px 4px; font-weight: 600; }
+    .annotation-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.35); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #fca5a5; }
+    .annotation-box.indigo { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.35); color: #a5b4fc; }
+    .annotation-box.emerald { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.35); color: #6ee7b7; }
+    .channel-card { background: #0f172a; border-radius: 10px; padding: 18px; flex: 1; }
+    select, input[type=radio] { accent-color: #6366f1; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="flex min-h-screen">
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 h-screen bg-slate-800 flex flex-col overflow-y-auto z-50" style="background:#1e293b; border-right:1px solid #334155;">
+  <div class="px-5 py-6 border-b border-slate-700">
+    <span class="text-xl font-extrabold gradient-text tracking-tight">FitPulse Console</span>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-1">
+    <div class="section-label">Overview</div>
+    <div class="nav-item active" data-section="retention" onclick="showSection('retention')">
+      <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Retention Dashboard</span>
+    </div>
+
+    <div class="section-label">Member Lifecycle</div>
+    <div class="nav-item" data-section="onboarding" onclick="showSection('onboarding')">
+      <i data-lucide="git-merge" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Onboarding Funnel</span>
+    </div>
+    <div class="nav-item" data-section="atrisk" onclick="showSection('atrisk')">
+      <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>
+      <span>At-Risk Members</span>
+    </div>
+
+    <div class="section-label">Engagement</div>
+    <div class="nav-item" data-section="gamification" onclick="showSection('gamification')">
+      <i data-lucide="zap" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Gamification Stats</span>
+    </div>
+    <div class="nav-item" data-section="reengagement" onclick="showSection('reengagement')">
+      <i data-lucide="refresh-cw" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Re-engagement Sequences</span>
+    </div>
+
+    <div class="section-label">Community &amp; Growth</div>
+    <div class="nav-item" data-section="community" onclick="showSection('community')">
+      <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Community Health</span>
+    </div>
+    <div class="nav-item" data-section="loyalty" onclick="showSection('loyalty')">
+      <i data-lucide="star" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Loyalty &amp; Referrals</span>
+    </div>
+  </nav>
+  <div class="px-5 py-5 border-t border-slate-700">
+    <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full border border-indigo-500 text-indigo-400">Owner</span>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="flex-1 overflow-y-auto" style="margin-left:240px;">
+  <div class="max-w-6xl mx-auto px-8 py-8">
+
+    <!-- ========== SECTION 1: RETENTION DASHBOARD ========== -->
+    <div id="section-retention" class="section active">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-100">Member Retention Command Centre</h1>
+        <p class="text-slate-400 mt-1">February 2025 · 10,000 members</p>
+      </div>
+
+      <!-- 6 stat cards -->
+      <div class="grid grid-cols-3 gap-4">
+        <!-- Overall Retention -->
+        <div class="stat-card flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 text-sm font-medium">Overall Retention</span>
+            <span class="p-2 rounded-lg bg-emerald-500/10"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i></span>
+          </div>
+          <div class="text-3xl font-bold text-emerald-400">82%</div>
+          <div class="text-xs text-slate-400">6-month rolling average</div>
+        </div>
+        <!-- At-Risk Members -->
+        <div class="stat-card flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 text-sm font-medium">At-Risk Members</span>
+            <span class="p-2 rounded-lg bg-amber-500/10"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i></span>
+          </div>
+          <div class="text-3xl font-bold text-amber-400">847</div>
+          <div class="text-xs text-slate-400">Flagged by AI prediction</div>
+        </div>
+        <!-- Revenue at Risk -->
+        <div class="stat-card flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 text-sm font-medium">Revenue at Risk</span>
+            <span class="p-2 rounded-lg bg-red-500/10"><i data-lucide="dollar-sign" class="w-4 h-4 text-red-500"></i></span>
+          </div>
+          <div class="text-3xl font-bold text-red-400">$592,800</div>
+          <div class="text-xs text-slate-400">Projected annual churn revenue</div>
+        </div>
+        <!-- Recovered This Month -->
+        <div class="stat-card flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 text-sm font-medium">Recovered This Month</span>
+            <span class="p-2 rounded-lg bg-emerald-500/10"><i data-lucide="user-check" class="w-4 h-4 text-emerald-500"></i></span>
+          </div>
+          <div class="text-3xl font-bold text-emerald-400">312</div>
+          <div class="text-xs text-slate-400">Members re-engaged successfully</div>
+        </div>
+        <!-- Onboarding Completion -->
+        <div class="stat-card flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 text-sm font-medium">Onboarding Completion</span>
+            <span class="p-2 rounded-lg bg-indigo-500/10"><i data-lucide="list" class="w-4 h-4 text-indigo-400"></i></span>
+          </div>
+          <div class="text-3xl font-bold text-indigo-400">22%</div>
+          <div class="text-xs text-slate-400">Reach first measurable win</div>
+        </div>
+        <!-- Community Connections -->
+        <div class="stat-card flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 text-sm font-medium">Community Connections</span>
+            <span class="p-2 rounded-lg bg-violet-500/10"><i data-lucide="users" class="w-4 h-4 text-violet-400"></i></span>
+          </div>
+          <div class="text-3xl font-bold text-violet-400">48.4%</div>
+          <div class="text-xs text-slate-400">Members with 1+ connection</div>
+        </div>
+      </div>
+
+      <!-- 6 retention lever cards -->
+      <div class="grid grid-cols-2 gap-4 mt-6">
+        <!-- Gamification -->
+        <div class="lever-card" style="border-left-color:#6366f1;">
+          <div class="flex items-start gap-3">
+            <span class="p-2 rounded-lg bg-indigo-500/10 mt-0.5"><i data-lucide="zap" class="w-5 h-5 text-indigo-400"></i></span>
+            <div class="flex-1">
+              <div class="font-bold text-slate-100 mb-1">Gamification</div>
+              <div class="text-slate-400 text-sm mb-3">App users: 82% vs 54% retention</div>
+              <button onclick="showSection('gamification')" class="text-indigo-400 text-sm font-semibold hover:text-indigo-300 transition-colors">View Details →</button>
+            </div>
+          </div>
+        </div>
+        <!-- AI Prediction -->
+        <div class="lever-card" style="border-left-color:#a855f7;">
+          <div class="flex items-start gap-3">
+            <span class="p-2 rounded-lg bg-violet-500/10 mt-0.5"><i data-lucide="cpu" class="w-5 h-5 text-violet-400"></i></span>
+            <div class="flex-1">
+              <div class="font-bold text-slate-100 mb-1">AI Prediction</div>
+              <div class="text-slate-400 text-sm mb-3">847 members flagged at-risk</div>
+              <button onclick="showSection('atrisk')" class="text-violet-400 text-sm font-semibold hover:text-violet-300 transition-colors">View Details →</button>
+            </div>
+          </div>
+        </div>
+        <!-- Onboarding -->
+        <div class="lever-card" style="border-left-color:#10b981;">
+          <div class="flex items-start gap-3">
+            <span class="p-2 rounded-lg bg-emerald-500/10 mt-0.5"><i data-lucide="git-merge" class="w-5 h-5 text-emerald-400"></i></span>
+            <div class="flex-1">
+              <div class="font-bold text-slate-100 mb-1">Onboarding</div>
+              <div class="text-slate-400 text-sm mb-3">87% retention if all 5 steps done</div>
+              <button onclick="showSection('onboarding')" class="text-emerald-400 text-sm font-semibold hover:text-emerald-300 transition-colors">View Details →</button>
+            </div>
+          </div>
+        </div>
+        <!-- Re-engagement -->
+        <div class="lever-card" style="border-left-color:#f59e0b;">
+          <div class="flex items-start gap-3">
+            <span class="p-2 rounded-lg bg-amber-500/10 mt-0.5"><i data-lucide="refresh-cw" class="w-5 h-5 text-amber-400"></i></span>
+            <div class="flex-1">
+              <div class="font-bold text-slate-100 mb-1">Re-engagement</div>
+              <div class="text-slate-400 text-sm mb-3">21% recovery rate · 87 recovered</div>
+              <button onclick="showSection('reengagement')" class="text-amber-400 text-sm font-semibold hover:text-amber-300 transition-colors">View Details →</button>
+            </div>
+          </div>
+        </div>
+        <!-- Community -->
+        <div class="lever-card" style="border-left-color:#3b82f6;">
+          <div class="flex items-start gap-3">
+            <span class="p-2 rounded-lg bg-blue-500/10 mt-0.5"><i data-lucide="heart-handshake" class="w-5 h-5 text-blue-400"></i></span>
+            <div class="flex-1">
+              <div class="font-bold text-slate-100 mb-1">Community</div>
+              <div class="text-slate-400 text-sm mb-3">3+ connections = 5x retention</div>
+              <button onclick="showSection('community')" class="text-blue-400 text-sm font-semibold hover:text-blue-300 transition-colors">View Details →</button>
+            </div>
+          </div>
+        </div>
+        <!-- Loyalty/Referral -->
+        <div class="lever-card" style="border-left-color:#f59e0b;">
+          <div class="flex items-start gap-3">
+            <span class="p-2 rounded-lg bg-amber-500/10 mt-0.5"><i data-lucide="star" class="w-5 h-5 text-amber-400"></i></span>
+            <div class="flex-1">
+              <div class="font-bold text-slate-100 mb-1">Loyalty / Referral</div>
+              <div class="text-slate-400 text-sm mb-3">Gold members: 93% retention</div>
+              <button onclick="showSection('loyalty')" class="text-amber-400 text-sm font-semibold hover:text-amber-300 transition-colors">View Details →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Master ROI card -->
+      <div class="roi-card mt-6">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-lg">💡</span>
+          <h3 class="text-slate-100 font-bold text-lg">Combined Retention Programme — Annual Value</h3>
+        </div>
+        <div class="grid grid-cols-4 gap-6">
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-indigo-300">$70K/year</div>
+            <div class="text-slate-400 text-xs mt-1">Cost of every 1% of churn</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-emerald-300">$348K/year</div>
+            <div class="text-slate-400 text-xs mt-1">Retained by saving 5% with AI + re-engagement</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-violet-300">$418K–$557K/year</div>
+            <div class="text-slate-400 text-xs mt-1">Value of raising community connection rate</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-amber-300">$1.46M/year</div>
+            <div class="text-slate-400 text-xs mt-1">Value of moving 6-month retention from 66% to 87%</div>
+          </div>
+        </div>
+        <div class="text-slate-500 text-xs mt-4 pt-4 border-t border-indigo-900">Source: Internal retention modelling · Assumes avg. membership value $70/month · 10,000 member base</div>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 2: ONBOARDING FUNNEL ========== -->
+    <div id="section-onboarding" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-100">New Member Onboarding</h1>
+        <p class="text-slate-400 mt-1">847 new members · January 2025</p>
+      </div>
+
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-5">Onboarding Funnel</h3>
+        <div class="space-y-1 px-4">
+          <!-- Step 1: Joined 100% -->
+          <div class="flex flex-col items-center">
+            <div class="w-full" style="max-width:100%;">
+              <div class="funnel-bar" style="background:#10b981; width:100%; height:44px; border-radius:6px 6px 0 0;">
+                <span class="text-white font-semibold text-sm">Joined &nbsp;—&nbsp; 847 members (100%)</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 93% continued</div>
+          <!-- Step 2: First Workout 93% -->
+          <div class="flex justify-center">
+            <div style="width:93%; transition: width 0.6s;">
+              <div class="funnel-bar" style="background:#22c55e; width:100%; height:40px;">
+                <span class="text-white font-semibold text-sm">First Workout &nbsp;—&nbsp; 791 (93%)</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 77% continued</div>
+          <!-- Step 3: First Class 72% -->
+          <div class="flex justify-center">
+            <div style="width:72%; transition: width 0.6s;">
+              <div class="funnel-bar" style="background:#84cc16; width:100%; height:40px;">
+                <span class="text-white font-semibold text-sm">First Class &nbsp;—&nbsp; 612 (72%)</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 87% continued</div>
+          <!-- Step 4: Goals Set 63% -->
+          <div class="flex justify-center">
+            <div style="width:63%; transition: width 0.6s;">
+              <div class="funnel-bar" style="background:#eab308; width:100%; height:40px;">
+                <span class="text-white font-semibold text-sm">Goals Set &nbsp;—&nbsp; 534 (63%)</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-red-400 text-xs py-0.5 font-semibold">▼ 56% continued &nbsp;⚠ Biggest Drop</div>
+          <!-- Step 5: Trainer Check-in 35% -->
+          <div class="flex justify-center">
+            <div style="width:35%; transition: width 0.6s;">
+              <div class="funnel-bar" style="background:#f97316; width:100%; height:40px;">
+                <span class="text-white font-semibold text-sm">Trainer Check-in &nbsp;—&nbsp; 298 (35%)</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 63% continued</div>
+          <!-- Step 6: First Measurable Win 22% -->
+          <div class="flex justify-center">
+            <div style="width:22%; transition: width 0.6s;">
+              <div class="funnel-bar" style="background:#ef4444; width:100%; height:40px; border-radius:0 0 6px 6px;">
+                <span class="text-white font-semibold text-sm">First Win &nbsp;—&nbsp; 187 (22%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation-box mt-6">
+          ⚠ 41% drop between Goals Set and Trainer Check-in — automating a Day 10 nudge recovers ~60–70 members/month
+        </div>
+      </div>
+
+      <!-- Retention by completion -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-5">Retention by Onboarding Completion</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300 font-medium">All 5 steps completed</span>
+              <span class="text-emerald-400 font-bold">87%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:87%; background:#10b981;"></div></div>
+            <div class="text-xs text-slate-500 mt-1">187 members</div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300 font-medium">3–4 steps completed</span>
+              <span class="text-blue-400 font-bold">74%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:74%; background:#3b82f6;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300 font-medium">1–2 steps completed</span>
+              <span class="text-amber-400 font-bold">51%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:51%; background:#f59e0b;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300 font-medium">No steps completed</span>
+              <span class="text-red-400 font-bold">38%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:38%; background:#ef4444;"></div></div>
+          </div>
+        </div>
+        <div class="annotation-box emerald mt-4">
+          The 49-point gap between no steps and all 5 steps = ~$1.46M/year at this gym
+        </div>
+      </div>
+
+      <div class="roi-card">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="trending-up" class="w-5 h-5 text-indigo-400"></i>
+          <span class="font-bold text-slate-100">Onboarding ROI Opportunity</span>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed">Automating the Day 10 trainer nudge (post Goals Set) could recover 60–70 members/month from the largest funnel drop. At $70/month average, that's <span class="text-emerald-400 font-bold">$50,400–$58,800/year</span> in retained revenue from a single automation.</p>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 3: AT-RISK MEMBERS ========== -->
+    <div id="section-atrisk" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-100">AI Churn Prediction</h1>
+        <p class="text-slate-400 mt-1">Members flagged 30–90 days before likely cancellation</p>
+      </div>
+
+      <!-- Churn risk distribution -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-4">Churn Risk Distribution</h3>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">Low (0–39)</span>
+              <span class="text-emerald-400 font-bold">7,240 members</span>
+            </div>
+            <div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:72.4%; background:#10b981;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">Medium (40–69)</span>
+              <span class="text-amber-400 font-bold">1,980 members</span>
+            </div>
+            <div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:19.8%; background:#f59e0b;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">High (70–89)</span>
+              <span class="text-orange-400 font-bold">630 members</span>
+            </div>
+            <div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:6.3%; background:#f97316;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">Critical (90+)</span>
+              <span class="text-red-400 font-bold">150 members</span>
+            </div>
+            <div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:1.5%; background:#ef4444;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- At-risk table -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-4">At-Risk Member List</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Risk Score</th>
+              <th>Last Seen</th>
+              <th>Trigger</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="atRiskTableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="roi-card">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="cpu" class="w-5 h-5 text-violet-400"></i>
+          <span class="font-bold text-slate-100">AI Prediction ROI</span>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed">Flagging members 30–90 days before likely cancellation allows time for meaningful intervention. Saving just 5% of at-risk members (42 people) at $70/month = <span class="text-emerald-400 font-bold">$35,280/year</span>. Full programme potential: <span class="text-emerald-400 font-bold">$348K/year</span>.</p>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 4: GAMIFICATION STATS ========== -->
+    <div id="section-gamification" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-100">Gamification &amp; Engagement</h1>
+        <p class="text-slate-400 mt-1">App-driven retention levers · February 2025</p>
+      </div>
+
+      <!-- 4 stat cards -->
+      <div class="grid grid-cols-4 gap-4 mb-5">
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">App Adoption</div>
+          <div class="text-2xl font-extrabold text-indigo-400">68.4%</div>
+          <div class="text-slate-500 text-xs mt-1">6,840 members</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Avg Streak</div>
+          <div class="text-2xl font-extrabold text-emerald-400">9.2 days</div>
+          <div class="text-slate-500 text-xs mt-1">Active app users</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Challenge Rate</div>
+          <div class="text-2xl font-extrabold text-amber-400">43%</div>
+          <div class="text-slate-500 text-xs mt-1">In at least 1 challenge</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Points Redeemed</div>
+          <div class="text-2xl font-extrabold text-violet-400">48,200</div>
+          <div class="text-slate-500 text-xs mt-1">This month</div>
+        </div>
+      </div>
+
+      <!-- Retention by engagement -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-4">Retention by App Engagement Segment</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">High (daily app use)</span>
+              <span class="text-emerald-400 font-bold">91% <span class="text-slate-500 font-normal">· 1,820 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:91%; background:#10b981;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">Medium (2–4x/week)</span>
+              <span class="text-blue-400 font-bold">78% <span class="text-slate-500 font-normal">· 3,200 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:78%; background:#3b82f6;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">Low (once/week)</span>
+              <span class="text-amber-400 font-bold">61% <span class="text-slate-500 font-normal">· 1,820 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:61%; background:#f59e0b;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">No app use</span>
+              <span class="text-red-400 font-bold">54% <span class="text-slate-500 font-normal">· 3,160 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:54%; background:#ef4444;"></div></div>
+          </div>
+        </div>
+        <div class="annotation-box mt-4">
+          ⚠ 28-point retention gap between daily users and non-users = ~$1.6M/year revenue difference
+        </div>
+      </div>
+
+      <!-- Challenges table -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-4">Challenge Performance</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Challenge Name</th>
+              <th>Participants</th>
+              <th>Completion</th>
+              <th>Retention Lift</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-slate-200 font-medium">February Warrior</td>
+              <td class="text-slate-300">312</td>
+              <td><span class="risk-pill" style="background:rgba(16,185,129,0.15); color:#10b981;">78%</span></td>
+              <td><span class="risk-pill" style="background:rgba(16,185,129,0.15); color:#10b981;">+18%</span></td>
+            </tr>
+            <tr>
+              <td class="text-slate-200 font-medium">Buddy Bonus</td>
+              <td class="text-slate-300">94</td>
+              <td><span class="risk-pill" style="background:rgba(16,185,129,0.15); color:#10b981;">65%</span></td>
+              <td><span class="risk-pill" style="background:rgba(16,185,129,0.15); color:#10b981;">+24%</span></td>
+            </tr>
+            <tr>
+              <td class="text-slate-200 font-medium">Morning Crew</td>
+              <td class="text-slate-300">156</td>
+              <td><span class="risk-pill" style="background:rgba(245,158,11,0.15); color:#f59e0b;">45%</span></td>
+              <td><span class="risk-pill" style="background:rgba(16,185,129,0.15); color:#10b981;">+12%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="roi-card">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="zap" class="w-5 h-5 text-indigo-400"></i>
+          <span class="font-bold text-slate-100">Gamification ROI</span>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed">App users are <span class="text-indigo-300 font-semibold">30% more likely to retain</span> than non-users. Members who hit milestone achievements in their first 90 days are <span class="text-indigo-300 font-semibold">60% more likely to stay</span> long-term. Each 1% improvement in app adoption = ~$70K/year retained.</p>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 5: RE-ENGAGEMENT SEQUENCES ========== -->
+    <div id="section-reengagement" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-100">Absence Detection &amp; Re-engagement</h1>
+        <p class="text-slate-400 mt-1">Automated outreach sequences for drifting members</p>
+      </div>
+
+      <!-- 4 stat cards -->
+      <div class="grid grid-cols-4 gap-4 mb-5">
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Drifting</div>
+          <div class="text-2xl font-extrabold text-amber-400">423</div>
+          <div class="text-slate-500 text-xs mt-1">Members absent 7+ days</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">In Sequence</div>
+          <div class="text-2xl font-extrabold text-indigo-400">312</div>
+          <div class="text-slate-500 text-xs mt-1">Active re-engagement</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Recovered</div>
+          <div class="text-2xl font-extrabold text-emerald-400">87</div>
+          <div class="text-slate-500 text-xs mt-1">This month</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Recovery Rate</div>
+          <div class="text-2xl font-extrabold text-emerald-400">21%</div>
+          <div class="text-slate-500 text-xs mt-1">Across all sequences</div>
+        </div>
+      </div>
+
+      <!-- Sequence performance table -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-4">Sequence Performance</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Touch</th>
+              <th>Sent</th>
+              <th>Open Rate</th>
+              <th>Booking Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-slate-200 font-medium">Day 7 Push</td>
+              <td class="text-slate-300">312</td>
+              <td><span class="risk-pill" style="background:rgba(16,185,129,0.15); color:#10b981;">77%</span></td>
+              <td><span class="risk-pill" style="background:rgba(245,158,11,0.15); color:#f59e0b;">20%</span></td>
+            </tr>
+            <tr>
+              <td class="text-slate-200 font-medium">Day 14 SMS</td>
+              <td class="text-slate-300">249</td>
+              <td><span class="risk-pill" style="background:rgba(16,185,129,0.15); color:#10b981;">80%</span></td>
+              <td><span class="risk-pill" style="background:rgba(245,158,11,0.15); color:#f59e0b;">29%</span></td>
+            </tr>
+            <tr>
+              <td class="text-slate-200 font-medium">Day 21 Email</td>
+              <td class="text-slate-300">178</td>
+              <td><span class="risk-pill" style="background:rgba(245,158,11,0.15); color:#f59e0b;">50%</span></td>
+              <td><span class="risk-pill" style="background:rgba(245,158,11,0.15); color:#f59e0b;">24%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Channel insight cards -->
+      <div class="flex gap-4 mb-5">
+        <div class="channel-card">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i>
+            <span class="font-bold text-slate-200 text-sm">Push Notification</span>
+          </div>
+          <div class="text-emerald-400 font-bold text-lg">77% open rate</div>
+          <div class="text-slate-400 text-xs mt-1">Best for immediate alerts &amp; streak reminders</div>
+        </div>
+        <div class="channel-card">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="message-square" class="w-4 h-4 text-emerald-400"></i>
+            <span class="font-bold text-slate-200 text-sm">SMS</span>
+          </div>
+          <div class="text-emerald-400 font-bold text-lg">209% higher response</div>
+          <div class="text-slate-400 text-xs mt-1">vs email · Best for personal outreach</div>
+        </div>
+        <div class="channel-card">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="mail" class="w-4 h-4 text-amber-400"></i>
+            <span class="font-bold text-slate-200 text-sm">Email</span>
+          </div>
+          <div class="text-amber-400 font-bold text-lg">50% open rate</div>
+          <div class="text-slate-400 text-xs mt-1">Best for detailed offers &amp; long-form content</div>
+        </div>
+      </div>
+
+      <div class="roi-card">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="refresh-cw" class="w-5 h-5 text-amber-400"></i>
+          <span class="font-bold text-slate-100">Re-engagement ROI</span>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed">15–25% recovery rate across sequences · <span class="text-emerald-400 font-semibold">209% higher SMS response</span> vs email · 87 members recovered this month at $70/month = <span class="text-emerald-400 font-semibold">$73,080/year</span> retained. Full programme potential at scale: <span class="text-emerald-400 font-semibold">~$209K/year</span>.</p>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 6: COMMUNITY HEALTH ========== -->
+    <div id="section-community" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-100">Community &amp; Social Connections</h1>
+        <p class="text-slate-400 mt-1">Social graph health · February 2025</p>
+      </div>
+
+      <!-- 4 stat cards -->
+      <div class="grid grid-cols-4 gap-4 mb-5">
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Connected Members</div>
+          <div class="text-2xl font-extrabold text-blue-400">48.4%</div>
+          <div class="text-slate-500 text-xs mt-1">4,840 members</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Avg Connections</div>
+          <div class="text-2xl font-extrabold text-violet-400">2.3</div>
+          <div class="text-slate-500 text-xs mt-1">Per connected member</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">In Challenges</div>
+          <div class="text-2xl font-extrabold text-emerald-400">1,840</div>
+          <div class="text-slate-500 text-xs mt-1">Active this month</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Feed Activity</div>
+          <div class="text-2xl font-extrabold text-indigo-400">2,341</div>
+          <div class="text-slate-500 text-xs mt-1">Posts/reactions/week</div>
+        </div>
+      </div>
+
+      <!-- Connection vs retention chart -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-4">Connection Count vs. Retention Rate</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">0 connections</span>
+              <span class="text-red-400 font-bold">54% <span class="text-slate-500 font-normal">· 5,160 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:54%; background:#ef4444;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">1–2 connections</span>
+              <span class="text-amber-400 font-bold">71% <span class="text-slate-500 font-normal">· 2,740 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:71%; background:#f59e0b;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">3–4 connections</span>
+              <span class="text-emerald-400 font-bold">89% <span class="text-slate-500 font-normal">· 1,680 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:89%; background:#10b981;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">5+ connections</span>
+              <span class="text-emerald-400 font-bold">94% <span class="text-slate-500 font-normal">· 420 members</span></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:94%; background:#10b981;"></div></div>
+          </div>
+        </div>
+        <div class="annotation-box emerald mt-4">
+          35-point gap between 0 and 3+ connections. Members with 3+ friends at the gym are effectively 5× more likely to stay long-term.
+        </div>
+      </div>
+
+      <div class="roi-card">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="users" class="w-5 h-5 text-blue-400"></i>
+          <span class="font-bold text-slate-100">Community ROI</span>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed">5× retention for members with 3+ connections. Raising the connection rate from 48.4% to 65% would move ~1,600 members into higher retention bands. Estimated value: <span class="text-emerald-400 font-semibold">$418K–$557K/year</span> in retained revenue.</p>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 7: LOYALTY & REFERRALS ========== -->
+    <div id="section-loyalty" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-100">Loyalty Tiers &amp; Referral Programme</h1>
+        <p class="text-slate-400 mt-1">Tier performance &amp; referral conversion · February 2025</p>
+      </div>
+
+      <!-- 4 stat cards -->
+      <div class="grid grid-cols-4 gap-4 mb-5">
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Referrals This Month</div>
+          <div class="text-2xl font-extrabold text-indigo-400">284</div>
+          <div class="text-slate-500 text-xs mt-1">Codes shared</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Converted</div>
+          <div class="text-2xl font-extrabold text-emerald-400">187 <span class="text-sm font-medium text-slate-400">(66%)</span></div>
+          <div class="text-slate-500 text-xs mt-1">Joined after referral</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Points Issued</div>
+          <div class="text-2xl font-extrabold text-amber-400">284,000</div>
+          <div class="text-slate-500 text-xs mt-1">This month</div>
+        </div>
+        <div class="stat-card text-center">
+          <div class="text-slate-400 text-xs mb-1">Est. LTV</div>
+          <div class="text-2xl font-extrabold text-emerald-400">$130,560</div>
+          <div class="text-slate-500 text-xs mt-1">From this month's referrals</div>
+        </div>
+      </div>
+
+      <!-- Tier retention vertical bars -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-5">Retention by Loyalty Tier</h3>
+        <div class="flex gap-6 items-end justify-center" style="height:200px; padding-bottom:0;">
+          <!-- Bronze -->
+          <div class="flex flex-col items-center gap-2 flex-1">
+            <div class="text-amber-500 font-bold text-sm">52%</div>
+            <div class="w-full flex items-end justify-center" style="height:140px;">
+              <div style="width:80%; height:calc(52% * 1.4); background:#92400e; border-radius:6px 6px 0 0; min-height:20px; display:flex; align-items:flex-start; justify-content:center; padding-top:6px;">
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="font-bold text-amber-700 text-sm">Bronze</div>
+              <div class="text-slate-500 text-xs">4,200 members</div>
+            </div>
+          </div>
+          <!-- Silver -->
+          <div class="flex flex-col items-center gap-2 flex-1">
+            <div class="text-slate-300 font-bold text-sm">74%</div>
+            <div class="w-full flex items-end justify-center" style="height:140px;">
+              <div style="width:80%; height:calc(74% * 1.4); background:#94a3b8; border-radius:6px 6px 0 0; min-height:20px; display:flex; align-items:flex-start; justify-content:center; padding-top:6px;">
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="font-bold text-slate-400 text-sm">Silver</div>
+              <div class="text-slate-500 text-xs">3,800 members</div>
+            </div>
+          </div>
+          <!-- Gold -->
+          <div class="flex flex-col items-center gap-2 flex-1">
+            <div class="text-amber-400 font-bold text-sm">93%</div>
+            <div class="w-full flex items-end justify-center" style="height:140px;">
+              <div style="width:80%; height:calc(93% * 1.4); background:#fbbf24; border-radius:6px 6px 0 0; min-height:20px; display:flex; align-items:flex-start; justify-content:center; padding-top:6px;">
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="font-bold text-amber-400 text-sm">Gold</div>
+              <div class="text-slate-500 text-xs">2,000 members</div>
+            </div>
+          </div>
+        </div>
+        <div class="annotation-box indigo mt-4">
+          Each tier upgrade correlates with ~+20 retention points. Moving members from Bronze to Silver is worth ~$1.4M/year if scaled across the member base.
+        </div>
+      </div>
+
+      <!-- Referral funnel -->
+      <div class="card mb-5">
+        <h3 class="font-bold text-slate-100 mb-5">Referral Conversion Funnel</h3>
+        <div class="space-y-1 px-4">
+          <!-- Codes shared 1840 / 1840 = 100% -->
+          <div class="flex justify-center">
+            <div style="width:100%;">
+              <div class="funnel-bar" style="background:#6366f1; width:100%; height:40px; border-radius:6px 6px 0 0;">
+                <span class="text-white font-semibold text-sm">Codes Shared &nbsp;—&nbsp; 1,840</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 33% clicked</div>
+          <!-- Links clicked 612 / 1840 = 33% -->
+          <div class="flex justify-center">
+            <div style="width:33%;">
+              <div class="funnel-bar" style="background:#8b5cf6; width:100%; height:40px;">
+                <span class="text-white font-semibold text-sm">Links Clicked &nbsp;—&nbsp; 612</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 56% booked</div>
+          <!-- Trial booked 341 / 612 = 56% -->
+          <div class="flex justify-center">
+            <div style="width:18.5%;">
+              <div class="funnel-bar" style="background:#a855f7; width:100%; height:40px;">
+                <span class="text-white font-semibold text-sm">Trial &nbsp;—&nbsp; 341</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 55% joined</div>
+          <!-- Joined 187 / 1840 = 10.2% -->
+          <div class="flex justify-center">
+            <div style="width:10.2%;">
+              <div class="funnel-bar" style="background:#10b981; width:100%; height:40px;">
+                <span class="text-white font-semibold text-sm">Joined &nbsp;—&nbsp; 187</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center text-slate-400 text-xs py-0.5">▼ 79% active at 3 months</div>
+          <!-- Active at 3 months 148 / 1840 = 8% -->
+          <div class="flex justify-center">
+            <div style="width:8%;">
+              <div class="funnel-bar" style="background:#059669; width:100%; height:40px; border-radius:0 0 6px 6px;">
+                <span class="text-white font-semibold text-sm">Active 3m &nbsp;—&nbsp; 148</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="roi-card">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="star" class="w-5 h-5 text-amber-400"></i>
+          <span class="font-bold text-slate-100">Loyalty &amp; Referral ROI</span>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed">Referred members are <span class="text-emerald-400 font-semibold">37% more likely to stay</span> than cold-joined members. Referral conversion is <span class="text-emerald-400 font-semibold">3–5× higher</span> than manual outreach. This month's 187 referral joiners represent an estimated <span class="text-emerald-400 font-semibold">$130,560 LTV</span> at 12-month average retention.</p>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-slate-500 text-sm py-8 mt-8 border-t border-slate-700">
+      <p>Prototype by <a href="https://qarea.com" target="_blank" class="hover:text-slate-300 transition-colors">QArea</a> / <a href="https://testfort.com" target="_blank" class="hover:text-slate-300 transition-colors">TestFort</a> · Software Testing &amp; Development</p>
+      <p class="mt-1">This is what your member app could look like — designed, built, and quality-tested by QArea.</p>
+    </footer>
+
+  </div><!-- end max-w -->
+</main>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- INTERVENTION MODAL -->
+<div id="interventionModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="flex items-center gap-3 mb-5">
+      <span class="p-2 rounded-lg bg-indigo-500/10"><i data-lucide="send" class="w-5 h-5 text-indigo-400"></i></span>
+      <div>
+        <h2 class="font-bold text-slate-100 text-lg">Send Intervention</h2>
+        <p id="modalMemberName" class="text-slate-400 text-sm"></p>
+      </div>
+    </div>
+    <div class="space-y-3 mb-6">
+      <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-700 transition-colors" style="background:#0f172a;">
+        <input type="radio" name="interventionType" value="reengagement" class="mt-0.5" checked />
+        <div>
+          <div class="text-slate-200 font-medium text-sm">Re-engagement sequence</div>
+          <div class="text-slate-500 text-xs">Automated 3-touch push/SMS/email over 21 days</div>
+        </div>
+      </label>
+      <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-700 transition-colors" style="background:#0f172a;">
+        <input type="radio" name="interventionType" value="offer" class="mt-0.5" />
+        <div>
+          <div class="text-slate-200 font-medium text-sm">Personalised offer</div>
+          <div class="text-slate-500 text-xs">Send a custom discount or free class voucher</div>
+        </div>
+      </label>
+      <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-700 transition-colors" style="background:#0f172a;">
+        <input type="radio" name="interventionType" value="call" class="mt-0.5" />
+        <div>
+          <div class="text-slate-200 font-medium text-sm">Staff follow-up call</div>
+          <div class="text-slate-500 text-xs">Flag for personal outreach by a team member</div>
+        </div>
+      </label>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeModal()" class="flex-1 px-4 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm font-medium hover:bg-slate-700 transition-colors">Cancel</button>
+      <button onclick="confirmIntervention()" class="flex-1 px-4 py-2.5 rounded-lg text-white text-sm font-semibold transition-colors" style="background:#6366f1;">Confirm Intervention</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const overviewStats = {
+  totalMembers: 10000, atRiskCount: 847, projectedChurnRevenue: 592800,
+  recoveredThisMonth: 312, retentionRate: 82
+};
+
+const retentionByEngagement = [
+  { segment: "High (daily app use)", retention: 91, members: 1820 },
+  { segment: "Medium (2–4x/week)", retention: 78, members: 3200 },
+  { segment: "Low (once/week)", retention: 61, members: 1820 },
+  { segment: "No app use", retention: 54, members: 3160 }
+];
+
+const atRiskMembers = [
+  { name: "Oliver S.", riskScore: 87, lastSeen: "19 days ago", trigger: "No check-in 19d + failed payment", intervention: null },
+  { name: "Fatima A.", riskScore: 81, lastSeen: "14 days ago", trigger: "Class attendance dropped 80%", intervention: null },
+  { name: "Ben C.", riskScore: 74, lastSeen: "8 days ago", trigger: "Streak broken + no app opens", intervention: null },
+  { name: "Yuki T.", riskScore: 61, lastSeen: "5 days ago", trigger: "Payment declined once", intervention: null },
+  { name: "Dan F.", riskScore: 45, lastSeen: "3 days ago", trigger: "Reduced visit frequency", intervention: "Offer Sent" }
+];
+
+const churnRiskDistribution = [
+  { band: "Low (0–39)", count: 7240, colour: "emerald" },
+  { band: "Medium (40–69)", count: 1980, colour: "amber" },
+  { band: "High (70–89)", count: 630, colour: "orange" },
+  { band: "Critical (90+)", count: 150, colour: "red" }
+];
+
+const onboardingFunnel = [
+  { step: "Joined", count: 847, pct: 100 },
+  { step: "First Workout", count: 791, pct: 93 },
+  { step: "First Class", count: 612, pct: 72 },
+  { step: "Goals Set", count: 534, pct: 63 },
+  { step: "Trainer Check-in", count: 298, pct: 35 },
+  { step: "First Measurable Win", count: 187, pct: 22 }
+];
+
+const reEngagementStats = { drifting: 423, inSequence: 312, recovered: 87, recoveryRate: 21 };
+
+const sequencePerformance = [
+  { touch: "Day 7 Push", sent: 312, openRate: 77, bookingRate: 20 },
+  { touch: "Day 14 SMS", sent: 249, openRate: 80, bookingRate: 29 },
+  { touch: "Day 21 Email", sent: 178, openRate: 50, bookingRate: 24 }
+];
+
+const connectionRetention = [
+  { segment: "0 connections", retention: 54, members: 5160 },
+  { segment: "1–2 connections", retention: 71, members: 2740 },
+  { segment: "3–4 connections", retention: 89, members: 1680 },
+  { segment: "5+ connections", retention: 94, members: 420 }
+];
+
+const tierRetention = [
+  { tier: "Bronze", retention: 52, members: 4200 },
+  { tier: "Silver", retention: 74, members: 3800 },
+  { tier: "Gold", retention: 93, members: 2000 }
+];
+
+const referralFunnel = [
+  { stage: "Codes shared", count: 1840 },
+  { stage: "Links clicked", count: 612 },
+  { stage: "Trial booked", count: 341 },
+  { stage: "Joined", count: 187 },
+  { stage: "Active at 3 months", count: 148 }
+];
+
+// ==================== STATE ====================
+let interventionTarget = null;
+let memberInterventions = {};
+
+// ==================== NAVIGATION ====================
+function showSection(sectionId) {
+  // Hide all sections
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  // Show target
+  const target = document.getElementById('section-' + sectionId);
+  if (target) target.classList.add('active');
+  // Update sidebar
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
+    if (item.dataset.section === sectionId) item.classList.add('active');
+  });
+  // Reinit icons
+  lucide.createIcons();
+}
+
+// ==================== AT-RISK TABLE ====================
+function getRiskPillStyle(score) {
+  if (score >= 80) return 'background:rgba(239,68,68,0.18); color:#ef4444;';
+  if (score >= 70) return 'background:rgba(249,115,22,0.18); color:#f97316;';
+  return 'background:rgba(245,158,11,0.18); color:#f59e0b;';
+}
+
+function buildAtRiskTable() {
+  const tbody = document.getElementById('atRiskTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  atRiskMembers.forEach((member, idx) => {
+    const sentKey = member.name;
+    const isSent = memberInterventions[sentKey] || member.intervention;
+    const pillStyle = getRiskPillStyle(member.riskScore);
+    const tr = document.createElement('tr');
+    tr.id = 'row-' + idx;
+    tr.innerHTML = `
+      <td class="text-slate-200 font-medium">${member.name}</td>
+      <td><span class="risk-pill" style="${pillStyle}">${member.riskScore}</span></td>
+      <td class="text-slate-400">${member.lastSeen}</td>
+      <td class="text-slate-300 text-sm">${member.trigger}</td>
+      <td>
+        ${isSent
+          ? `<span class="badge-sent">✅ ${typeof isSent === 'string' ? isSent : 'Intervention Sent'}</span>`
+          : `<button onclick="openModal(${idx})" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors" style="background:#6366f1;">Send Intervention</button>`
+        }
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ==================== MODAL ====================
+function openModal(memberIdx) {
+  interventionTarget = memberIdx;
+  const member = atRiskMembers[memberIdx];
+  document.getElementById('modalMemberName').textContent = member.name + ' · Risk Score ' + member.riskScore;
+  // Reset radio
+  const radios = document.querySelectorAll('input[name="interventionType"]');
+  if (radios.length) radios[0].checked = true;
+  document.getElementById('interventionModal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('interventionModal').classList.add('hidden');
+  interventionTarget = null;
+}
+
+function confirmIntervention() {
+  if (interventionTarget === null) return;
+  const selected = document.querySelector('input[name="interventionType"]:checked');
+  const typeMap = {
+    reengagement: 'Sequence Sent',
+    offer: 'Offer Sent',
+    call: 'Call Flagged'
+  };
+  const label = typeMap[selected ? selected.value : 'reengagement'] || 'Intervention Sent';
+  const member = atRiskMembers[interventionTarget];
+  memberInterventions[member.name] = label;
+  closeModal();
+  buildAtRiskTable();
+  showToast('✅ Intervention sent for ' + member.name);
+  lucide.createIcons();
+}
+
+// Close modal on backdrop click
+document.getElementById('interventionModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ==================== TOAST ====================
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2500);
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', function() {
+  buildAtRiskTable();
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>

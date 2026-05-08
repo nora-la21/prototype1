@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitPulse — Member App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    body { background: #0f172a; }
+    .phone-content { overflow-y: auto; overflow-x: hidden; flex: 1; }
+    .phone-content::-webkit-scrollbar { width: 4px; }
+    .phone-content::-webkit-scrollbar-track { background: transparent; }
+    .phone-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .sub-tab-panel { display: none; }
+    .sub-tab-panel.active { display: block; }
+    .gradient-text {
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gradient-bg { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .gradient-bg-amber { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .badge-card { transition: transform 0.15s ease; }
+    .badge-card:hover { transform: scale(1.05); }
+    .progress-bar { transition: width 0.6s ease; }
+    .pulse-dot { animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5); }
+      70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+    .toast {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-sheet {
+      background: #1e293b;
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      padding: 24px 20px 32px;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.open .modal-sheet {
+      transform: translateY(0);
+    }
+    .pill-btn { transition: all 0.15s ease; }
+    .pill-btn.active-pill {
+      background: #6366f1;
+      color: white;
+    }
+    .nav-btn { transition: all 0.15s ease; }
+    .ring-svg { transform: rotate(-90deg); }
+    .tier-row { transition: background 0.15s ease; }
+    .tier-row:hover { background: #273549; }
+    .reaction-btn { transition: all 0.15s ease; }
+    .reaction-btn.reacted { color: #6366f1; }
+    .challenge-detail { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .challenge-detail.open { max-height: 200px; }
+    .slot-btn { transition: all 0.15s ease; border: 2px solid #334155; }
+    .slot-btn.selected { border-color: #6366f1; background: rgba(99,102,241,0.15); }
+    .avatar-M { background: #3b82f6; }
+    .avatar-A { background: #ec4899; }
+    .avatar-J { background: #10b981; }
+    .avatar-P { background: #8b5cf6; }
+    .avatar-T { background: #f59e0b; }
+    .avatar-S { background: #6366f1; }
+    .scroll-x { overflow-x: auto; overflow-y: hidden; }
+    .scroll-x::-webkit-scrollbar { height: 0; }
+    .tooltip-container { position: relative; }
+    .tooltip-box {
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 50;
+    }
+    .tooltip-container:hover .tooltip-box { opacity: 1; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start py-8">
+
+  <!-- Phone Frame -->
+  <div id="phone-frame" class="w-[390px] h-[844px] rounded-[48px] border-4 border-slate-700 bg-slate-900 overflow-hidden relative shadow-2xl flex flex-col" style="box-shadow: 0 0 0 8px #0f172a, 0 30px 80px rgba(0,0,0,0.8);">
+
+    <!-- Scrollable Content Area -->
+    <div class="phone-content">
+
+      <!-- TAB 1: HOME -->
+      <div id="tab-home" class="tab-panel active pb-4">
+        <!-- Top Bar -->
+        <div class="flex items-center justify-between px-5 pt-12 pb-4">
+          <span class="text-xl font-extrabold gradient-text tracking-tight">FitPulse</span>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <button class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-300">
+                <i data-lucide="bell" class="w-4 h-4"></i>
+              </button>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            </div>
+            <div class="w-9 h-9 rounded-full avatar-S flex items-center justify-center text-white font-bold text-sm">S</div>
+          </div>
+        </div>
+
+        <div class="px-4 space-y-3">
+          <!-- Greeting -->
+          <div class="text-slate-100 font-semibold text-base">Good morning, Sara 👋</div>
+
+          <!-- Streak Card -->
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🔥</span>
+                <span class="text-slate-100 font-bold text-base">14-Day Streak</span>
+              </div>
+              <span class="text-xs text-emerald-400 font-semibold bg-emerald-400/10 px-2 py-0.5 rounded-full">Active</span>
+            </div>
+            <div class="flex gap-2 mb-3" id="streak-days-home"></div>
+            <p class="text-slate-400 text-xs">Keep it going — work out today!</p>
+          </div>
+
+          <!-- Points & Tier Card -->
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <div class="text-slate-100 font-bold text-base" id="home-points-display">1,840 pts · Silver Member</div>
+                <div class="text-slate-400 text-xs mt-0.5">660 pts to Gold</div>
+              </div>
+              <div class="text-2xl">🥈</div>
+            </div>
+            <div class="w-full bg-slate-700 rounded-full h-2.5 mt-2">
+              <div class="h-2.5 rounded-full progress-bar" style="width: 73.6%; background: linear-gradient(90deg, #f59e0b, #ef4444);"></div>
+            </div>
+            <div class="flex justify-between text-xs text-slate-500 mt-1">
+              <span>Silver (1,000)</span>
+              <span>Gold (2,500)</span>
+            </div>
+          </div>
+
+          <!-- Badges -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-slate-100 font-semibold text-sm">Badges</span>
+              <span class="text-xs text-indigo-400">4 / 8 earned</span>
+            </div>
+            <div class="scroll-x flex gap-3 pb-1" id="badges-scroll"></div>
+          </div>
+
+          <!-- Active Challenges -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-slate-100 font-semibold text-sm">Active Challenges</span>
+              <button onclick="switchTab('community'); setTimeout(() => switchSubTab('community', 'challenges'), 100);" class="text-xs text-indigo-400">View All →</button>
+            </div>
+            <div class="space-y-2" id="home-challenges"></div>
+          </div>
+
+          <!-- Milestone Progress -->
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-slate-100 font-semibold text-sm">Your Journey</span>
+              <span class="text-xs text-slate-400">Day 42</span>
+            </div>
+            <div class="flex items-center gap-1 mb-3" id="home-milestone-dots"></div>
+            <button onclick="switchTab('journey')" class="w-full text-center text-xs text-indigo-400 font-semibold py-2 bg-indigo-500/10 rounded-xl hover:bg-indigo-500/20 transition-colors">
+              Book Your Trainer →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: JOURNEY -->
+      <div id="tab-journey" class="tab-panel pb-4">
+        <div class="px-5 pt-12 pb-4">
+          <div class="text-slate-400 text-xs font-medium uppercase tracking-widest mb-1">Your First 90 Days</div>
+          <div class="text-slate-100 font-bold text-xl">Day 42 · <span class="text-indigo-400">3 of 5</span> milestones</div>
+        </div>
+
+        <div class="px-4 space-y-4">
+          <!-- Circular Progress Ring -->
+          <div class="bg-slate-800 rounded-2xl p-5 flex items-center gap-6">
+            <div class="relative w-24 h-24 flex-shrink-0">
+              <svg class="ring-svg w-24 h-24" viewBox="0 0 96 96">
+                <circle cx="48" cy="48" r="40" fill="none" stroke="#334155" stroke-width="8"/>
+                <circle cx="48" cy="48" r="40" fill="none" stroke="#6366f1" stroke-width="8"
+                  stroke-dasharray="251.3" stroke-dashoffset="100.5" stroke-linecap="round"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-slate-100 font-bold text-lg leading-tight">3/5</span>
+                <span class="text-slate-400 text-xs">60%</span>
+              </div>
+            </div>
+            <div>
+              <div class="text-slate-100 font-bold text-base">Great Progress!</div>
+              <div class="text-slate-400 text-sm mt-1">600 pts earned so far</div>
+              <div class="text-slate-400 text-xs mt-2">2 steps left to complete your onboarding journey</div>
+            </div>
+          </div>
+
+          <!-- Milestone Steps -->
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <div class="text-slate-100 font-semibold text-sm mb-4">Milestones</div>
+            <div id="journey-steps" class="space-y-0"></div>
+          </div>
+
+          <!-- Churn Risk Card -->
+          <div class="bg-slate-800 rounded-2xl p-4 border-l-4 border-emerald-500">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-slate-100 font-semibold text-sm">Your Retention Health</span>
+              <span class="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full font-semibold">Low Risk</span>
+            </div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="flex-1 bg-slate-700 rounded-full h-3">
+                <div class="h-3 rounded-full bg-emerald-500 progress-bar" style="width: 28%;"></div>
+              </div>
+              <span class="text-emerald-400 font-bold text-sm">28</span>
+            </div>
+            <p class="text-slate-400 text-xs">You're on a great streak and actively attending classes. Keep it up — you're in the top 30% of engaged members!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: COMMUNITY -->
+      <div id="tab-community" class="tab-panel pb-4">
+        <div class="px-5 pt-12 pb-4">
+          <div class="text-slate-100 font-bold text-xl">Your Gym Community</div>
+          <div class="text-slate-400 text-sm mt-1">Stay connected, stay motivated</div>
+        </div>
+
+        <!-- Sub-tabs -->
+        <div class="px-4 mb-4">
+          <div class="flex gap-2 bg-slate-800 rounded-xl p-1">
+            <button class="pill-btn active-pill flex-1 text-xs font-semibold py-2 rounded-lg" onclick="switchSubTab('community','feed')">Feed</button>
+            <button class="pill-btn flex-1 text-xs font-semibold py-2 rounded-lg text-slate-400" onclick="switchSubTab('community','buddies')">Buddies</button>
+            <button class="pill-btn flex-1 text-xs font-semibold py-2 rounded-lg text-slate-400" onclick="switchSubTab('community','challenges')">Challenges</button>
+          </div>
+        </div>
+
+        <div class="px-4">
+          <!-- Feed sub-tab -->
+          <div id="community-feed" class="sub-tab-panel active space-y-3" ></div>
+          <!-- Buddies sub-tab -->
+          <div id="community-buddies" class="sub-tab-panel space-y-3"></div>
+          <!-- Challenges sub-tab -->
+          <div id="community-challenges" class="sub-tab-panel space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: REWARDS -->
+      <div id="tab-rewards" class="tab-panel pb-4">
+        <div class="px-5 pt-12 pb-4">
+          <div class="text-slate-100 font-bold text-xl">Rewards</div>
+          <div class="text-slate-400 text-sm mt-1" id="rewards-pts-header">1,840 pts available</div>
+        </div>
+
+        <!-- Sub-tabs -->
+        <div class="px-4 mb-4">
+          <div class="flex gap-2 bg-slate-800 rounded-xl p-1">
+            <button class="pill-btn active-pill flex-1 text-xs font-semibold py-2 rounded-lg" onclick="switchSubTab('rewards','redeem')">Redeem</button>
+            <button class="pill-btn flex-1 text-xs font-semibold py-2 rounded-lg text-slate-400" onclick="switchSubTab('rewards','tier')">My Tier</button>
+            <button class="pill-btn flex-1 text-xs font-semibold py-2 rounded-lg text-slate-400" onclick="switchSubTab('rewards','history')">History</button>
+          </div>
+        </div>
+
+        <div class="px-4">
+          <div id="rewards-redeem" class="sub-tab-panel active"></div>
+          <div id="rewards-tier" class="sub-tab-panel"></div>
+          <div id="rewards-history" class="sub-tab-panel"></div>
+        </div>
+      </div>
+
+      <!-- TAB 5: REFER -->
+      <div id="tab-refer" class="tab-panel pb-4">
+        <div class="px-5 pt-12 pb-4">
+          <div class="text-slate-100 font-bold text-xl">Refer &amp; Earn</div>
+          <div class="text-slate-400 text-sm mt-1">Earn 500 pts for every friend who joins</div>
+        </div>
+
+        <div class="px-4 space-y-4">
+          <!-- Referral Code Card -->
+          <div class="gradient-bg rounded-2xl p-5 text-center">
+            <div class="text-white/70 text-xs font-medium uppercase tracking-widest mb-2">Your Referral Code</div>
+            <div class="text-white font-extrabold text-3xl font-mono tracking-widest mb-4">SARA-FP47</div>
+            <div class="flex gap-3">
+              <button onclick="copyReferralCode()" class="flex-1 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="copy" class="w-4 h-4"></i> Copy Code
+              </button>
+              <button onclick="openModal('share-modal')" class="flex-1 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="share-2" class="w-4 h-4"></i> Share Link
+              </button>
+            </div>
+          </div>
+
+          <!-- Referral Stats -->
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div class="text-slate-100 font-bold text-2xl">3</div>
+                <div class="text-slate-400 text-xs mt-0.5">Sent</div>
+              </div>
+              <div>
+                <div class="text-emerald-400 font-bold text-2xl">2</div>
+                <div class="text-slate-400 text-xs mt-0.5">Joined</div>
+              </div>
+              <div>
+                <div class="text-amber-400 font-bold text-2xl">1</div>
+                <div class="text-slate-400 text-xs mt-0.5">Pending</div>
+              </div>
+            </div>
+            <div class="border-t border-slate-700 mt-3 pt-3 text-center">
+              <span class="text-slate-400 text-xs">Total earned from referrals: </span>
+              <span class="text-indigo-400 font-bold text-sm">1,000 pts</span>
+            </div>
+          </div>
+
+          <!-- How It Works -->
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <div class="text-slate-100 font-semibold text-sm mb-3">How It Works</div>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
+                <div>
+                  <div class="text-slate-100 text-sm font-medium">Share your code</div>
+                  <div class="text-slate-400 text-xs">Send SARA-FP47 to friends via WhatsApp, text, or email</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
+                <div>
+                  <div class="text-slate-100 text-sm font-medium">They sign up</div>
+                  <div class="text-slate-400 text-xs">Your friend joins FitPulse using your referral code</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
+                <div>
+                  <div class="text-slate-100 text-sm font-medium">Both earn rewards</div>
+                  <div class="text-slate-400 text-xs">You get 500 pts, they get 100 pts welcome bonus</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Referral History -->
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <div class="text-slate-100 font-semibold text-sm mb-3">Referral History</div>
+            <div class="space-y-3" id="referral-history-list"></div>
+          </div>
+
+          <!-- Leaderboard Teaser -->
+          <div class="bg-slate-800 rounded-2xl p-4 border border-indigo-500/30">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-slate-100 font-semibold text-sm">Top Referrers This Month</div>
+              <span class="text-xs text-indigo-400">🏆 Compete</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <span class="text-amber-400 font-bold text-sm w-4">1</span>
+                <div class="w-7 h-7 rounded-full avatar-M flex items-center justify-center text-white text-xs font-bold">M</div>
+                <span class="text-slate-100 text-sm flex-1">Mike T.</span>
+                <span class="text-slate-400 text-xs">7 referrals</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-slate-400 font-bold text-sm w-4">2</span>
+                <div class="w-7 h-7 rounded-full avatar-A flex items-center justify-center text-white text-xs font-bold">A</div>
+                <span class="text-slate-100 text-sm flex-1">Anna K.</span>
+                <span class="text-slate-400 text-xs">5 referrals</span>
+              </div>
+              <div class="flex items-center gap-3 bg-indigo-500/10 rounded-xl px-2 py-1 -mx-2">
+                <span class="text-indigo-400 font-bold text-sm w-4">4</span>
+                <div class="w-7 h-7 rounded-full avatar-S flex items-center justify-center text-white text-xs font-bold">S</div>
+                <span class="text-indigo-300 text-sm flex-1 font-semibold">Sara (You)</span>
+                <span class="text-indigo-400 text-xs">3 referrals</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /phone-content -->
+
+    <!-- Bottom Nav -->
+    <div class="bg-slate-900 border-t border-slate-800 flex-shrink-0">
+      <div class="flex items-stretch h-16">
+        <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-indigo-400 active-nav" data-tab="home" onclick="switchTab('home')">
+          <i data-lucide="home" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Home</span>
+          <div class="h-0.5 w-8 bg-indigo-500 rounded-full"></div>
+        </button>
+        <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-500" data-tab="journey" onclick="switchTab('journey')">
+          <i data-lucide="map" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Journey</span>
+          <div class="h-0.5 w-8 rounded-full opacity-0"></div>
+        </button>
+        <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-500" data-tab="community" onclick="switchTab('community')">
+          <i data-lucide="users" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Community</span>
+          <div class="h-0.5 w-8 rounded-full opacity-0"></div>
+        </button>
+        <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-500" data-tab="rewards" onclick="switchTab('rewards')">
+          <i data-lucide="gift" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Rewards</span>
+          <div class="h-0.5 w-8 rounded-full opacity-0"></div>
+        </button>
+        <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-500" data-tab="refer" onclick="switchTab('refer')">
+          <i data-lucide="share-2" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Refer</span>
+          <div class="h-0.5 w-8 rounded-full opacity-0"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+      <div class="bg-slate-100 text-slate-900 text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2">
+        <span id="toast-icon">✅</span>
+        <span id="toast-message">Done!</span>
+      </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('booking-modal')">
+      <div class="modal-sheet">
+        <div class="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5"></div>
+        <div class="text-slate-100 font-bold text-lg mb-1">Book a Trainer Session</div>
+        <div class="text-slate-400 text-sm mb-5">Select a time slot with Coach Dana</div>
+        <div class="space-y-2 mb-5" id="booking-slots">
+          <button class="slot-btn w-full text-left px-4 py-3 rounded-xl" onclick="selectSlot(this,'Thu, Feb 8 · 9:00am')">
+            <div class="text-slate-100 font-medium text-sm">Thu, Feb 8 · 9:00am</div>
+            <div class="text-slate-400 text-xs">30 min · Coach Dana · Studio 2</div>
+          </button>
+          <button class="slot-btn w-full text-left px-4 py-3 rounded-xl" onclick="selectSlot(this,'Fri, Feb 9 · 6:00pm')">
+            <div class="text-slate-100 font-medium text-sm">Fri, Feb 9 · 6:00pm</div>
+            <div class="text-slate-400 text-xs">30 min · Coach Dana · Studio 1</div>
+          </button>
+          <button class="slot-btn w-full text-left px-4 py-3 rounded-xl" onclick="selectSlot(this,'Sat, Feb 10 · 11:00am')">
+            <div class="text-slate-100 font-medium text-sm">Sat, Feb 10 · 11:00am</div>
+            <div class="text-slate-400 text-xs">30 min · Coach Dana · Gym Floor</div>
+          </button>
+        </div>
+        <button onclick="confirmBooking()" class="w-full gradient-bg text-white font-bold py-3.5 rounded-2xl text-sm">Confirm Booking</button>
+        <button onclick="closeModal('booking-modal')" class="w-full text-slate-400 text-sm mt-3 py-2">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('share-modal')">
+      <div class="modal-sheet">
+        <div class="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5"></div>
+        <div class="text-slate-100 font-bold text-lg mb-1">Share Your Referral Link</div>
+        <div class="text-slate-400 text-sm mb-5">Invite friends and earn 500 pts each</div>
+        <div class="space-y-3 mb-4">
+          <button onclick="shareVia('WhatsApp')" class="w-full flex items-center gap-4 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-semibold py-3.5 px-4 rounded-2xl transition-colors">
+            <span class="text-2xl">💬</span>
+            <span>Share via WhatsApp</span>
+          </button>
+          <button onclick="shareVia('Email')" class="w-full flex items-center gap-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 font-semibold py-3.5 px-4 rounded-2xl transition-colors">
+            <span class="text-2xl">📧</span>
+            <span>Share via Email</span>
+          </button>
+          <button onclick="shareVia('Link')" class="w-full flex items-center gap-4 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-100 font-semibold py-3.5 px-4 rounded-2xl transition-colors">
+            <span class="text-2xl">🔗</span>
+            <span>Copy Link</span>
+          </button>
+        </div>
+        <button onclick="closeModal('share-modal')" class="w-full text-slate-400 text-sm py-2">Close</button>
+      </div>
+    </div>
+
+    <!-- Redeem Confirmation Modal -->
+    <div id="redeem-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('redeem-modal')">
+      <div class="modal-sheet">
+        <div class="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5"></div>
+        <div class="text-center mb-5">
+          <div class="text-4xl mb-3" id="redeem-modal-icon">🎁</div>
+          <div class="text-slate-100 font-bold text-lg mb-1" id="redeem-modal-name">Reward</div>
+          <div class="text-slate-400 text-sm" id="redeem-modal-cost">0 pts</div>
+        </div>
+        <div class="bg-slate-700 rounded-2xl p-4 mb-5">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-slate-400">Current balance</span>
+            <span class="text-slate-100 font-semibold" id="redeem-modal-balance">0 pts</span>
+          </div>
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-slate-400">Reward cost</span>
+            <span class="text-red-400 font-semibold" id="redeem-modal-deduct">-0 pts</span>
+          </div>
+          <div class="border-t border-slate-600 pt-2 mt-2 flex justify-between text-sm">
+            <span class="text-slate-300 font-semibold">After redemption</span>
+            <span class="text-emerald-400 font-bold" id="redeem-modal-after">0 pts</span>
+          </div>
+        </div>
+        <button onclick="confirmRedeem()" class="w-full gradient-bg text-white font-bold py-3.5 rounded-2xl text-sm mb-3">Confirm Redemption</button>
+        <button onclick="closeModal('redeem-modal')" class="w-full text-slate-400 text-sm py-2">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Invite to Class Modal -->
+    <div id="invite-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('invite-modal')">
+      <div class="modal-sheet">
+        <div class="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5"></div>
+        <div class="text-slate-100 font-bold text-lg mb-1">Invite to Class</div>
+        <div class="text-slate-400 text-sm mb-5">Inviting <span id="invite-buddy-name" class="text-slate-300 font-medium">Buddy</span> to join you</div>
+        <div class="space-y-2 mb-5">
+          <button class="invite-class-btn w-full text-left px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-colors" onclick="selectInviteClass(this,'HIIT Blast · Thu 7:00pm')">
+            <div class="text-slate-100 font-medium text-sm">HIIT Blast</div>
+            <div class="text-slate-400 text-xs">Thu, Feb 8 · 7:00pm · 4 spots left</div>
+          </button>
+          <button class="invite-class-btn w-full text-left px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-colors" onclick="selectInviteClass(this,'Yoga Flow · Sat 10:00am')">
+            <div class="text-slate-100 font-medium text-sm">Yoga Flow</div>
+            <div class="text-slate-400 text-xs">Sat, Feb 10 · 10:00am · 8 spots left</div>
+          </button>
+          <button class="invite-class-btn w-full text-left px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-colors" onclick="selectInviteClass(this,'Cycling · Fri 6:30pm')">
+            <div class="text-slate-100 font-medium text-sm">Cycling</div>
+            <div class="text-slate-400 text-xs">Fri, Feb 9 · 6:30pm · 2 spots left</div>
+          </button>
+        </div>
+        <button onclick="confirmInvite()" class="w-full gradient-bg text-white font-bold py-3.5 rounded-2xl text-sm">Send Invite</button>
+        <button onclick="closeModal('invite-modal')" class="w-full text-slate-400 text-sm mt-3 py-2">Cancel</button>
+      </div>
+    </div>
+
+  </div><!-- /phone-frame -->
+
+  <!-- Footer -->
+  <footer class="mt-8 text-center text-slate-500 text-sm">
+    <p>Prototype by <a href="https://qarea.com" target="_blank" class="hover:text-slate-300 transition-colors">QArea</a> / <a href="https://testfort.com" target="_blank" class="hover:text-slate-300 transition-colors">TestFort</a> · Software Testing &amp; Development</p>
+    <p class="mt-1">This is what your member app could look like — designed, built, and quality-tested by QArea.</p>
+  </footer>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const currentMember = {
+  name: "Sara", avatar: "S", joinDate: "Oct 3, 2024", daysSinceJoin: 42,
+  tier: "Silver", points: 1840, pointsToGold: 2500, streakDays: 14,
+  streakAtRisk: false, connections: 3, referralCode: "SARA-FP47",
+  totalReferrals: 3, churnRiskScore: 28, onboardingComplete: 3,
+  favouriteClass: "HIIT Blast", trainerName: "Coach Dana"
+};
+
+const badges = [
+  { name: "First Workout", icon: "zap", earned: true, date: "Oct 3" },
+  { name: "7-Day Streak", icon: "flame", earned: true, date: "Oct 10" },
+  { name: "First Class", icon: "users", earned: true, date: "Oct 5" },
+  { name: "Goal Setter", icon: "target", earned: true, date: "Oct 3" },
+  { name: "30-Day Streak", icon: "trophy", earned: false, date: null },
+  { name: "Referral Hero", icon: "heart", earned: false, date: null },
+  { name: "100 Workouts", icon: "award", earned: false, date: null },
+  { name: "Class Regular", icon: "calendar", earned: false, date: null }
+];
+
+const weeklyActivity = [true, true, false, true, true, true, true];
+
+const challenges = [
+  { id: 1, name: "February Warrior", type: "group", goal: "20 check-ins in February", progress: 14, target: 20, participants: 312, daysLeft: 8, reward: 200, joined: true },
+  { id: 2, name: "Buddy Bonus", type: "social", goal: "Attend 5 classes with a gym buddy", progress: 3, target: 5, participants: 94, daysLeft: 9, reward: 300, joined: true },
+  { id: 3, name: "Morning Crew", type: "individual", goal: "10 pre-9am workouts", progress: 0, target: 10, participants: 156, daysLeft: 18, reward: 200, joined: false }
+];
+
+const leaderboard = [
+  { rank: 1, name: "Mike T.", avatar: "M", points: 2840, streak: 31, tier: "Gold" },
+  { rank: 2, name: "Anna K.", avatar: "A", points: 2310, streak: 22, tier: "Gold" },
+  { rank: 3, name: "James R.", avatar: "J", points: 1980, streak: 18, tier: "Silver" },
+  { rank: 4, name: "Sara (You)", avatar: "S", points: 1840, streak: 14, tier: "Silver", isCurrentUser: true },
+  { rank: 5, name: "Priya M.", avatar: "P", points: 1100, streak: 9, tier: "Silver" },
+  { rank: 6, name: "Tom H.", avatar: "T", points: 890, streak: 6, tier: "Bronze" }
+];
+
+const rewards = [
+  { id: 1, name: "Free Smoothie", cost: 300, icon: "coffee" },
+  { id: 2, name: "Guest Pass", cost: 500, icon: "ticket" },
+  { id: 3, name: "Protein Bar Pack", cost: 200, icon: "package" },
+  { id: 4, name: "PT Session (30 min)", cost: 1500, icon: "user-check" },
+  { id: 5, name: "1 Month Free", cost: 5000, icon: "gift" }
+];
+
+const onboardingSteps = [
+  { id: 1, title: "First Workout", icon: "dumbbell", completed: true, date: "Oct 3", points: 100 },
+  { id: 2, title: "First Class", icon: "users", completed: true, date: "Oct 5", points: 150 },
+  { id: 3, title: "Set Your Goals", icon: "target", completed: true, date: "Oct 3", points: 100 },
+  { id: 4, title: "Meet Your Trainer", icon: "user-check", completed: false, date: null, points: 200, ctaLabel: "Book Now" },
+  { id: 5, title: "First Measurable Win", icon: "trending-up", completed: false, date: null, points: 250, ctaLabel: "Log a Win" }
+];
+
+const reEngagementSequence = [
+  { step: 1, triggerDay: 7, channel: "Push", message: "Hey Sara 👋 We haven't seen you in a week — your HIIT Blast crew misses you.", sent: true, opened: true },
+  { step: 2, triggerDay: 14, channel: "SMS", message: "Sara, Coach Dana has a HIIT Blast spot saved for you this Thursday at 7pm.", sent: true, opened: true },
+  { step: 3, triggerDay: 21, channel: "Email", message: "A complimentary PT session — no strings attached.", sent: false, opened: false }
+];
+
+const gymBuddies = [
+  { name: "Mike T.", avatar: "M", streak: 31, sharedClasses: 8, lastClass: "HIIT Blast · Yesterday" },
+  { name: "Priya M.", avatar: "P", streak: 9, sharedClasses: 5, lastClass: "Yoga Flow · Today" },
+  { name: "James R.", avatar: "J", streak: 18, sharedClasses: 12, lastClass: "Cycling · 2 days ago" }
+];
+
+const activityFeed = [
+  { member: "Mike T.", avatar: "M", action: "completed a 30-day streak 🔥", time: "2 min ago", reactions: 14, reacted: false },
+  { member: "Priya M.", avatar: "P", action: "joined the February Warrior challenge 💪", time: "18 min ago", reactions: 6, reacted: false },
+  { member: "James R.", avatar: "J", action: "checked in for the 50th time 🏅", time: "1 hr ago", reactions: 22, reacted: true },
+  { member: "Anna K.", avatar: "A", action: "booked HIIT Blast Thursday — 2 spots left!", time: "2 hrs ago", reactions: 3, reacted: false }
+];
+
+const referralHistory = [
+  { name: "Mike T.", status: "Joined", joinDate: "Nov 2024", reward: 500, paid: true },
+  { name: "Priya S.", status: "Joined", joinDate: "Dec 2024", reward: 500, paid: true },
+  { name: "Tom H.", status: "Pending", joinDate: null, reward: 500, paid: false }
+];
+
+const pointsHistory = [
+  { date: "Feb 3", action: "Check-in", points: 10 },
+  { date: "Feb 2", action: "Class attended", points: 25 },
+  { date: "Feb 1", action: "Referral bonus — Mike", points: 500 },
+  { date: "Jan 31", action: "Challenge completed", points: 200 },
+  { date: "Jan 30", action: "Redeemed Guest Pass", points: -500 }
+];
+
+// ─── MUTABLE STATE ──────────────────────────────────────────────────────────
+let currentPoints = 1840;
+let feedReactions = activityFeed.map(f => ({ reactions: f.reactions, reacted: f.reacted }));
+let step4Booked = false;
+let step5Logged = false;
+let pendingRedeemId = null;
+let selectedSlot = null;
+let selectedInviteClass = null;
+let currentInviteBuddy = null;
+let joinedChallenges = challenges.map(c => c.joined);
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+const days = ['M','T','W','T','F','S','S'];
+const avatarColors = { M:'avatar-M', A:'avatar-A', J:'avatar-J', P:'avatar-P', T:'avatar-T', S:'avatar-S' };
+
+function getAvatarClass(letter) {
+  return avatarColors[letter] || 'avatar-S';
+}
+
+function showToast(msg, icon = '✅') {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-message').textContent = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'booking-modal') {
+    selectedSlot = null;
+    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  }
+  if (id === 'invite-modal') {
+    selectedInviteClass = null;
+    document.querySelectorAll('.invite-class-btn').forEach(b => b.classList.remove('selected','border-indigo-500','bg-indigo-500/10','border-2'));
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    const isActive = btn.dataset.tab === tab;
+    btn.classList.toggle('text-indigo-400', isActive);
+    btn.classList.toggle('text-slate-500', !isActive);
+    const underline = btn.querySelector('div');
+    underline.classList.toggle('bg-indigo-500', isActive);
+    underline.classList.toggle('opacity-0', !isActive);
+  });
+  // render tabs on switch
+  if (tab === 'home') renderHome();
+  if (tab === 'journey') renderJourney();
+  if (tab === 'community') renderCommunity();
+  if (tab === 'rewards') renderRewards();
+  if (tab === 'refer') renderRefer();
+  setTimeout(() => lucide.createIcons(), 50);
+}
+
+function switchSubTab(tab, sub) {
+  const panels = document.querySelectorAll(`#tab-${tab} .sub-tab-panel`);
+  panels.forEach(p => p.classList.remove('active'));
+  document.getElementById(`${tab}-${sub}`).classList.add('active');
+  const pills = document.querySelectorAll(`#tab-${tab} .pill-btn`);
+  const subNames = { community: ['feed','buddies','challenges'], rewards: ['redeem','tier','history'] };
+  const subs = subNames[tab] || [];
+  pills.forEach((pill, i) => {
+    const isActive = subs[i] === sub;
+    pill.classList.toggle('active-pill', isActive);
+    if (isActive) { pill.classList.remove('text-slate-400'); }
+    else { pill.classList.add('text-slate-400'); }
+  });
+  setTimeout(() => lucide.createIcons(), 50);
+}
+
+// ─── RENDER: HOME ──────────────────────────────────────────────────────────
+function renderHome() {
+  // Streak days
+  const streakEl = document.getElementById('streak-days-home');
+  if (streakEl) {
+    streakEl.innerHTML = days.map((d, i) => {
+      const active = weeklyActivity[i];
+      return `<div class="flex flex-col items-center gap-1 flex-1">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${active ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-500'}">${active ? '✓' : d}</div>
+        <span class="text-[10px] text-slate-500">${d}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Points header
+  const ptsEl = document.getElementById('home-points-display');
+  if (ptsEl) ptsEl.textContent = `${currentPoints.toLocaleString()} pts · Silver Member`;
+
+  // Badges scroll
+  const badgesEl = document.getElementById('badges-scroll');
+  if (badgesEl) {
+    badgesEl.innerHTML = badges.map(b => `
+      <div class="tooltip-container flex-shrink-0">
+        <div class="badge-card w-16 flex flex-col items-center gap-1.5 cursor-pointer">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center ${b.earned ? 'bg-indigo-900 text-indigo-300' : 'bg-slate-800 text-slate-600'} relative">
+            <i data-lucide="${b.icon}" class="w-6 h-6"></i>
+            ${!b.earned ? '<div class="absolute bottom-1 right-1 w-4 h-4 bg-slate-700 rounded-full flex items-center justify-center"><i data-lucide="lock" class="w-2.5 h-2.5 text-slate-500"></i></div>' : ''}
+          </div>
+          <span class="text-[9px] text-center leading-tight ${b.earned ? 'text-slate-300' : 'text-slate-600'} font-medium">${b.name}</span>
+        </div>
+        <div class="tooltip-box">${b.earned ? '✅ Earned ' + b.date : '🔒 Not yet earned'}</div>
+      </div>
+    `).join('');
+  }
+
+  // Home challenges (joined only)
+  const challEl = document.getElementById('home-challenges');
+  if (challEl) {
+    const joined = challenges.filter((c, i) => joinedChallenges[i]);
+    challEl.innerHTML = joined.map(c => {
+      const pct = Math.round((c.progress / c.target) * 100);
+      return `<div class="bg-slate-800 rounded-2xl p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-slate-100 text-sm font-semibold">${c.name}</span>
+          <span class="text-xs text-amber-400 font-semibold">+${c.reward} pts</span>
+        </div>
+        <div class="text-slate-400 text-xs mb-2">${c.goal}</div>
+        <div class="flex items-center gap-2">
+          <div class="flex-1 bg-slate-700 rounded-full h-2">
+            <div class="h-2 rounded-full bg-indigo-500 progress-bar" style="width:${pct}%"></div>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">${c.progress}/${c.target}</span>
+        </div>
+        <div class="text-[10px] text-slate-500 mt-1.5">${c.daysLeft} days left · ${c.participants.toLocaleString()} participants</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Milestone dots
+  const dotEl = document.getElementById('home-milestone-dots');
+  if (dotEl) {
+    dotEl.innerHTML = onboardingSteps.map((s, i) => {
+      if (s.completed) {
+        return `<div class="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">✓</div>`;
+      } else if (i === 3) {
+        return `<div class="w-7 h-7 rounded-full bg-indigo-500 pulse-dot flex items-center justify-center flex-shrink-0"><span class="w-2 h-2 bg-white rounded-full"></span></div>`;
+      } else {
+        return `<div class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0"><i data-lucide="lock" class="w-3 h-3 text-slate-500"></i></div>`;
+      }
+    }).join('<div class="flex-1 h-0.5 bg-slate-700 self-center"></div>');
+  }
+}
+
+// ─── RENDER: JOURNEY ───────────────────────────────────────────────────────
+function renderJourney() {
+  const stepsEl = document.getElementById('journey-steps');
+  if (!stepsEl) return;
+  stepsEl.innerHTML = onboardingSteps.map((s, i) => {
+    const isLast = i === onboardingSteps.length - 1;
+    let circleClass, statusHTML, ctaHTML = '';
+    if (s.completed) {
+      circleClass = 'bg-emerald-500 text-white';
+      statusHTML = `<span class="text-xs text-emerald-400 font-medium">✅ Done · ${s.date}</span>`;
+    } else if (i === 3 && !step4Booked) {
+      circleClass = 'bg-indigo-500 text-white pulse-dot';
+      statusHTML = `<span class="text-xs text-indigo-400 font-semibold bg-indigo-500/20 px-2 py-0.5 rounded-full">→ Up Next</span>`;
+      ctaHTML = `<button onclick="openModal('booking-modal')" class="mt-2 text-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-1.5 rounded-xl transition-colors">Book Now</button>`;
+    } else if (i === 3 && step4Booked) {
+      circleClass = 'bg-amber-500 text-white';
+      statusHTML = `<span class="text-xs text-amber-400 font-medium">⏳ Booked</span>`;
+    } else if (i === 4 && step4Booked && !step5Logged) {
+      circleClass = 'bg-indigo-500 text-white pulse-dot';
+      statusHTML = `<span class="text-xs text-indigo-400 font-semibold bg-indigo-500/20 px-2 py-0.5 rounded-full">→ Up Next</span>`;
+      ctaHTML = `<button onclick="logWin()" class="mt-2 text-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-1.5 rounded-xl transition-colors">Log a Win</button>`;
+    } else if (i === 4 && step5Logged) {
+      circleClass = 'bg-emerald-500 text-white';
+      statusHTML = `<span class="text-xs text-emerald-400 font-medium">✅ Done · Today</span>`;
+    } else {
+      circleClass = 'bg-slate-700 text-slate-500';
+      statusHTML = `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3"></i> Locked</span>`;
+    }
+    return `
+      <div class="flex gap-3">
+        <div class="flex flex-col items-center">
+          <div class="w-9 h-9 rounded-full ${circleClass} flex items-center justify-center flex-shrink-0">
+            <i data-lucide="${s.icon}" class="w-4 h-4"></i>
+          </div>
+          ${!isLast ? '<div class="w-0.5 flex-1 bg-slate-700 mt-1 mb-1 min-h-[20px]" style="border-left: 2px dashed #334155; background:transparent;"></div>' : ''}
+        </div>
+        <div class="pb-4 flex-1">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-100 font-semibold text-sm">${s.title}</span>
+            <span class="text-xs text-emerald-400 font-semibold bg-emerald-400/10 px-2 py-0.5 rounded-full">+${s.points} pts</span>
+          </div>
+          <div class="mt-1">${statusHTML}</div>
+          ${ctaHTML}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── RENDER: COMMUNITY ─────────────────────────────────────────────────────
+function renderCommunity() {
+  renderFeed();
+  renderBuddies();
+  renderChallenges();
+}
+
+function renderFeed() {
+  const el = document.getElementById('community-feed');
+  if (!el) return;
+  el.innerHTML = feedReactions.map((fr, i) => {
+    const f = activityFeed[i];
+    const isBooking = f.action.includes('booked');
+    return `<div class="bg-slate-800 rounded-2xl p-4">
+      <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full ${getAvatarClass(f.avatar)} flex items-center justify-center text-white font-bold text-sm flex-shrink-0">${f.avatar}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-baseline gap-1.5 flex-wrap">
+            <span class="text-slate-100 font-semibold text-sm">${f.member}</span>
+            <span class="text-slate-400 text-xs">${f.action}</span>
+          </div>
+          <div class="text-slate-500 text-xs mt-1">${f.time}</div>
+          <div class="flex items-center gap-3 mt-2.5">
+            <button class="reaction-btn flex items-center gap-1.5 text-sm font-medium ${fr.reacted ? 'reacted' : 'text-slate-400'}" onclick="toggleReaction(${i})">
+              👏 <span>${fr.reactions}</span>
+            </button>
+            ${isBooking ? `<button onclick="joinFromFeed('${f.member}')" class="text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 font-semibold px-3 py-1 rounded-full transition-colors">Join them →</button>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderBuddies() {
+  const el = document.getElementById('community-buddies');
+  if (!el) return;
+  const suggested = [
+    { name: "Lisa B.", avatar: "L", reason: "Attends HIIT Blast same days as you" },
+    { name: "Sam K.", avatar: "K", reason: "Similar workout schedule · Silver tier" }
+  ];
+  el.innerHTML = `
+    <div class="flex items-center justify-between mb-1">
+      <span class="text-slate-100 font-semibold text-sm">Your Buddies</span>
+      <span class="text-xs text-emerald-400 bg-emerald-400/10 font-semibold px-2.5 py-0.5 rounded-full">3 connections</span>
+    </div>
+    ${gymBuddies.map(b => `
+      <div class="bg-slate-800 rounded-2xl p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-full ${getAvatarClass(b.avatar)} flex items-center justify-center text-white font-bold">${b.avatar}</div>
+          <div class="flex-1">
+            <div class="text-slate-100 font-semibold text-sm">${b.name}</div>
+            <div class="text-slate-400 text-xs mt-0.5">🔥 ${b.streak}-day streak · ${b.sharedClasses} shared classes</div>
+          </div>
+        </div>
+        <div class="text-slate-500 text-xs mb-3">Last together: ${b.lastClass}</div>
+        <div class="flex gap-2">
+          <button onclick="openInviteModal('${b.name}')" class="flex-1 text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 font-semibold py-2 rounded-xl transition-colors">Invite to Class</button>
+          <button onclick="highFive('${b.name}')" class="flex-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-2 rounded-xl transition-colors">High Five 👋</button>
+        </div>
+      </div>
+    `).join('')}
+    <div class="mt-2">
+      <div class="text-slate-100 font-semibold text-sm mb-3">Suggested Connections</div>
+      ${suggested.map(s => `
+        <div class="bg-slate-800 rounded-2xl p-4 mb-2 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center text-slate-300 font-bold text-sm flex-shrink-0">${s.avatar}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-slate-100 font-semibold text-sm">${s.name}</div>
+            <div class="text-slate-400 text-xs mt-0.5 leading-relaxed">${s.reason}</div>
+          </div>
+          <button onclick="connectBuddy('${s.name}')" class="text-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-3 py-1.5 rounded-xl transition-colors flex-shrink-0">Connect →</button>
+        </div>
+      `).join('')}
+    </div>
+    <p class="text-slate-500 text-xs text-center mt-2 px-2">Members with gym buddies work out 2.3× more often. Keep connecting!</p>
+  `;
+}
+
+function renderChallenges() {
+  const el = document.getElementById('community-challenges');
+  if (!el) return;
+  const typeColors = { group: 'text-blue-400 bg-blue-400/10', social: 'text-purple-400 bg-purple-400/10', individual: 'text-amber-400 bg-amber-400/10' };
+  el.innerHTML = challenges.map((c, i) => {
+    const pct = Math.round((c.progress / c.target) * 100);
+    const joined = joinedChallenges[i];
+    const miniLB = [
+      { name: 'Mike T.', avatar: 'M', progress: c.target, rank: 1 },
+      { name: 'Anna K.', avatar: 'A', progress: Math.floor(c.target * 0.8), rank: 2 },
+      { name: 'Sara (You)', avatar: 'S', progress: c.progress, rank: 3, isYou: true }
+    ];
+    return `<div class="bg-slate-800 rounded-2xl p-4">
+      <div class="flex items-start justify-between mb-2">
+        <div>
+          <div class="text-slate-100 font-bold text-sm">${c.name}</div>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${typeColors[c.type]} capitalize">${c.type}</span>
+        </div>
+        <div class="text-right">
+          <div class="text-amber-400 font-bold text-sm">+${c.reward} pts</div>
+          <div class="text-slate-500 text-[10px]">${c.daysLeft}d left</div>
+        </div>
+      </div>
+      <div class="text-slate-400 text-xs mb-2">${c.goal}</div>
+      ${joined ? `
+        <div class="flex items-center gap-2 mb-2">
+          <div class="flex-1 bg-slate-700 rounded-full h-2">
+            <div class="h-2 rounded-full bg-indigo-500 progress-bar" style="width:${pct}%"></div>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">${c.progress}/${c.target}</span>
+        </div>
+      ` : ''}
+      <div class="flex items-center justify-between mt-3">
+        <span class="text-slate-500 text-xs">${c.participants.toLocaleString()} participants</span>
+        ${joined
+          ? `<button onclick="toggleChallengeDetail(${c.id})" class="text-xs text-indigo-400 font-semibold">View Details</button>`
+          : `<button onclick="joinChallenge(${i})" class="text-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-3 py-1.5 rounded-xl transition-colors">Join →</button>`
+        }
+      </div>
+      ${joined ? `
+        <div id="challenge-detail-${c.id}" class="challenge-detail">
+          <div class="mt-3 pt-3 border-t border-slate-700">
+            <div class="text-slate-300 text-xs font-semibold mb-2">Mini Leaderboard</div>
+            ${miniLB.map(lb => `
+              <div class="flex items-center gap-2 py-1 ${lb.isYou ? 'text-indigo-400' : 'text-slate-400'}">
+                <span class="text-xs font-bold w-4">${lb.rank}</span>
+                <div class="w-6 h-6 rounded-full ${getAvatarClass(lb.avatar)} flex items-center justify-center text-white text-[10px] font-bold">${lb.avatar}</div>
+                <span class="text-xs flex-1 ${lb.isYou ? 'font-semibold' : ''}">${lb.name}</span>
+                <span class="text-xs font-semibold">${lb.progress}/${c.target}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─── RENDER: REWARDS ───────────────────────────────────────────────────────
+function renderRewards() {
+  renderRedeem();
+  renderTier();
+  renderHistory();
+}
+
+function renderRedeem() {
+  const el = document.getElementById('rewards-redeem');
+  if (!el) return;
+  const hdr = document.getElementById('rewards-pts-header');
+  if (hdr) hdr.textContent = `${currentPoints.toLocaleString()} pts available`;
+  const iconMap = { coffee: 'coffee', ticket: 'ticket', package: 'package', 'user-check': 'user-check', gift: 'gift' };
+  el.innerHTML = `<div class="grid grid-cols-2 gap-3">
+    ${rewards.map(r => {
+      const canAfford = currentPoints >= r.cost;
+      const need = r.cost - currentPoints;
+      return `<div class="bg-slate-800 rounded-2xl p-4 flex flex-col items-center gap-2 text-center">
+        <div class="w-12 h-12 rounded-2xl ${canAfford ? 'bg-indigo-900 text-indigo-300' : 'bg-slate-700 text-slate-500'} flex items-center justify-center">
+          <i data-lucide="${r.icon}" class="w-6 h-6"></i>
+        </div>
+        <div class="text-slate-100 font-semibold text-xs leading-tight">${r.name}</div>
+        <div class="text-indigo-400 font-bold text-sm">${r.cost.toLocaleString()} pts</div>
+        ${canAfford
+          ? `<button onclick="openRedeemModal(${r.id})" class="w-full text-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 rounded-xl transition-colors">Redeem</button>`
+          : `<div class="text-[10px] text-slate-500 font-medium">Need ${need} more pts</div>`
+        }
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderTier() {
+  const el = document.getElementById('rewards-tier');
+  if (!el) return;
+  const pct = Math.min(100, Math.round(((currentPoints - 1000) / (2500 - 1000)) * 100));
+  const remaining = Math.max(0, 2500 - currentPoints);
+  el.innerHTML = `
+    <div class="gradient-bg rounded-2xl p-5 text-center mb-4">
+      <div class="text-white/70 text-xs font-medium uppercase tracking-widest mb-1">Current Tier</div>
+      <div class="text-white font-extrabold text-3xl mb-1">🥈 Silver</div>
+      <div class="text-white/70 text-sm">${currentPoints.toLocaleString()} pts total</div>
+    </div>
+    <div class="bg-slate-800 rounded-2xl p-4 mb-4">
+      <div class="flex justify-between text-xs text-slate-400 mb-2">
+        <span>Progress to Gold</span>
+        <span>${remaining > 0 ? remaining + ' pts to go' : 'Gold reached!'}</span>
+      </div>
+      <div class="w-full bg-slate-700 rounded-full h-3 mb-2">
+        <div class="h-3 rounded-full progress-bar" style="width:${pct}%; background: linear-gradient(90deg,#f59e0b,#ef4444);"></div>
+      </div>
+      <div class="flex justify-between text-[10px] text-slate-500">
+        <span>Silver (1,000)</span>
+        <span>Gold (2,500)</span>
+      </div>
+    </div>
+    <div class="bg-slate-800 rounded-2xl p-4 mb-4">
+      <div class="text-slate-100 font-semibold text-sm mb-3">Silver Perks</div>
+      <div class="space-y-2.5">
+        ${['Priority class booking', '1 free guest pass per month', 'Birthday bonus 200 pts', '10% merch discount'].map(p => `
+          <div class="flex items-center gap-2.5">
+            <div class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3 h-3 text-emerald-400"></i>
+            </div>
+            <span class="text-slate-300 text-sm">${p}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <details class="bg-slate-800 rounded-2xl p-4 mb-4">
+      <summary class="text-amber-400 font-semibold text-sm cursor-pointer flex items-center gap-2">
+        <i data-lucide="lock" class="w-4 h-4"></i> Unlock Gold Perks →
+      </summary>
+      <div class="mt-3 space-y-2.5">
+        ${['Free monthly PT session', 'Unlimited guest passes', 'Early class access', '20% merch discount', 'Dedicated member hotline'].map(p => `
+          <div class="flex items-center gap-2.5">
+            <div class="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="star" class="w-3 h-3 text-amber-400"></i>
+            </div>
+            <span class="text-slate-400 text-sm">${p}</span>
+          </div>`).join('')}
+      </div>
+    </details>
+    <div class="bg-slate-800 rounded-2xl overflow-hidden">
+      <div class="text-slate-100 font-semibold text-sm p-4 pb-2">Tier Comparison</div>
+      <table class="w-full text-xs">
+        <thead>
+          <tr class="border-b border-slate-700">
+            <th class="text-slate-400 font-medium text-left py-2 px-4">Perk</th>
+            <th class="text-slate-500 font-medium py-2 px-2 text-center">Bronze</th>
+            <th class="text-indigo-400 font-bold py-2 px-2 text-center bg-indigo-500/10">Silver</th>
+            <th class="text-amber-400 font-medium py-2 px-2 text-center">Gold</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[
+            ['Priority Booking', '✗', '✓', '✓'],
+            ['Guest Pass', '✗', '1/mo', 'Unlimited'],
+            ['Birthday Bonus', '50 pts', '200 pts', '500 pts'],
+            ['PT Sessions', '✗', '✗', '1/mo free'],
+            ['Merch Discount', '5%', '10%', '20%']
+          ].map(row => `<tr class="border-b border-slate-700/50 tier-row">
+            <td class="text-slate-400 py-2.5 px-4">${row[0]}</td>
+            <td class="text-slate-500 py-2.5 px-2 text-center">${row[1]}</td>
+            <td class="text-slate-100 py-2.5 px-2 text-center bg-indigo-500/5 font-medium">${row[2]}</td>
+            <td class="text-amber-400 py-2.5 px-2 text-center">${row[3]}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderHistory() {
+  const el = document.getElementById('rewards-history');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="bg-slate-800 rounded-2xl p-4 mb-4">
+      <div class="text-slate-100 font-semibold text-sm mb-1">February Summary</div>
+      <div class="flex gap-4">
+        <div>
+          <div class="text-emerald-400 font-bold text-lg">+535 pts</div>
+          <div class="text-slate-500 text-xs">Earned</div>
+        </div>
+        <div>
+          <div class="text-red-400 font-bold text-lg">-500 pts</div>
+          <div class="text-slate-500 text-xs">Spent</div>
+        </div>
+        <div>
+          <div class="text-slate-100 font-bold text-lg">35 pts</div>
+          <div class="text-slate-500 text-xs">Net</div>
+        </div>
+      </div>
+    </div>
+    <div class="bg-slate-800 rounded-2xl divide-y divide-slate-700">
+      ${pointsHistory.map(h => `
+        <div class="flex items-center gap-3 px-4 py-3">
+          <div class="w-8 h-8 rounded-full ${h.points > 0 ? 'bg-emerald-500/20' : 'bg-red-500/20'} flex items-center justify-center flex-shrink-0">
+            <i data-lucide="${h.points > 0 ? 'plus' : 'minus'}" class="w-4 h-4 ${h.points > 0 ? 'text-emerald-400' : 'text-red-400'}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-slate-100 text-sm font-medium truncate">${h.action}</div>
+            <div class="text-slate-500 text-xs">${h.date}</div>
+          </div>
+          <div class="font-bold text-sm ${h.points > 0 ? 'text-emerald-400' : 'text-red-400'}">${h.points > 0 ? '+' : ''}${h.points}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ─── RENDER: REFER ─────────────────────────────────────────────────────────
+function renderRefer() {
+  const el = document.getElementById('referral-history-list');
+  if (!el) return;
+  el.innerHTML = referralHistory.map(r => `
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold text-sm flex-shrink-0">${r.name.charAt(0)}</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-slate-100 font-medium text-sm">${r.name}</div>
+        <div class="text-slate-500 text-xs">${r.joinDate || 'Pending signup'}</div>
+      </div>
+      <div class="flex flex-col items-end gap-1">
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${r.status === 'Joined' ? 'text-emerald-400 bg-emerald-400/10' : 'text-amber-400 bg-amber-400/10'}">${r.status}</span>
+        ${r.status === 'Pending' ? `<button onclick="sendReminder('${r.name}')" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-medium transition-colors">Send Reminder</button>` : `<span class="text-emerald-400 text-xs font-semibold">+${r.reward} pts</span>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── INTERACTIONS ───────────────────────────────────────────────────────────
+function toggleReaction(i) {
+  feedReactions[i].reacted = !feedReactions[i].reacted;
+  feedReactions[i].reactions += feedReactions[i].reacted ? 1 : -1;
+  renderFeed();
+  setTimeout(() => lucide.createIcons(), 20);
+}
+
+function joinFromFeed(name) {
+  showToast(`You joined the class with ${name}!`, '🎉');
+}
+
+function toggleChallengeDetail(id) {
+  const el = document.getElementById(`challenge-detail-${id}`);
+  if (el) el.classList.toggle('open');
+}
+
+function joinChallenge(i) {
+  joinedChallenges[i] = true;
+  renderChallenges();
+  setTimeout(() => lucide.createIcons(), 50);
+  showToast(`Joined ${challenges[i].name}!`, '💪');
+}
+
+function selectSlot(btn, slot) {
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSlot = slot;
+}
+
+function confirmBooking() {
+  if (!selectedSlot) { showToast('Please select a time slot', '⚠️'); return; }
+  step4Booked = true;
+  closeModal('booking-modal');
+  renderJourney();
+  setTimeout(() => lucide.createIcons(), 50);
+  showToast(`Booked: ${selectedSlot} with Coach Dana`, '📅');
+}
+
+function logWin() {
+  step5Logged = true;
+  renderJourney();
+  setTimeout(() => lucide.createIcons(), 50);
+  showToast('Win logged! +250 pts earned 🏆', '🏅');
+}
+
+function openRedeemModal(id) {
+  const reward = rewards.find(r => r.id === id);
+  if (!reward) return;
+  pendingRedeemId = id;
+  const iconEmojis = { coffee: '☕', ticket: '🎟️', package: '🧪', 'user-check': '🏋️', gift: '🎁' };
+  document.getElementById('redeem-modal-icon').textContent = iconEmojis[reward.icon] || '🎁';
+  document.getElementById('redeem-modal-name').textContent = reward.name;
+  document.getElementById('redeem-modal-cost').textContent = `${reward.cost.toLocaleString()} pts`;
+  document.getElementById('redeem-modal-balance').textContent = `${currentPoints.toLocaleString()} pts`;
+  document.getElementById('redeem-modal-deduct').textContent = `-${reward.cost.toLocaleString()} pts`;
+  document.getElementById('redeem-modal-after').textContent = `${(currentPoints - reward.cost).toLocaleString()} pts`;
+  openModal('redeem-modal');
+}
+
+function confirmRedeem() {
+  const reward = rewards.find(r => r.id === pendingRedeemId);
+  if (!reward) return;
+  currentPoints -= reward.cost;
+  closeModal('redeem-modal');
+  renderRedeem();
+  const hdr = document.getElementById('rewards-pts-header');
+  if (hdr) hdr.textContent = `${currentPoints.toLocaleString()} pts available`;
+  const homePts = document.getElementById('home-points-display');
+  if (homePts) homePts.textContent = `${currentPoints.toLocaleString()} pts · Silver Member`;
+  setTimeout(() => lucide.createIcons(), 50);
+  showToast(`${reward.name} redeemed!`, '🎉');
+}
+
+function copyReferralCode() {
+  navigator.clipboard.writeText('SARA-FP47').catch(() => {});
+  showToast('Code copied: SARA-FP47', '📋');
+}
+
+function shareVia(method) {
+  closeModal('share-modal');
+  const msgs = { WhatsApp: 'Sent via WhatsApp!', Email: 'Email drafted!', Link: 'Link copied!' };
+  const icons = { WhatsApp: '💬', Email: '📧', Link: '🔗' };
+  showToast(msgs[method], icons[method]);
+}
+
+function sendReminder(name) {
+  showToast(`Reminder sent to ${name}!`, '📤');
+}
+
+function openInviteModal(buddyName) {
+  currentInviteBuddy = buddyName;
+  document.getElementById('invite-buddy-name').textContent = buddyName;
+  selectedInviteClass = null;
+  openModal('invite-modal');
+}
+
+function selectInviteClass(btn, cls) {
+  document.querySelectorAll('.invite-class-btn').forEach(b => {
+    b.classList.remove('selected','border-indigo-500','bg-indigo-500/10','border-2','bg-slate-700');
+    b.classList.add('bg-slate-700');
+  });
+  btn.classList.remove('bg-slate-700');
+  btn.classList.add('selected','border-2','border-indigo-500','bg-indigo-500/10');
+  selectedInviteClass = cls;
+}
+
+function confirmInvite() {
+  if (!selectedInviteClass) { showToast('Select a class first', '⚠️'); return; }
+  closeModal('invite-modal');
+  showToast(`Invite sent to ${currentInviteBuddy}!`, '🙌');
+}
+
+function highFive(name) {
+  showToast(`High five sent to ${name}! 👋`, '🤝');
+}
+
+function connectBuddy(name) {
+  showToast(`Connected with ${name}!`, '🤝');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderHome();
+  renderJourney();
+  renderCommunity();
+  renderRewards();
+  renderRefer();
+  setTimeout(() => lucide.createIcons(), 100);
+});
+</script>
+</body>
+</html>
