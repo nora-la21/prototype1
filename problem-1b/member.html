@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitPulse — Member App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0f172a; }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    }
+
+    .gradient-bg-offer {
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+    }
+
+    .phone-frame {
+      width: 390px;
+      border-radius: 48px;
+      border: 4px solid rgba(255,255,255,0.1);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+      background: #0f172a;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screen {
+      display: none;
+      height: 780px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .screen::-webkit-scrollbar { display: none; }
+
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(251,191,36,0); }
+    }
+
+    .pulse-amber {
+      animation: pulse-border 2s infinite;
+    }
+
+    @keyframes checkmark-pulse {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; }
+      80% { transform: scale(0.95); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .checkmark-anim {
+      animation: checkmark-pulse 0.6s ease-out forwards;
+    }
+
+    @keyframes toast-up {
+      0% { transform: translateY(100px); opacity: 0; }
+      15% { transform: translateY(0); opacity: 1; }
+      75% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100px); opacity: 0; }
+    }
+
+    .toast-anim {
+      animation: toast-up 2.5s ease forwards;
+    }
+
+    @keyframes slide-down {
+      0% { max-height: 0; opacity: 0; }
+      100% { max-height: 600px; opacity: 1; }
+    }
+
+    .activity-expand {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.4s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .activity-expand.open {
+      max-height: 600px;
+      opacity: 1;
+    }
+
+    .tab-indicator {
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      transition: all 0.2s;
+    }
+
+    .countdown-box {
+      background: rgba(0,0,0,0.35);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-width: 54px;
+      text-align: center;
+    }
+
+    .toggle-track {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: #334155;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-track.on {
+      background: #10b981;
+    }
+
+    .toggle-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: left 0.2s;
+    }
+
+    .toggle-track.on .toggle-thumb {
+      left: 23px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center py-12 px-4" style="background:#0f172a;">
+
+  <!-- Phone Frame -->
+  <div class="phone-frame relative">
+
+    <!-- ===== TOAST ===== -->
+    <div id="toast" class="hidden absolute bottom-20 left-4 right-4 z-50">
+      <div class="bg-emerald-600 text-white text-sm font-semibold rounded-2xl px-4 py-3 flex items-center gap-2 shadow-xl">
+        <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+        <span id="toast-msg">Added to Apple Calendar ✓</span>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 1: HOME ===== -->
+    <div id="screen-1" class="screen active">
+      <div class="pb-24">
+
+        <!-- Push notification banner -->
+        <div id="notif-banner" class="bg-amber-500 text-white px-4 py-3 flex items-start gap-3 cursor-pointer select-none">
+          <div class="flex-1" onclick="goToScreen(2)">
+            <p class="text-sm font-semibold leading-snug">Hey Marcus, we miss you 👋 — it's been 18 days. Come back this week and we'll give you a free class.</p>
+          </div>
+          <button onclick="dismissBanner(event)" class="text-white/80 hover:text-white mt-0.5 flex-shrink-0">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Header -->
+        <div class="px-5 pt-5 pb-3 flex items-center justify-between">
+          <div class="text-2xl font-extrabold gradient-text tracking-tight">FitPulse</div>
+          <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white text-sm font-bold shadow-lg">MW</div>
+        </div>
+
+        <!-- Member info -->
+        <div class="px-5 pb-4">
+          <p class="text-[#f8fafc] text-xl font-bold">Marcus Webb</p>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;">⭐ Gold Member</span>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="px-5 pb-4 grid grid-cols-3 gap-3">
+          <div class="card p-3 text-center">
+            <p class="text-[#94a3b8] text-xs mb-1">Last Visit</p>
+            <p id="last-visit-stat" class="text-amber-400 font-bold text-sm">18 days ago</p>
+            <i data-lucide="clock" class="w-4 h-4 text-amber-400 mx-auto mt-1"></i>
+          </div>
+          <div class="card p-3 text-center">
+            <p class="text-[#94a3b8] text-xs mb-1">Streak</p>
+            <p id="streak-stat" class="text-red-400 font-bold text-sm">0 days</p>
+            <span class="text-base">🔥</span>
+          </div>
+          <div class="card p-3 text-center">
+            <p class="text-[#94a3b8] text-xs mb-1">Upcoming</p>
+            <p class="text-[#94a3b8] font-semibold text-xs">No bookings</p>
+            <i data-lucide="calendar" class="w-4 h-4 text-[#94a3b8] mx-auto mt-1"></i>
+          </div>
+        </div>
+
+        <!-- At-risk banner -->
+        <div class="px-5 pb-4">
+          <div id="at-risk-banner" class="card p-4 pulse-amber border-amber-500/50 cursor-pointer" style="border-color: rgba(251,191,36,0.5); border-width:1px;" onclick="goToScreen(2)">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+              </div>
+              <div>
+                <p id="at-risk-text" class="text-[#f8fafc] font-semibold text-sm">Your membership is at risk of lapsing</p>
+                <p id="at-risk-sub" class="text-[#94a3b8] text-xs mt-0.5">See your personal offer →</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent activity section -->
+        <div class="px-5">
+          <p class="text-[#94a3b8] text-xs font-semibold uppercase tracking-widest mb-3">Recent Activity</p>
+          <div class="space-y-2">
+            <div class="card p-3 flex items-center gap-3 opacity-60">
+              <div class="w-8 h-8 rounded-full bg-[#334155] flex items-center justify-center flex-shrink-0">
+                <i data-lucide="zap" class="w-4 h-4 text-[#94a3b8]"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-[#f8fafc] text-sm font-medium">HIIT Thursdays 7pm</p>
+                <p class="text-[#94a3b8] text-xs">Jan 8 · Attended</p>
+              </div>
+              <span class="text-xs text-emerald-400 font-medium">✓</span>
+            </div>
+            <div class="card p-3 flex items-center gap-3 opacity-50">
+              <div class="w-8 h-8 rounded-full bg-[#334155] flex items-center justify-center flex-shrink-0">
+                <i data-lucide="activity" class="w-4 h-4 text-[#94a3b8]"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-[#f8fafc] text-sm font-medium">Yoga Morning Flow</p>
+                <p class="text-[#94a3b8] text-xs">Jan 3 · Missed</p>
+              </div>
+              <span class="text-xs text-red-400 font-medium">✗</span>
+            </div>
+            <div class="card p-3 flex items-center gap-3 opacity-40">
+              <div class="w-8 h-8 rounded-full bg-[#334155] flex items-center justify-center flex-shrink-0">
+                <i data-lucide="zap" class="w-4 h-4 text-[#94a3b8]"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-[#f8fafc] text-sm font-medium">HIIT Thursdays 7pm</p>
+                <p class="text-[#94a3b8] text-xs">Dec 27 · Missed</p>
+              </div>
+              <span class="text-xs text-red-400 font-medium">✗</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 2: OFFER ===== -->
+    <div id="screen-2" class="screen">
+      <div class="pb-24">
+
+        <!-- Header -->
+        <div class="px-5 pt-6 pb-4">
+          <p class="text-[#94a3b8] text-xs font-semibold uppercase tracking-widest mb-1">Personalised for you</p>
+          <h1 class="text-[#f8fafc] text-xl font-bold leading-snug">We made this just for you, Marcus 💙</h1>
+        </div>
+
+        <!-- Favourite class card -->
+        <div class="px-5 pb-4">
+          <div class="card p-4">
+            <p class="text-[#94a3b8] text-xs font-semibold uppercase tracking-widest mb-2">Your Favourite Class</p>
+            <p class="text-[#f8fafc] text-2xl font-extrabold tracking-tight">HIIT Thursdays 7pm</p>
+            <p class="text-[#94a3b8] text-sm mt-1">Coach Dana</p>
+            <div class="flex items-center gap-2 mt-3 bg-amber-500/10 rounded-xl px-3 py-2">
+              <span class="text-base">🔥</span>
+              <p class="text-amber-400 text-xs font-semibold">Your top class in the last 3 months</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Offer card -->
+        <div class="px-5 pb-4">
+          <div class="gradient-bg-offer rounded-2xl p-5 shadow-xl">
+            <p class="text-white font-bold text-lg">Come back this week</p>
+            <p class="text-blue-200 text-sm mt-1">Your next HIIT class is on us 🎁</p>
+
+            <div class="mt-4">
+              <p class="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-2">Offer expires in</p>
+              <div class="flex items-center gap-2">
+                <div class="countdown-box">
+                  <p id="cd-hours" class="text-white text-2xl font-black tabular-nums leading-none">47</p>
+                  <p class="text-blue-300 text-xs mt-1">HRS</p>
+                </div>
+                <p class="text-white text-2xl font-black">:</p>
+                <div class="countdown-box">
+                  <p id="cd-mins" class="text-white text-2xl font-black tabular-nums leading-none">59</p>
+                  <p class="text-blue-300 text-xs mt-1">MIN</p>
+                </div>
+                <p class="text-white text-2xl font-black">:</p>
+                <div class="countdown-box">
+                  <p id="cd-secs" class="text-white text-2xl font-black tabular-nums leading-none">59</p>
+                  <p class="text-blue-300 text-xs mt-1">SEC</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTAs -->
+        <div class="px-5 space-y-3 pb-4">
+          <button onclick="goToScreen(3)" class="w-full gradient-bg text-white font-bold py-4 rounded-2xl text-base shadow-lg active:scale-95 transition-transform">
+            Book My Free Class →
+          </button>
+          <button onclick="toggleActivity2()" class="w-full border border-[#334155] text-[#94a3b8] font-semibold py-3.5 rounded-2xl text-sm hover:border-[#4b6480] transition-colors active:scale-95">
+            See My Recent Activity
+          </button>
+        </div>
+
+        <!-- Expandable activity timeline -->
+        <div id="activity-expand-2" class="activity-expand px-5">
+          <p class="text-[#94a3b8] text-xs font-semibold uppercase tracking-widest mb-3">Activity Log</p>
+          <div class="space-y-2" id="activity-list-2"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 3: CONFIRMATION ===== -->
+    <div id="screen-3" class="screen">
+      <div class="pb-24">
+
+        <!-- Success animation -->
+        <div class="flex flex-col items-center pt-10 pb-6 px-5">
+          <div id="checkmark-circle" class="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center mb-5" style="opacity:0;">
+            <div class="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center">
+              <i data-lucide="check" class="w-8 h-8 text-white" style="stroke-width:3;"></i>
+            </div>
+          </div>
+          <h1 class="text-[#f8fafc] text-3xl font-extrabold text-center">You're back! 🎉</h1>
+          <p class="text-[#94a3b8] text-sm text-center mt-2">Your free class is confirmed</p>
+        </div>
+
+        <!-- Class details card -->
+        <div class="px-5 pb-4">
+          <div class="card p-4" style="border-left: 4px solid #6366f1;">
+            <p class="text-[#f8fafc] font-bold text-lg">HIIT Thursdays 7pm</p>
+            <p class="text-[#94a3b8] text-sm mt-1">This Thursday · Coach Dana · Westside Location</p>
+            <div class="flex items-center gap-2 mt-3">
+              <i data-lucide="map-pin" class="w-4 h-4 text-indigo-400"></i>
+              <span class="text-indigo-400 text-xs font-medium">Westside Gym, Studio A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add to calendar -->
+        <div class="px-5 pb-4">
+          <button onclick="showToast('Added to Apple Calendar ✓')" class="w-full card border-[#334155] text-[#f8fafc] font-semibold py-4 rounded-2xl text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform">
+            <i data-lucide="calendar-plus" class="w-4 h-4 text-indigo-400"></i>
+            Add to Calendar
+          </button>
+        </div>
+
+        <!-- Reminder toggle -->
+        <div class="px-5 pb-4">
+          <div class="card p-4 flex items-center justify-between gap-4">
+            <div class="flex-1">
+              <p class="text-[#f8fafc] font-semibold text-sm">Set a Reminder</p>
+              <p id="reminder-label" class="text-[#94a3b8] text-xs mt-0.5">Get notified before your class</p>
+            </div>
+            <div id="toggle-track" class="toggle-track" onclick="toggleReminder()">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Streak section -->
+        <div class="px-5 pb-4">
+          <div class="card p-4 text-center">
+            <p class="text-[#94a3b8] text-xs font-semibold uppercase tracking-widest mb-3">Comeback Streak</p>
+            <p class="text-[#f8fafc] text-sm mb-3">Your comeback streak starts now</p>
+            <div class="flex items-center justify-center gap-2">
+              <span class="text-4xl">🔥</span>
+              <div>
+                <p class="text-[#f8fafc] text-5xl font-black leading-none">1</p>
+              </div>
+            </div>
+            <p class="text-[#94a3b8] text-sm mt-2">day streak</p>
+          </div>
+        </div>
+
+        <!-- Back to home -->
+        <div class="px-5 pb-4">
+          <button onclick="returnHome()" class="w-full gradient-bg text-white font-bold py-4 rounded-2xl text-base shadow-lg active:scale-95 transition-transform">
+            Back to Home →
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== BOTTOM TAB BAR ===== -->
+    <div class="absolute bottom-0 left-0 right-0 bg-[#1e293b] border-t border-[#334155]">
+      <div class="flex">
+        <button id="tab-home" class="flex-1 flex flex-col items-center py-3 gap-1" onclick="goToScreen(1)">
+          <div id="tab-home-ind" class="tab-indicator w-8 mb-1"></div>
+          <i data-lucide="home" id="tab-home-icon" class="w-5 h-5 text-blue-500"></i>
+          <span class="text-xs font-medium text-blue-500">Home</span>
+        </button>
+        <button id="tab-offer" class="flex-1 flex flex-col items-center py-3 gap-1" onclick="goToScreen(2)">
+          <div id="tab-offer-ind" class="tab-indicator w-0 mb-1"></div>
+          <i data-lucide="gift" id="tab-offer-icon" class="w-5 h-5 text-[#94a3b8]"></i>
+          <span id="tab-offer-label" class="text-xs font-medium text-[#94a3b8]">Offer</span>
+        </button>
+        <button id="tab-activity" class="flex-1 flex flex-col items-center py-3 gap-1" onclick="toggleActivityInline()">
+          <div id="tab-activity-ind" class="tab-indicator w-0 mb-1"></div>
+          <i data-lucide="activity" id="tab-activity-icon" class="w-5 h-5 text-[#94a3b8]"></i>
+          <span id="tab-activity-label" class="text-xs font-medium text-[#94a3b8]">Activity</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <!-- End phone frame -->
+
+  <!-- Footer -->
+  <div class="mt-10 text-center max-w-md px-4">
+    <p class="text-[#334155] text-xs leading-relaxed">
+      This is what your gym's churn prevention system could look like — built and tested by
+      <a href="https://qarea.com" target="_blank" class="text-[#4b6480] hover:text-[#64748b] underline transition-colors">QArea</a> /
+      <a href="https://testfort.com" target="_blank" class="text-[#4b6480] hover:text-[#64748b] underline transition-colors">TestFort</a>
+      · Software Testing &amp; Development ·
+      <a href="https://qarea.com" target="_blank" class="text-[#4b6480] hover:text-[#64748b] underline transition-colors">qarea.com</a> |
+      <a href="https://testfort.com" target="_blank" class="text-[#4b6480] hover:text-[#64748b] underline transition-colors">testfort.com</a>
+    </p>
+  </div>
+
+  <script>
+    // ─── STATE ───────────────────────────────────────────────────────────────
+    let currentScreen = 1;
+    let bannerDismissed = false;
+    let hasReturned = false;
+    let activity2Open = false;
+    let activity1Open = false;
+    let reminderOn = false;
+    let toastTimer = null;
+
+    // Countdown: 47h 59m 59s in seconds
+    let countdownSeconds = 47 * 3600 + 59 * 60 + 59;
+
+    // Activity data
+    const activityData = [
+      { date: 'Jan 15', cls: 'HIIT Thursdays 7pm', status: 'Attended' },
+      { date: 'Jan 8',  cls: 'HIIT Thursdays 7pm', status: 'Attended' },
+      { date: 'Jan 3',  cls: 'Yoga Morning Flow',  status: 'Missed'   },
+      { date: 'Dec 27', cls: 'HIIT Thursdays 7pm', status: 'Missed'   },
+      { date: 'Dec 20', cls: 'HIIT Thursdays 7pm', status: 'Missed'   },
+      { date: 'Dec 15', cls: 'Yoga Morning Flow',  status: 'Attended' },
+      { date: 'Dec 10', cls: 'Spin Class',         status: 'Missed'   },
+      { date: 'Dec 5',  cls: 'HIIT Thursdays 7pm', status: 'Attended' },
+    ];
+
+    // ─── INIT ─────────────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      buildActivityList();
+      startCountdown();
+      updateTabs(1);
+    });
+
+    // ─── SCREEN NAVIGATION ────────────────────────────────────────────────────
+    function goToScreen(n) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + n).classList.add('active');
+      currentScreen = n;
+      updateTabs(n);
+
+      if (n === 3) {
+        setTimeout(() => {
+          const circle = document.getElementById('checkmark-circle');
+          circle.style.opacity = '1';
+          circle.classList.add('checkmark-anim');
+        }, 100);
+      }
+    }
+
+    // ─── TABS ─────────────────────────────────────────────────────────────────
+    function updateTabs(active) {
+      const tabs = ['home', 'offer', 'activity'];
+      const screens = [1, 2, 3]; // activity maps to inline in screen 1
+
+      tabs.forEach((tab, i) => {
+        const isActive = (tab === 'home' && active === 1) ||
+                         (tab === 'offer' && (active === 2 || active === 3)) ||
+                         (tab === 'activity' && activity1Open && active === 1);
+
+        const icon = document.getElementById('tab-' + tab + '-icon');
+        const label = document.getElementById('tab-' + tab + '-label');
+        const ind = document.getElementById('tab-' + tab + '-ind');
+
+        if (isActive) {
+          icon.classList.add('text-blue-500');
+          icon.classList.remove('text-[#94a3b8]');
+          if (label) { label.classList.add('text-blue-500'); label.classList.remove('text-[#94a3b8]'); }
+          if (ind) ind.style.width = '32px';
+        } else {
+          icon.classList.remove('text-blue-500');
+          icon.classList.add('text-[#94a3b8]');
+          if (label) { label.classList.remove('text-blue-500'); label.classList.add('text-[#94a3b8]'); }
+          if (ind) ind.style.width = '0px';
+        }
+      });
+    }
+
+    // ─── BANNER DISMISS ───────────────────────────────────────────────────────
+    function dismissBanner(e) {
+      e.stopPropagation();
+      const banner = document.getElementById('notif-banner');
+      banner.style.transition = 'max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease';
+      banner.style.maxHeight = banner.offsetHeight + 'px';
+      setTimeout(() => {
+        banner.style.maxHeight = '0';
+        banner.style.opacity = '0';
+        banner.style.paddingTop = '0';
+        banner.style.paddingBottom = '0';
+        banner.style.overflow = 'hidden';
+      }, 10);
+      bannerDismissed = true;
+    }
+
+    // ─── ACTIVITY LIST BUILD ──────────────────────────────────────────────────
+    function buildActivityList() {
+      const container = document.getElementById('activity-list-2');
+      container.innerHTML = '';
+      activityData.forEach(item => {
+        const isAttended = item.status === 'Attended';
+        const div = document.createElement('div');
+        div.className = 'card p-3 flex items-center gap-3';
+        div.innerHTML = `
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+               style="background:${isAttended ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.12)'}">
+            <i data-lucide="${isAttended ? 'check-circle' : 'x-circle'}"
+               class="w-4 h-4 ${isAttended ? 'text-emerald-400' : 'text-red-400'}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[#f8fafc] text-sm font-medium truncate">${item.cls}</p>
+            <p class="text-[#94a3b8] text-xs">${item.date}</p>
+          </div>
+          <span class="text-xs font-semibold flex-shrink-0 ${isAttended ? 'text-emerald-400' : 'text-red-400'}">
+            ${isAttended ? 'Attended' : 'Missed'}
+          </span>
+        `;
+        container.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    // ─── ACTIVITY TOGGLE (SCREEN 2) ───────────────────────────────────────────
+    function toggleActivity2() {
+      const el = document.getElementById('activity-expand-2');
+      activity2Open = !activity2Open;
+      if (activity2Open) {
+        el.classList.add('open');
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+      } else {
+        el.classList.remove('open');
+      }
+    }
+
+    // ─── ACTIVITY TOGGLE (SCREEN 1 via tab) ───────────────────────────────────
+    let screen1ActivityEl = null;
+
+    function toggleActivityInline() {
+      // Switch to screen 1 first
+      if (currentScreen !== 1) {
+        goToScreen(1);
+      }
+
+      activity1Open = !activity1Open;
+
+      // Toggle or create inline activity in screen 1
+      let existing = document.getElementById('inline-activity-1');
+      if (activity1Open) {
+        if (!existing) {
+          existing = document.createElement('div');
+          existing.id = 'inline-activity-1';
+          existing.className = 'px-5 mt-3 activity-expand';
+
+          const title = document.createElement('p');
+          title.className = 'text-[#94a3b8] text-xs font-semibold uppercase tracking-widest mb-3';
+          title.textContent = 'Activity Log';
+          existing.appendChild(title);
+
+          const list = document.createElement('div');
+          list.className = 'space-y-2';
+          activityData.forEach(item => {
+            const isAttended = item.status === 'Attended';
+            const div = document.createElement('div');
+            div.className = 'card p-3 flex items-center gap-3';
+            div.innerHTML = `
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                   style="background:${isAttended ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.12)'}">
+                <i data-lucide="${isAttended ? 'check-circle' : 'x-circle'}"
+                   class="w-4 h-4 ${isAttended ? 'text-emerald-400' : 'text-red-400'}"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[#f8fafc] text-sm font-medium truncate">${item.cls}</p>
+                <p class="text-[#94a3b8] text-xs">${item.date}</p>
+              </div>
+              <span class="text-xs font-semibold flex-shrink-0 ${isAttended ? 'text-emerald-400' : 'text-red-400'}">
+                ${isAttended ? 'Attended' : 'Missed'}
+              </span>
+            `;
+            list.appendChild(div);
+          });
+          existing.appendChild(list);
+
+          // Insert after the recent activity section in screen 1
+          const screen1 = document.getElementById('screen-1').querySelector('div');
+          screen1.appendChild(existing);
+          lucide.createIcons();
+        }
+        setTimeout(() => existing.classList.add('open'), 10);
+        updateTabs(1);
+      } else {
+        if (existing) existing.classList.remove('open');
+        updateTabs(1);
+      }
+    }
+
+    // ─── COUNTDOWN TIMER ──────────────────────────────────────────────────────
+    function startCountdown() {
+      function tick() {
+        if (countdownSeconds <= 0) return;
+        countdownSeconds--;
+
+        const h = Math.floor(countdownSeconds / 3600);
+        const m = Math.floor((countdownSeconds % 3600) / 60);
+        const s = countdownSeconds % 60;
+
+        document.getElementById('cd-hours').textContent = String(h).padStart(2, '0');
+        document.getElementById('cd-mins').textContent  = String(m).padStart(2, '0');
+        document.getElementById('cd-secs').textContent  = String(s).padStart(2, '0');
+      }
+      setInterval(tick, 1000);
+    }
+
+    // ─── REMINDER TOGGLE ──────────────────────────────────────────────────────
+    function toggleReminder() {
+      reminderOn = !reminderOn;
+      const track = document.getElementById('toggle-track');
+      const label = document.getElementById('reminder-label');
+      if (reminderOn) {
+        track.classList.add('on');
+        label.textContent = 'Reminder set for 2 hours before ✓';
+        label.classList.remove('text-[#94a3b8]');
+        label.classList.add('text-emerald-400');
+      } else {
+        track.classList.remove('on');
+        label.textContent = 'Get notified before your class';
+        label.classList.add('text-[#94a3b8]');
+        label.classList.remove('text-emerald-400');
+      }
+    }
+
+    // ─── TOAST ────────────────────────────────────────────────────────────────
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.textContent = msg;
+      toast.classList.remove('hidden');
+      toast.querySelector('div').classList.remove('toast-anim');
+      void toast.querySelector('div').offsetWidth; // reflow
+      toast.querySelector('div').classList.add('toast-anim');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2500);
+    }
+
+    // ─── RETURN HOME (after booking) ──────────────────────────────────────────
+    function returnHome() {
+      hasReturned = true;
+
+      // Update last visit stat
+      const lastVisit = document.getElementById('last-visit-stat');
+      lastVisit.textContent = 'Today';
+      lastVisit.classList.remove('text-amber-400');
+      lastVisit.classList.add('text-emerald-400');
+
+      // Update streak stat
+      const streak = document.getElementById('streak-stat');
+      streak.textContent = '1 day 🔥';
+      streak.classList.remove('text-red-400');
+      streak.classList.add('text-emerald-400');
+
+      // Replace at-risk banner with success banner
+      const atRisk = document.getElementById('at-risk-banner');
+      atRisk.classList.remove('pulse-amber');
+      atRisk.style.borderColor = 'rgba(16,185,129,0.5)';
+      atRisk.style.cursor = 'default';
+      atRisk.onclick = null;
+
+      const iconWrap = atRisk.querySelector('div > div:first-child');
+      iconWrap.style.background = 'rgba(16,185,129,0.15)';
+      iconWrap.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>';
+
+      const textEl = document.getElementById('at-risk-text');
+      textEl.textContent = "You're back on track! Keep it up 💪";
+
+      const subEl = document.getElementById('at-risk-sub');
+      subEl.textContent = 'Great work, Marcus!';
+
+      lucide.createIcons();
+
+      goToScreen(1);
+    }
+  </script>
+</body>
+</html>
