@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitPulse Console — AI Churn Prediction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0f172a; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .side-panel { transform: translateX(100%); transition: transform 0.3s ease; }
+    .side-panel.open { transform: translateX(0); }
+    tr.member-row:hover { background: #263548 !important; cursor: pointer; }
+    input[type=range] { accent-color: #6366f1; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .risk-bar-fill { transition: width 0.3s ease; }
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+<!-- ── SIDEBAR ── -->
+<aside class="fixed top-0 left-0 bottom-0 w-56 bg-[#1e293b] border-r border-[#334155] flex flex-col z-20">
+  <div class="p-5 border-b border-[#334155]">
+    <div class="text-lg font-black bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">FitPulse</div>
+    <div class="text-[#94a3b8] text-xs mt-0.5">AI Churn Prediction</div>
+  </div>
+  <nav class="flex-1 p-3">
+    <button data-sec="dashboard" onclick="showSection('dashboard')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 text-[#94a3b8] hover:bg-white/5 transition">
+      <i data-lucide="bar-chart-2" class="w-4 h-4 flex-shrink-0"></i>Dashboard
+    </button>
+    <button data-sec="atrisk" onclick="showSection('atrisk')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 text-[#94a3b8] hover:bg-white/5 transition">
+      <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>At-Risk Members
+    </button>
+    <button data-sec="outcomes" onclick="showSection('outcomes')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 text-[#94a3b8] hover:bg-white/5 transition">
+      <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>Outcomes
+    </button>
+    <button data-sec="settings" onclick="showSection('settings')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 text-[#94a3b8] hover:bg-white/5 transition">
+      <i data-lucide="settings" class="w-4 h-4 flex-shrink-0"></i>Settings
+    </button>
+  </nav>
+  <div class="p-4 border-t border-[#334155]">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">O</div>
+      <div>
+        <div class="text-[#f8fafc] text-xs font-semibold">Gym Owner</div>
+        <span class="text-[10px] text-blue-400 border border-blue-800 bg-blue-950 rounded-full px-2 py-0.5">Owner</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="ml-56 flex-1 overflow-y-auto">
+
+<!-- AT-RISK MEMBERS -->
+<div id="section-atrisk" class="section p-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-black text-[#f8fafc]">At-Risk Members</h1>
+      <p class="text-[#94a3b8] text-sm mt-1">AI-flagged members likely to cancel in the next 30–90 days</p>
+    </div>
+    <button id="bulk-btn" disabled onclick="bulkIntervene()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-violet-600 text-white opacity-40 transition disabled:cursor-not-allowed">
+      <i data-lucide="send" class="w-4 h-4"></i><span id="bulk-label">Run Intervention</span>
+    </button>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-4 gap-4 mb-6">
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide">Total Members</span>
+        <i data-lucide="users" class="w-4 h-4 text-[#94a3b8]"></i>
+      </div>
+      <div class="text-2xl font-black text-[#f8fafc]">10,000</div>
+    </div>
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide">At Risk (60+)</span>
+        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+      </div>
+      <div class="text-2xl font-black text-amber-400">847</div>
+    </div>
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide">Critical (85+)</span>
+        <i data-lucide="alert-octagon" class="w-4 h-4 text-red-400"></i>
+      </div>
+      <div class="text-2xl font-black text-red-400">203</div>
+    </div>
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide">Interventions Sent</span>
+        <i data-lucide="send" class="w-4 h-4 text-blue-400"></i>
+      </div>
+      <div class="text-2xl font-black text-blue-400">312</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex items-center gap-3 mb-4">
+    <select id="filter-risk" onchange="filterTable()" class="bg-[#1e293b] border border-[#334155] text-[#f8fafc] text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
+      <option value="all">All Risk Levels</option>
+      <option value="critical">Critical (85+)</option>
+      <option value="high">High (70–84)</option>
+      <option value="medium">Medium (60–69)</option>
+    </select>
+    <select id="filter-seg" onchange="filterTable()" class="bg-[#1e293b] border border-[#334155] text-[#f8fafc] text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
+      <option value="all">All Segments</option>
+      <option value="lapsed">Lapsed (15+ days)</option>
+      <option value="payment">Payment Issues</option>
+    </select>
+    <input id="filter-search" oninput="filterTable()" placeholder="Search members..." class="bg-[#1e293b] border border-[#334155] text-[#f8fafc] text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 flex-1" />
+  </div>
+
+  <!-- Table -->
+  <div class="bg-[#1e293b] border border-[#334155] rounded-2xl overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-[#334155]">
+          <th class="w-10 px-4 py-3"><input type="checkbox" id="check-all" onchange="toggleAllChecks(this)" class="rounded accent-blue-500"></th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Name</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Risk Score</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Last Visit</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Visits (30d)</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Missed</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Payment</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Churn In</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-3 py-3">Action</th>
+        </tr>
+      </thead>
+      <tbody id="member-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="section-dashboard" class="section p-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-black text-[#f8fafc]">Churn Prediction Dashboard</h1>
+    <p class="text-[#94a3b8] text-sm mt-1">AI model insights · January 2025 · 10,000 members</p>
+  </div>
+
+  <div class="grid grid-cols-2 gap-6 mb-6">
+    <!-- Donut -->
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <h3 class="text-[#f8fafc] font-bold text-sm mb-4">Churn Risk Distribution</h3>
+      <div class="relative" style="height:220px">
+        <canvas id="donutChart"></canvas>
+      </div>
+    </div>
+    <!-- Bar -->
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <h3 class="text-[#f8fafc] font-bold text-sm mb-4">Predicted Churn by Month</h3>
+      <div style="height:220px">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+    <!-- Line -->
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <h3 class="text-[#f8fafc] font-bold text-sm mb-1">Intervention Conversion Rate</h3>
+      <p class="text-[#94a3b8] text-xs mb-3">Last 8 weeks · <span class="text-green-400 font-semibold">Current: 59% retention from interventions</span></p>
+      <div style="height:200px">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+    <!-- Stacked Bar -->
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <h3 class="text-[#f8fafc] font-bold text-sm mb-4">Revenue at Risk vs. Recovered</h3>
+      <div style="height:200px">
+        <canvas id="stackedBar"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROI Calculator -->
+  <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-6">
+    <h3 class="text-[#f8fafc] font-black text-lg mb-1">💰 What Churn Prediction Is Worth To Your Gym</h3>
+    <p class="text-[#94a3b8] text-sm mb-6">Adjust the sliders to model your gym's ROI</p>
+
+    <div class="grid grid-cols-2 gap-x-10 gap-y-5 mb-6">
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="text-[#94a3b8] text-sm">Total Members</label>
+          <span id="val-members" class="text-[#f8fafc] font-bold text-sm">10,000</span>
+        </div>
+        <input type="range" id="sl-members" min="1000" max="50000" step="500" value="10000" oninput="updateROI()" class="w-full h-2 rounded-full cursor-pointer">
+      </div>
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="text-[#94a3b8] text-sm">Monthly Dues ($)</label>
+          <span id="val-dues" class="text-[#f8fafc] font-bold text-sm">$58</span>
+        </div>
+        <input type="range" id="sl-dues" min="20" max="120" step="1" value="58" oninput="updateROI()" class="w-full h-2 rounded-full cursor-pointer">
+      </div>
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="text-[#94a3b8] text-sm">Annual Churn Rate</label>
+          <span id="val-churn" class="text-[#f8fafc] font-bold text-sm">34%</span>
+        </div>
+        <input type="range" id="sl-churn" min="10" max="50" step="1" value="34" oninput="updateROI()" class="w-full h-2 rounded-full cursor-pointer">
+      </div>
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="text-[#94a3b8] text-sm">AI Churn Reduction</label>
+          <span id="val-reduction" class="text-[#f8fafc] font-bold text-sm">20%</span>
+        </div>
+        <input type="range" id="sl-reduction" min="5" max="35" step="1" value="20" oninput="updateROI()" class="w-full h-2 rounded-full cursor-pointer">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-5 gap-4 mb-6">
+      <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-4 text-center">
+        <div class="text-[#94a3b8] text-xs mb-2">Members Churning/Year</div>
+        <div id="roi-churning" class="text-xl font-black text-[#f8fafc]">3,400</div>
+      </div>
+      <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-4 text-center">
+        <div class="text-[#94a3b8] text-xs mb-2">Members Saved (AI)</div>
+        <div id="roi-saved" class="text-xl font-black text-blue-400">680</div>
+      </div>
+      <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-4 text-center col-span-1">
+        <div class="text-[#94a3b8] text-xs mb-2">Annual Revenue Recovered</div>
+        <div id="roi-annual" class="text-xl font-black text-green-400">$473,280</div>
+      </div>
+      <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-4 text-center">
+        <div class="text-[#94a3b8] text-xs mb-2">Monthly Recovered</div>
+        <div id="roi-monthly" class="text-xl font-black text-green-400">$39,440</div>
+      </div>
+      <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-4 text-center">
+        <div class="text-[#94a3b8] text-xs mb-2">ROI on System</div>
+        <div id="roi-mult" class="text-xl font-black text-violet-400">19× ROI</div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-r from-blue-900/40 to-violet-900/40 border border-blue-800/50 rounded-xl p-4 text-center">
+      <p class="text-[#94a3b8] text-sm">This is what your gym could look like — built and tested by
+        <a href="https://qarea.com" target="_blank" class="text-blue-400 hover:text-blue-300 underline">QArea</a> /
+        <a href="https://testfort.com" target="_blank" class="text-blue-400 hover:text-blue-300 underline">TestFort</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div id="section-outcomes" class="section p-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-black text-[#f8fafc]">Intervention Outcomes</h1>
+    <p class="text-[#94a3b8] text-sm mt-1">Track results of all sent interventions</p>
+  </div>
+
+  <!-- Summary strip -->
+  <div class="grid grid-cols-4 gap-4 mb-6">
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-4 text-center">
+      <div class="text-2xl font-black text-[#f8fafc]">312</div>
+      <div class="text-[#94a3b8] text-xs mt-1">Total Sent</div>
+    </div>
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-4 text-center">
+      <div class="text-2xl font-black text-blue-400">184</div>
+      <div class="text-[#94a3b8] text-xs mt-1">Opened (59%)</div>
+    </div>
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-4 text-center">
+      <div class="text-2xl font-black text-green-400">97</div>
+      <div class="text-[#94a3b8] text-xs mt-1">Returned to Gym (31%)</div>
+    </div>
+    <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-4 text-center">
+      <div class="text-2xl font-black text-green-400">$5,626</div>
+      <div class="text-[#94a3b8] text-xs mt-1">Revenue Recovered</div>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3 mb-4">
+    <select id="filter-outcome" onchange="filterOutcomes()" class="bg-[#1e293b] border border-[#334155] text-[#f8fafc] text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
+      <option value="all">All Statuses</option>
+      <option value="Sent">Sent</option>
+      <option value="Opened">Opened</option>
+      <option value="Responded">Responded</option>
+      <option value="Returned">Returned</option>
+      <option value="No Response">No Response</option>
+    </select>
+  </div>
+
+  <div class="bg-[#1e293b] border border-[#334155] rounded-2xl overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-[#334155]">
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-5 py-3">Member</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-4 py-3">Intervention</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-4 py-3">Sent</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-4 py-3">Channel</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-4 py-3">Status</th>
+          <th class="text-left text-[#94a3b8] text-xs font-semibold uppercase tracking-wide px-4 py-3">Outcome</th>
+        </tr>
+      </thead>
+      <tbody id="outcomes-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="section-settings" class="section p-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-black text-[#f8fafc]">Settings</h1>
+    <p class="text-[#94a3b8] text-sm mt-1">AI model configuration and notification preferences</p>
+  </div>
+  <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-6 space-y-5 max-w-xl">
+    <div class="flex items-center justify-between py-3 border-b border-[#334155]">
+      <div>
+        <div class="text-[#f8fafc] font-semibold text-sm">AI Model Version</div>
+        <div class="text-[#94a3b8] text-xs">Churn Predictor v2.1 — last trained Jan 2025</div>
+      </div>
+      <span class="bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full">Active</span>
+    </div>
+    <div class="flex items-center justify-between py-3 border-b border-[#334155]">
+      <div>
+        <div class="text-[#f8fafc] font-semibold text-sm">Auto-send interventions at risk 90+</div>
+        <div class="text-[#94a3b8] text-xs">Automatically trigger win-back for critical members</div>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer">
+        <div class="w-10 h-6 bg-[#334155] peer-checked:bg-blue-600 rounded-full transition peer-focus:outline-none"></div>
+        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-4"></div>
+      </label>
+    </div>
+    <div class="flex items-center justify-between py-3 border-b border-[#334155]">
+      <div>
+        <div class="text-[#f8fafc] font-semibold text-sm">Daily digest email</div>
+        <div class="text-[#94a3b8] text-xs">Summary of at-risk members sent every morning at 8am</div>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer" checked>
+        <div class="w-10 h-6 bg-[#334155] peer-checked:bg-blue-600 rounded-full transition"></div>
+        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-4"></div>
+      </label>
+    </div>
+    <div class="flex items-center justify-between py-3">
+      <div>
+        <div class="text-[#f8fafc] font-semibold text-sm">Intervention budget limit</div>
+        <div class="text-[#94a3b8] text-xs">Monthly spend cap on automated interventions</div>
+      </div>
+      <span class="text-[#f8fafc] font-bold">$500 / month</span>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ── SIDE PANEL ── -->
+<div id="panel-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden" onclick="closeSidePanel()"></div>
+<div id="side-panel" class="side-panel fixed top-0 right-0 bottom-0 w-[420px] bg-[#1e293b] border-l border-[#334155] z-40 overflow-y-auto">
+  <div class="p-6" id="panel-content"></div>
+</div>
+
+<!-- ── BULK MODAL ── -->
+<div id="bulk-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center">
+  <div class="bg-[#1e293b] border border-[#334155] rounded-2xl p-6 w-96 shadow-2xl">
+    <h3 class="text-[#f8fafc] font-black text-lg mb-2">Confirm Bulk Intervention</h3>
+    <p id="bulk-modal-text" class="text-[#94a3b8] text-sm mb-5"></p>
+    <div class="flex gap-3">
+      <button onclick="closeBulkModal()" class="flex-1 bg-[#334155] hover:bg-[#475569] text-[#f8fafc] font-bold py-2.5 rounded-xl transition">Cancel</button>
+      <button onclick="confirmBulk()" class="flex-1 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold py-2.5 rounded-xl transition">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast" class="fixed bottom-6 right-6 bg-[#1e293b] border-l-4 border-green-500 text-[#f8fafc] px-5 py-3 rounded-xl text-sm font-semibold opacity-0 transition-opacity duration-300 z-[60] shadow-xl max-w-xs"></div>
+
+<!-- FOOTER -->
+<div class="ml-56 bg-[#0f172a] border-t border-[#334155] py-5 text-center">
+  <p class="text-[#64748b] text-xs">This is what your gym's churn prevention system could look like — built and tested by
+    <a href="https://qarea.com" target="_blank" class="hover:text-[#94a3b8] underline">QArea</a> /
+    <a href="https://testfort.com" target="_blank" class="hover:text-[#94a3b8] underline">TestFort</a> ·
+    Software Testing &amp; Development · qarea.com | testfort.com
+  </p>
+</div>
+
+<script>
+// ── DATA ──
+const members = [
+  { id:1,  name:"Marcus Webb",      avatar:"MW", riskScore:91, lastVisit:18, visitsLast30:1, missedClasses:4, paymentStatus:"Current", predictedChurnDays:12, favouriteClass:"HIIT Thursdays 7pm",       interventionStatus:null },
+  { id:2,  name:"Sarah Chen",       avatar:"SC", riskScore:87, lastVisit:14, visitsLast30:2, missedClasses:3, paymentStatus:"Current", predictedChurnDays:18, favouriteClass:"Yoga Flow Tuesdays 6pm",    interventionStatus:null },
+  { id:3,  name:"James Okafor",     avatar:"JO", riskScore:76, lastVisit:9,  visitsLast30:3, missedClasses:2, paymentStatus:"Failed",  predictedChurnDays:24, favouriteClass:"Spin Mondays 7am",          interventionStatus:null },
+  { id:4,  name:"Priya Nair",       avatar:"PN", riskScore:72, lastVisit:11, visitsLast30:4, missedClasses:1, paymentStatus:"Current", predictedChurnDays:28, favouriteClass:"Pilates Wednesdays 8am",    interventionStatus:null },
+  { id:5,  name:"Tom Reeves",       avatar:"TR", riskScore:68, lastVisit:7,  visitsLast30:5, missedClasses:2, paymentStatus:"Current", predictedChurnDays:35, favouriteClass:"CrossFit Fridays 6pm",      interventionStatus:null },
+  { id:6,  name:"Aisha Mohammed",   avatar:"AM", riskScore:89, lastVisit:21, visitsLast30:1, missedClasses:5, paymentStatus:"Failed",  predictedChurnDays:9,  favouriteClass:"Zumba Thursdays 7pm",       interventionStatus:null },
+  { id:7,  name:"Liam Carter",      avatar:"LC", riskScore:83, lastVisit:16, visitsLast30:2, missedClasses:3, paymentStatus:"Current", predictedChurnDays:15, favouriteClass:"Boxing Saturdays 10am",     interventionStatus:null },
+  { id:8,  name:"Elena Vasquez",    avatar:"EV", riskScore:79, lastVisit:12, visitsLast30:3, missedClasses:2, paymentStatus:"Current", predictedChurnDays:22, favouriteClass:"Barre Tuesdays 9am",        interventionStatus:null },
+  { id:9,  name:"Noah Patel",       avatar:"NP", riskScore:74, lastVisit:10, visitsLast30:4, missedClasses:1, paymentStatus:"Current", predictedChurnDays:26, favouriteClass:"Cycling Wednesdays 6am",    interventionStatus:null },
+  { id:10, name:"Grace Liu",        avatar:"GL", riskScore:71, lastVisit:8,  visitsLast30:5, missedClasses:2, paymentStatus:"Failed",  predictedChurnDays:30, favouriteClass:"Swim Fridays 7am",          interventionStatus:null },
+  { id:11, name:"Ethan Brooks",     avatar:"EB", riskScore:88, lastVisit:19, visitsLast30:1, missedClasses:4, paymentStatus:"Current", predictedChurnDays:11, favouriteClass:"HIIT Mondays 6pm",          interventionStatus:null },
+  { id:12, name:"Sofia Rossi",      avatar:"SR", riskScore:85, lastVisit:15, visitsLast30:2, missedClasses:3, paymentStatus:"Current", predictedChurnDays:17, favouriteClass:"Yoga Sundays 9am",          interventionStatus:null },
+  { id:13, name:"Daniel Kim",       avatar:"DK", riskScore:77, lastVisit:13, visitsLast30:3, missedClasses:2, paymentStatus:"Current", predictedChurnDays:23, favouriteClass:"Strength Thursdays 5pm",    interventionStatus:null },
+  { id:14, name:"Olivia Grant",     avatar:"OG", riskScore:66, lastVisit:6,  visitsLast30:6, missedClasses:1, paymentStatus:"Current", predictedChurnDays:38, favouriteClass:"Dance Saturdays 11am",      interventionStatus:null },
+  { id:15, name:"Marcus Hill",      avatar:"MH", riskScore:63, lastVisit:5,  visitsLast30:7, missedClasses:1, paymentStatus:"Current", predictedChurnDays:42, favouriteClass:"Pilates Mondays 7am",       interventionStatus:null },
+  { id:16, name:"Fatima Al-Hassan", avatar:"FA", riskScore:92, lastVisit:24, visitsLast30:0, missedClasses:6, paymentStatus:"Failed",  predictedChurnDays:7,  favouriteClass:"Spin Tuesdays 7pm",         interventionStatus:null },
+  { id:17, name:"Ryan O'Brien",     avatar:"RO", riskScore:81, lastVisit:17, visitsLast30:2, missedClasses:3, paymentStatus:"Current", predictedChurnDays:19, favouriteClass:"Boxing Wednesdays 7pm",     interventionStatus:null },
+  { id:18, name:"Mei Zhang",        avatar:"MZ", riskScore:75, lastVisit:10, visitsLast30:4, missedClasses:2, paymentStatus:"Current", predictedChurnDays:25, favouriteClass:"Tai Chi Saturdays 8am",     interventionStatus:null },
+  { id:19, name:"Carlos Rivera",    avatar:"CR", riskScore:69, lastVisit:8,  visitsLast30:5, missedClasses:1, paymentStatus:"Current", predictedChurnDays:33, favouriteClass:"Football Fridays 6pm",      interventionStatus:null },
+  { id:20, name:"Hannah Müller",    avatar:"HM", riskScore:65, lastVisit:7,  visitsLast30:6, missedClasses:1, paymentStatus:"Current", predictedChurnDays:37, favouriteClass:"Yoga Thursdays 8am",        interventionStatus:null }
+];
+
+const outcomes = [
+  { name:"Marcus Webb",      type:"Win-Back Campaign",       sentDate:"Jan 28", channel:"SMS",   status:"Returned",     outcome:"Booked class"    },
+  { name:"Aisha Mohammed",   type:"Card Update Flow",        sentDate:"Jan 27", channel:"Email", status:"Responded",    outcome:"Updated card"    },
+  { name:"Ethan Brooks",     type:"Win-Back Campaign",       sentDate:"Jan 27", channel:"Push",  status:"Opened",       outcome:"No action"       },
+  { name:"Sofia Rossi",      type:"Class Re-engagement",     sentDate:"Jan 26", channel:"SMS",   status:"Returned",     outcome:"Booked class"    },
+  { name:"Liam Carter",      type:"Win-Back Campaign",       sentDate:"Jan 26", channel:"Email", status:"No Response",  outcome:"No action"       },
+  { name:"Sarah Chen",       type:"Class Re-engagement",     sentDate:"Jan 25", channel:"Push",  status:"Opened",       outcome:"No action"       },
+  { name:"Daniel Kim",       type:"Win-Back Campaign",       sentDate:"Jan 25", channel:"SMS",   status:"Returned",     outcome:"Booked class"    },
+  { name:"Grace Liu",        type:"Card Update Flow",        sentDate:"Jan 24", channel:"Email", status:"Responded",    outcome:"Updated card"    },
+  { name:"Ryan O'Brien",     type:"Win-Back Campaign",       sentDate:"Jan 24", channel:"Push",  status:"Sent",         outcome:"—"               },
+  { name:"Elena Vasquez",    type:"Class Re-engagement",     sentDate:"Jan 23", channel:"SMS",   status:"Returned",     outcome:"Booked class"    },
+  { name:"Tom Reeves",       type:"Win-Back Campaign",       sentDate:"Jan 23", channel:"Email", status:"No Response",  outcome:"Cancelled anyway"},
+  { name:"Noah Patel",       type:"Class Re-engagement",     sentDate:"Jan 22", channel:"Push",  status:"Opened",       outcome:"No action"       },
+  { name:"Mei Zhang",        type:"Win-Back Campaign",       sentDate:"Jan 22", channel:"SMS",   status:"Returned",     outcome:"Booked class"    },
+  { name:"Carlos Rivera",    type:"Win-Back Campaign",       sentDate:"Jan 21", channel:"Email", status:"Sent",         outcome:"—"               },
+  { name:"Priya Nair",       type:"Class Re-engagement",     sentDate:"Jan 21", channel:"Push",  status:"Responded",    outcome:"Booked class"    }
+];
+
+// ── STATE ──
+let selectedIds = new Set();
+let activePanelMember = null;
+let charts = {};
+let roiTargets = { churning:3400, saved:680, annual:473280, monthly:39440, mult:19 };
+let roiAnimFrame = null;
+
+// ── TOAST ──
+function showToast(msg, color='border-green-500') {
+  const t = document.getElementById('toast');
+  t.className = `fixed bottom-6 right-6 bg-[#1e293b] border-l-4 ${color} text-[#f8fafc] px-5 py-3 rounded-xl text-sm font-semibold opacity-0 transition-opacity duration-300 z-[60] shadow-xl max-w-xs`;
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2800);
+}
+
+// ── NAVIGATION ──
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    const active = btn.dataset.sec === id;
+    btn.className = `nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold mb-1 transition ${
+      active ? 'bg-blue-600/20 text-blue-400 border-l-2 border-blue-500' : 'text-[#94a3b8] hover:bg-white/5'
+    }`;
+  });
+  if (id === 'dashboard') setTimeout(initCharts, 50);
+  lucide.createIcons();
+}
+
+// ── RISK HELPERS ──
+function riskColor(score) {
+  if (score >= 85) return '#ef4444';
+  if (score >= 70) return '#f59e0b';
+  return '#eab308';
+}
+function riskLabel(score) {
+  if (score >= 85) return 'Critical';
+  if (score >= 70) return 'High';
+  return 'Medium';
+}
+function riskTextClass(score) {
+  if (score >= 85) return 'text-red-400';
+  if (score >= 70) return 'text-amber-400';
+  return 'text-yellow-400';
+}
+
+// ── RENDER MEMBER TABLE ──
+function renderTable(list) {
+  const tbody = document.getElementById('member-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = list.map(m => {
+    const color = riskColor(m.riskScore);
+    const sent = m.interventionStatus === 'Sent';
+    return `<tr class="member-row border-b border-[#334155]/50 transition" style="background:#1e293b" onclick="openPanel(${m.id})">
+      <td class="px-4 py-3" onclick="event.stopPropagation()">
+        <input type="checkbox" class="member-check rounded accent-blue-500" data-id="${m.id}" onchange="toggleCheck(${m.id}, this)">
+      </td>
+      <td class="px-3 py-3">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-blue-900 flex items-center justify-center text-xs font-bold text-blue-300">${m.avatar}</div>
+          <span class="text-[#f8fafc] text-sm font-semibold">${m.name}</span>
+        </div>
+      </td>
+      <td class="px-3 py-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="color:${color};background:${color}22">${m.riskScore}</span>
+          <div class="w-16 bg-[#334155] rounded-full h-1.5">
+            <div class="h-1.5 rounded-full risk-bar-fill" style="width:${m.riskScore}%;background:${color}"></div>
+          </div>
+        </div>
+      </td>
+      <td class="px-3 py-3 text-sm ${m.lastVisit >= 14 ? 'text-amber-400' : 'text-[#94a3b8]'}">${m.lastVisit}d ago</td>
+      <td class="px-3 py-3 text-[#94a3b8] text-sm">${m.visitsLast30}</td>
+      <td class="px-3 py-3 text-[#94a3b8] text-sm">${m.missedClasses}</td>
+      <td class="px-3 py-3">
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${m.paymentStatus === 'Failed' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}">${m.paymentStatus}</span>
+      </td>
+      <td class="px-3 py-3 text-[#94a3b8] text-sm">${m.predictedChurnDays}d</td>
+      <td class="px-3 py-3" onclick="event.stopPropagation()">
+        ${sent
+          ? `<span class="bg-blue-500/20 text-blue-400 text-xs font-bold px-2.5 py-1 rounded-full">✓ Sent</span>`
+          : `<button onclick="openPanel(${m.id})" class="text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 transition">Intervene →</button>`
+        }
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function getFilteredMembers() {
+  const risk = document.getElementById('filter-risk')?.value || 'all';
+  const seg  = document.getElementById('filter-seg')?.value  || 'all';
+  const srch = (document.getElementById('filter-search')?.value || '').toLowerCase();
+  return members.filter(m => {
+    if (risk === 'critical' && m.riskScore < 85) return false;
+    if (risk === 'high'     && (m.riskScore < 70 || m.riskScore >= 85)) return false;
+    if (risk === 'medium'   && (m.riskScore < 60 || m.riskScore >= 70)) return false;
+    if (seg  === 'lapsed'   && m.lastVisit < 15) return false;
+    if (seg  === 'payment'  && m.paymentStatus !== 'Failed') return false;
+    if (srch && !m.name.toLowerCase().includes(srch)) return false;
+    return true;
+  });
+}
+
+function filterTable() { renderTable(getFilteredMembers()); }
+
+// ── CHECKBOXES ──
+function toggleCheck(id, el) {
+  if (el.checked) selectedIds.add(id); else selectedIds.delete(id);
+  updateBulkBtn();
+}
+function toggleAllChecks(master) {
+  document.querySelectorAll('.member-check').forEach(cb => {
+    cb.checked = master.checked;
+    const id = parseInt(cb.dataset.id);
+    if (master.checked) selectedIds.add(id); else selectedIds.delete(id);
+  });
+  updateBulkBtn();
+}
+function updateBulkBtn() {
+  const btn = document.getElementById('bulk-btn');
+  const lbl = document.getElementById('bulk-label');
+  if (selectedIds.size > 0) {
+    btn.disabled = false;
+    btn.classList.remove('opacity-40');
+    lbl.textContent = `Run Intervention (${selectedIds.size})`;
+  } else {
+    btn.disabled = true;
+    btn.classList.add('opacity-40');
+    lbl.textContent = 'Run Intervention';
+  }
+}
+
+// ── BULK MODAL ──
+function bulkIntervene() {
+  const n = selectedIds.size;
+  document.getElementById('bulk-modal-text').textContent = `Send an intervention to ${n} selected member${n > 1 ? 's' : ''}? This will trigger personalised win-back sequences immediately.`;
+  document.getElementById('bulk-modal').classList.remove('hidden');
+}
+function closeBulkModal() { document.getElementById('bulk-modal').classList.add('hidden'); }
+function confirmBulk() {
+  selectedIds.forEach(id => {
+    const m = members.find(x => x.id === id);
+    if (m) m.interventionStatus = 'Sent';
+  });
+  selectedIds.clear();
+  closeBulkModal();
+  filterTable();
+  updateBulkBtn();
+  showToast(`Interventions sent to ${selectedIds.size || 'selected'} members ✓`);
+  lucide.createIcons();
+}
+
+// ── SIDE PANEL ──
+function openPanel(id) {
+  const m = members.find(x => x.id === id);
+  if (!m) return;
+  activePanelMember = m;
+
+  const freqNow = (m.visitsLast30 / 4).toFixed(1);
+  const recommended = m.paymentStatus === 'Failed'
+    ? 'Card Update Flow + 1 Free Session Incentive'
+    : m.missedClasses >= 3
+    ? 'Class Re-engagement Sequence (favourite class offer)'
+    : 'Personalised Win-Back Campaign';
+
+  const msgTemplates = {
+    'Card Update Flow + 1 Free Session Incentive': `Hi ${m.name.split(' ')[0]}, your payment needs updating. Update now and we'll add a free session to your account: [link]`,
+    'Class Re-engagement Sequence (favourite class offer)': `Hi ${m.name.split(' ')[0]}, Coach Dana has a spot saved for you in ${m.favouriteClass}. Book now before it fills up: [link]`,
+    'Personalised Win-Back Campaign': `Hi ${m.name.split(' ')[0]}, we miss you at FitPulse! It's been ${m.lastVisit} days. Come back this week — your next ${m.favouriteClass} is on us. Tap to book: [link]`
+  };
+
+  // sparkline bars (8 weeks declining)
+  const sparkHeights = m.riskScore >= 85
+    ? [38,35,30,25,18,12,6,3]
+    : m.riskScore >= 70
+    ? [36,34,28,24,18,14,10,6]
+    : [32,30,26,22,18,16,12,10];
+
+  const sparkBars = sparkHeights.map((h, i) => {
+    const col = i >= 5 ? '#ef4444' : i >= 3 ? '#f59e0b' : '#22c55e';
+    return `<div style="width:8px;height:${h}px;background:${col};border-radius:2px;flex-shrink:0"></div>`;
+  }).join('');
+
+  const panelSent = m.interventionStatus === 'Sent';
+
+  document.getElementById('panel-content').innerHTML = `
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-blue-900 flex items-center justify-center text-blue-300 font-black text-base">${m.avatar}</div>
+        <div>
+          <div class="text-[#f8fafc] font-black text-lg">${m.name}</div>
+          <span class="text-xs font-bold px-2.5 py-1 rounded-full" style="color:${riskColor(m.riskScore)};background:${riskColor(m.riskScore)}22">
+            Score ${m.riskScore} · ${riskLabel(m.riskScore)} Risk
+          </span>
+        </div>
+      </div>
+      <button onclick="closeSidePanel()" class="text-[#94a3b8] hover:text-[#f8fafc] transition text-xl leading-none">&times;</button>
+    </div>
+
+    <div class="bg-[#0f172a] rounded-xl p-4 mb-4">
+      <div class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide mb-3">Why is this member at risk?</div>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[#94a3b8]">Visit frequency</span>
+          <span class="text-red-400 font-semibold">Was 3.2/week → Now ${freqNow}/week ↓</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#94a3b8]">Class attendance</span>
+          <span class="text-amber-400 font-semibold">Missed ${m.missedClasses} of last ${m.missedClasses + 1} classes</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#94a3b8]">App engagement</span>
+          <span class="text-amber-400 font-semibold">Last open: ${m.lastVisit} days ago</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#94a3b8]">Payment</span>
+          <span class="${m.paymentStatus === 'Failed' ? 'text-red-400' : 'text-green-400'} font-semibold">
+            ${m.paymentStatus === 'Failed' ? 'Last payment failed' : 'Last payment successful'}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#0f172a] rounded-xl p-4 mb-4">
+      <div class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide mb-2">Engagement Trend (8 weeks)</div>
+      <div class="flex items-end gap-1.5 h-10">${sparkBars}</div>
+      <div class="flex justify-between text-[#475569] text-[10px] mt-1"><span>8 weeks ago</span><span>This week</span></div>
+    </div>
+
+    ${panelSent ? `
+    <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center">
+      <div class="text-green-400 font-black text-base">✅ Intervention already sent</div>
+      <div class="text-[#94a3b8] text-sm mt-1">Watch for response in the Outcomes tab</div>
+    </div>
+    ` : `
+    <div class="mb-4">
+      <div class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide mb-2">Recommended Intervention</div>
+      <select id="panel-type" onchange="updatePanelMessage(${m.id})" class="w-full bg-[#0f172a] border border-[#334155] text-[#f8fafc] text-sm rounded-xl px-3 py-2.5 mb-3 focus:outline-none focus:border-blue-500">
+        <option ${recommended === 'Personalised Win-Back Campaign' ? 'selected' : ''}>Personalised Win-Back Campaign</option>
+        <option ${recommended === 'Class Re-engagement Sequence (favourite class offer)' ? 'selected' : ''}>Class Re-engagement Sequence (favourite class offer)</option>
+        <option ${recommended === 'Card Update Flow + 1 Free Session Incentive' ? 'selected' : ''}>Card Update Flow + 1 Free Session Incentive</option>
+      </select>
+      <div class="text-[#94a3b8] text-xs font-semibold uppercase tracking-wide mb-2">Message Preview</div>
+      <textarea id="panel-msg" rows="4" class="w-full bg-[#0f172a] border border-[#334155] text-[#f8fafc] text-sm rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:border-blue-500">${msgTemplates[recommended]}</textarea>
+    </div>
+    <div class="flex gap-3" id="panel-actions">
+      <button onclick="sendIntervention(${m.id})" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-violet-600 hover:opacity-90 transition">Send Now</button>
+      <button onclick="scheduleIntervention(${m.id})" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-[#94a3b8] border border-[#334155] hover:bg-white/5 transition">Schedule Tomorrow 9am</button>
+    </div>
+    <div id="panel-scheduled" class="hidden mt-3 text-center text-amber-400 text-sm font-semibold">⏰ Scheduled for tomorrow 9am ✓</div>
+    `}
+  `;
+
+  // store msg templates on window for dropdown
+  window._panelMsgTemplates = msgTemplates;
+  window._panelMember = m;
+
+  document.getElementById('panel-backdrop').classList.remove('hidden');
+  document.getElementById('side-panel').classList.add('open');
+  lucide.createIcons();
+}
+
+function updatePanelMessage(id) {
+  const sel = document.getElementById('panel-type').value;
+  const ta = document.getElementById('panel-msg');
+  if (ta && window._panelMsgTemplates) ta.value = window._panelMsgTemplates[sel] || '';
+}
+
+function sendIntervention(id) {
+  const m = members.find(x => x.id === id);
+  if (m) m.interventionStatus = 'Sent';
+  document.getElementById('panel-actions').innerHTML = `
+    <div class="w-full bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
+      <div class="text-green-400 font-bold">✅ Intervention sent · Watch for response in Outcomes tab</div>
+    </div>`;
+  filterTable();
+  showToast(`Intervention sent to ${m?.name} ✓`);
+  lucide.createIcons();
+}
+
+function scheduleIntervention(id) {
+  document.getElementById('panel-scheduled').classList.remove('hidden');
+  showToast('Scheduled for tomorrow 9am ✓', 'border-amber-400');
+}
+
+function closeSidePanel() {
+  document.getElementById('side-panel').classList.remove('open');
+  document.getElementById('panel-backdrop').classList.add('hidden');
+}
+
+// ── CHARTS ──
+const chartDefaults = {
+  color: '#94a3b8',
+  borderColor: '#334155',
+  plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+  scales: {
+    x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+    y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+  }
+};
+
+function initCharts() {
+  if (charts.donut) return; // already init
+
+  // Donut
+  const donutCtx = document.getElementById('donutChart')?.getContext('2d');
+  if (donutCtx) {
+    charts.donut = new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Critical', 'High', 'Medium', 'Low Risk'],
+        datasets: [{ data: [203, 412, 232, 9153], backgroundColor: ['#ef4444','#f59e0b','#eab308','#22c55e'], borderWidth: 2, borderColor: '#0f172a', hoverOffset: 8 }]
+      },
+      options: {
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 11 }, padding: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw.toLocaleString()} (${(ctx.raw/10000*100).toFixed(1)}%)` } }
+        }
+      }
+    });
+  }
+
+  // Bar (predicted churn)
+  const barCtx = document.getElementById('barChart')?.getContext('2d');
+  if (barCtx) {
+    charts.bar = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Jun','Jul','Aug','Sep','Oct','Nov'],
+        datasets: [{ label: 'Members', data: [203,187,165,142,128,119], backgroundColor: '#6366f1', borderRadius: 6 }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: {
+            title: ctx => ctx[0].label + ' 2025',
+            label: ctx => [` ${ctx.raw} members`, ` Est. at risk: $${(ctx.raw * 58 * 12 / 1000).toFixed(0)}K`]
+          }}
+        },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'transparent' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+        }
+      }
+    });
+  }
+
+  // Line (conversion)
+  const lineCtx = document.getElementById('lineChart')?.getContext('2d');
+  if (lineCtx) {
+    charts.line = new Chart(lineCtx, {
+      type: 'line',
+      data: {
+        labels: ['W1','W2','W3','W4','W5','W6','W7','W8'],
+        datasets: [
+          { label: 'Interventions Sent', data: [45,52,61,58,67,71,68,74], borderColor: '#3b82f6', backgroundColor: '#3b82f615', tension: 0.4, fill: true, pointBackgroundColor: '#3b82f6' },
+          { label: 'Members Retained',   data: [18,22,28,27,34,38,37,44], borderColor: '#22c55e', backgroundColor: '#22c55e15', tension: 0.4, fill: true, pointBackgroundColor: '#22c55e' }
+        ]
+      },
+      options: {
+        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+        }
+      }
+    });
+  }
+
+  // Stacked bar (revenue)
+  const stackCtx = document.getElementById('stackedBar')?.getContext('2d');
+  if (stackCtx) {
+    charts.stacked = new Chart(stackCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [
+          { label: 'At Risk',  data: [285000,241000,267000,198000,223000,245000], backgroundColor: '#ef444460', stack: 'rev', borderRadius: 0 },
+          { label: 'Recovered', data: [89000,104000,118000,127000,143000,156000], backgroundColor: '#22c55e', stack: 'rev', borderRadius: 4 }
+        ]
+      },
+      options: {
+        plugins: {
+          legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: $${(ctx.raw/1000).toFixed(0)}K` } }
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'transparent' } },
+          y: { stacked: true, ticks: { color: '#94a3b8', callback: v => '$' + (v/1000) + 'K' }, grid: { color: '#334155' } }
+        }
+      }
+    });
+  }
+}
+
+// ── ROI CALCULATOR ──
+let roiAnimStart = null;
+let roiFrom = {};
+let roiTo = {};
+
+function updateROI() {
+  const total     = +document.getElementById('sl-members').value;
+  const dues      = +document.getElementById('sl-dues').value;
+  const churnPct  = +document.getElementById('sl-churn').value;
+  const redPct    = +document.getElementById('sl-reduction').value;
+
+  document.getElementById('val-members').textContent   = total.toLocaleString();
+  document.getElementById('val-dues').textContent       = '$' + dues;
+  document.getElementById('val-churn').textContent      = churnPct + '%';
+  document.getElementById('val-reduction').textContent  = redPct + '%';
+
+  const churning = Math.floor(total * churnPct / 100);
+  const saved    = Math.floor(churning * redPct / 100);
+  const annual   = saved * dues * 12;
+  const monthly  = Math.floor(annual / 12);
+  const mult     = Math.floor(annual / 24000);
+
+  roiFrom = {
+    churning: parseInt(document.getElementById('roi-churning').textContent.replace(/,/g, '')) || 0,
+    saved: parseInt(document.getElementById('roi-saved').textContent.replace(/,/g, '')) || 0,
+    annual: parseInt(document.getElementById('roi-annual').textContent.replace(/[$,]/g, '')) || 0,
+    monthly: parseInt(document.getElementById('roi-monthly').textContent.replace(/[$,]/g, '')) || 0,
+    mult: parseInt(document.getElementById('roi-mult').textContent) || 0
+  };
+  roiTo = { churning, saved, annual, monthly, mult };
+
+  if (roiAnimFrame) cancelAnimationFrame(roiAnimFrame);
+  roiAnimStart = null;
+  function animStep(ts) {
+    if (!roiAnimStart) roiAnimStart = ts;
+    const p = Math.min((ts - roiAnimStart) / 300, 1);
+    const e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+
+    const cur = k => Math.round(roiFrom[k] + (roiTo[k] - roiFrom[k]) * e);
+
+    document.getElementById('roi-churning').textContent = cur('churning').toLocaleString();
+    document.getElementById('roi-saved').textContent    = cur('saved').toLocaleString();
+    document.getElementById('roi-annual').textContent   = '$' + cur('annual').toLocaleString();
+    document.getElementById('roi-monthly').textContent  = '$' + cur('monthly').toLocaleString();
+    document.getElementById('roi-mult').textContent     = cur('mult') + '× ROI';
+
+    if (p < 1) roiAnimFrame = requestAnimationFrame(animStep);
+  }
+  roiAnimFrame = requestAnimationFrame(animStep);
+}
+
+// ── OUTCOMES TABLE ──
+function renderOutcomes(list) {
+  const statusStyles = {
+    'Sent':        'bg-slate-500/20 text-slate-300',
+    'Opened':      'bg-blue-500/20 text-blue-400',
+    'Responded':   'bg-amber-500/20 text-amber-400',
+    'Returned':    'bg-green-500/20 text-green-400',
+    'No Response': 'bg-red-500/20 text-red-400'
+  };
+  const channelIcon = { SMS:'message-square', Email:'mail', Push:'bell' };
+  const tbody = document.getElementById('outcomes-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = list.map(o => `
+    <tr class="border-b border-[#334155]/50" style="background:#1e293b">
+      <td class="px-5 py-3 text-[#f8fafc] text-sm font-semibold">${o.name}</td>
+      <td class="px-4 py-3 text-[#94a3b8] text-sm">${o.type}</td>
+      <td class="px-4 py-3 text-[#94a3b8] text-sm">${o.sentDate}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-1.5 text-[#94a3b8] text-sm">
+          <i data-lucide="${channelIcon[o.channel] || 'send'}" class="w-3.5 h-3.5"></i>${o.channel}
+        </div>
+      </td>
+      <td class="px-4 py-3"><span class="text-xs font-bold px-2.5 py-1 rounded-full ${statusStyles[o.status] || ''}">${o.status}</span></td>
+      <td class="px-4 py-3 text-[#94a3b8] text-sm">${o.outcome}</td>
+    </tr>`).join('');
+  lucide.createIcons();
+}
+
+function filterOutcomes() {
+  const val = document.getElementById('filter-outcome')?.value || 'all';
+  const filtered = val === 'all' ? outcomes : outcomes.filter(o => o.status === val);
+  renderOutcomes(filtered);
+}
+
+// ── INIT ──
+function init() {
+  showSection('atrisk');
+  renderTable(members);
+  renderOutcomes(outcomes);
+  lucide.createIcons();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
