@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FitPulse Console – Community & Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { background: #0f172a; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; z-index: 50; }
+  .main { margin-left: 240px; min-height: 100vh; padding: 32px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 10px; cursor: pointer; color: #94a3b8; font-size: 14px; font-weight: 500; transition: all 0.2s; margin: 2px 8px; }
+  .nav-item:hover { background: #0f172a; color: #f1f5f9; }
+  .nav-item.active { background: #6366f1; color: white; }
+  .nav-item svg { width: 18px; height: 18px; }
+  .stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .toast-desktop { position: fixed; bottom: 32px; right: 32px; background: #1e293b; color: #f1f5f9; border-radius: 12px; padding: 14px 20px; font-size: 13px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid #334155; z-index: 999; opacity: 0; transform: translateY(8px); transition: all 0.3s ease; pointer-events: none; min-width: 260px; }
+  .toast-desktop.show { opacity: 1; transform: translateY(0); }
+  .slide-panel { position: fixed; right: -420px; top: 0; bottom: 0; width: 400px; background: #1e293b; border-left: 1px solid #334155; z-index: 200; transition: right 0.3s ease; padding: 32px 24px; overflow-y: auto; }
+  .slide-panel.open { right: 0; }
+  .modal-overlay-desktop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 150; display: none; align-items: center; justify-content: center; }
+  .modal-box-desktop { background: #1e293b; border-radius: 20px; padding: 32px; max-width: 480px; width: 90%; border: 1px solid #334155; }
+  .progress-bar { height: 8px; background: #334155; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; }
+  .pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .btn-primary { background: #6366f1; color: white; border-radius: 10px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-primary:hover { background: #5254cc; }
+  .btn-outline-sm { background: transparent; color: #6366f1; border: 1px solid #6366f1; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-outline-sm:hover { background: rgba(99,102,241,0.1); }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 16px; border-bottom: 1px solid #334155; }
+  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #1e293b; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  input, select, textarea { background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; padding: 9px 12px; font-size: 13px; width: 100%; outline: none; transition: border 0.2s; }
+  input:focus, select:focus, textarea:focus { border-color: #6366f1; }
+  label { font-size: 12px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 5px; }
+  .form-group { margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="px-5 py-6 border-b" style="border-color:#334155;">
+    <span class="text-lg font-black" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">FitPulse</span>
+    <div class="text-xs mt-0.5" style="color:#64748b;">Owner Console</div>
+  </div>
+  <nav class="flex flex-col flex-1 py-4 gap-1">
+    <div class="nav-item active" id="nav-overview" onclick="switchSection('overview')">
+      <i data-lucide="users"></i>
+      <span>Community Overview</span>
+    </div>
+    <div class="nav-item" id="nav-challenges" onclick="switchSection('challenges')">
+      <i data-lucide="flag"></i>
+      <span>Challenges</span>
+    </div>
+    <div class="nav-item" id="nav-isolated" onclick="switchSection('isolated')">
+      <i data-lucide="user-x"></i>
+      <span>Isolated Members</span>
+    </div>
+  </nav>
+  <div class="px-5 py-5 border-t" style="border-color:#334155;">
+    <div class="flex items-center gap-3">
+      <div style="width:34px;height:34px;border-radius:50%;background:#6366f1;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:white;">O</div>
+      <div>
+        <div class="text-sm font-semibold" style="color:#f1f5f9;">Gym Owner</div>
+        <span class="pill" style="background:#1e1b4b;color:#a5b4fc;font-size:10px;">Owner</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- SECTION: COMMUNITY OVERVIEW -->
+  <div class="section active" id="section-overview">
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold" style="color:#f1f5f9;">Community & Social Health</h1>
+        <p class="text-sm mt-1" style="color:#94a3b8;">February 2025 · 10,000 members</p>
+      </div>
+    </div>
+
+    <!-- 4 Stat Cards -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="stat-card">
+        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">Members Connected</div>
+        <div class="text-2xl font-bold" style="color:#f1f5f9;">4,840</div>
+        <div class="text-xs mt-1" style="color:#10b981;">48.4% of total</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">Avg Connections</div>
+        <div class="text-2xl font-bold" style="color:#f1f5f9;">2.3</div>
+        <div class="text-xs mt-1" style="color:#94a3b8;">per member</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">In Challenges</div>
+        <div class="text-2xl font-bold" style="color:#f1f5f9;">1,840</div>
+        <div class="text-xs mt-1" style="color:#6366f1;">18.4% of total</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">Feed Activity</div>
+        <div class="text-2xl font-bold" style="color:#f1f5f9;">2,341</div>
+        <div class="text-xs mt-1" style="color:#94a3b8;">moments this week</div>
+      </div>
+    </div>
+
+    <!-- Connection vs Retention Chart -->
+    <div class="stat-card mb-6">
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <div class="font-semibold text-base" style="color:#f1f5f9;">Social Connections vs. Retention Rate</div>
+          <div class="text-xs mt-0.5" style="color:#94a3b8;">Retention by connection segment</div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-4">
+          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">0 connections</div>
+          <div class="flex-1 relative" style="height:28px;">
+            <div style="width:54%;height:100%;background:#ef4444;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
+              <span style="font-size:12px;font-weight:700;color:white;">54%</span>
+            </div>
+          </div>
+          <div class="text-xs shrink-0" style="color:#94a3b8;">5,160 members</div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">1–2 connections</div>
+          <div class="flex-1 relative" style="height:28px;">
+            <div style="width:71%;height:100%;background:#f59e0b;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
+              <span style="font-size:12px;font-weight:700;color:white;">71%</span>
+            </div>
+          </div>
+          <div class="text-xs shrink-0" style="color:#94a3b8;">2,740 members</div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">3–4 connections</div>
+          <div class="flex-1 relative" style="height:28px;">
+            <div style="width:89%;height:100%;background:#6366f1;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
+              <span style="font-size:12px;font-weight:700;color:white;">89%</span>
+            </div>
+          </div>
+          <div class="text-xs shrink-0" style="color:#94a3b8;">1,680 members</div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">5+ connections</div>
+          <div class="flex-1 relative" style="height:28px;">
+            <div style="width:94%;height:100%;background:#10b981;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
+              <span style="font-size:12px;font-weight:700;color:white;">94%</span>
+            </div>
+          </div>
+          <div class="text-xs shrink-0" style="color:#94a3b8;">420 members</div>
+        </div>
+      </div>
+      <!-- Annotation -->
+      <div class="mt-5 rounded-xl p-4" style="background:#0f172a;border:1px solid #334155;">
+        <div class="flex items-start gap-3">
+          <div style="width:8px;height:8px;border-radius:50%;background:#6366f1;flex-shrink:0;margin-top:4px;"></div>
+          <p class="text-sm" style="color:#cbd5e1;">Members with <strong style="color:#a5b4fc;">3+ connections</strong> retain at <strong style="color:#10b981;">89%</strong> vs <strong style="color:#ef4444;">54%</strong> for isolated members — a <strong style="color:#f1f5f9;">35-point gap</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community Health Score -->
+    <div class="stat-card mb-6">
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <div class="font-semibold text-base" style="color:#f1f5f9;">Community Health Score</div>
+          <div class="text-xs mt-0.5" style="color:#94a3b8;">Composite metric across connections, challenges & engagement</div>
+        </div>
+        <div class="text-right">
+          <div class="text-4xl font-black" style="color:#6366f1;">48</div>
+          <div class="text-sm" style="color:#94a3b8;">/ 100</div>
+        </div>
+      </div>
+      <div class="progress-bar mb-5">
+        <div class="progress-fill" style="width:48%;background:#6366f1;"></div>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mb-5">
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span style="color:#94a3b8;">Connections</span>
+            <span style="color:#f1f5f9;font-weight:600;">42/100</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:42%;background:#8b5cf6;"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span style="color:#94a3b8;">Challenges</span>
+            <span style="color:#f1f5f9;font-weight:600;">61/100</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:61%;background:#6366f1;"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span style="color:#94a3b8;">Engagement</span>
+            <span style="color:#f1f5f9;font-weight:600;">41/100</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:41%;background:#10b981;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-xl p-4" style="background:#0f172a;border:1px solid #334155;">
+        <p class="text-xs" style="color:#94a3b8;">💡 Increasing members with 3+ connections from <strong style="color:#f1f5f9;">21%</strong> to <strong style="color:#a5b4fc;">40%</strong> is estimated to retain <strong style="color:#10b981;">600–800 additional members/year</strong> (~$418K–$557K at $58/month)</p>
+      </div>
+    </div>
+
+    <!-- ROI Insight Card -->
+    <div class="rounded-xl p-6" style="background:#1e1b4b;border-left:4px solid #6366f1;border:1px solid #3730a3;border-left:4px solid #6366f1;">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-lg">💡</span>
+        <div class="font-bold text-base" style="color:#f1f5f9;">Why Community Is Your Strongest Retention Tool</div>
+      </div>
+      <div class="grid grid-cols-3 gap-6 mb-4">
+        <div class="text-center p-4 rounded-xl" style="background:rgba(0,0,0,0.2);">
+          <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">5x</div>
+          <div class="text-xs" style="color:#c7d2fe;">higher retention for members with 3+ connections</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background:rgba(0,0,0,0.2);">
+          <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">35pt</div>
+          <div class="text-xs" style="color:#c7d2fe;">retention gap between connected and isolated members</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background:rgba(0,0,0,0.2);">
+          <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">~$418K–$557K</div>
+          <div class="text-xs" style="color:#c7d2fe;">annual revenue retained with improved connections</div>
+        </div>
+      </div>
+      <div class="text-xs" style="color:#818cf8;">Source: Planet Fitness internal data + QArea analysis</div>
+    </div>
+  </div>
+
+  <!-- SECTION: CHALLENGES -->
+  <div class="section" id="section-challenges">
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold" style="color:#f1f5f9;">Group Challenge Performance</h1>
+        <p class="text-sm mt-1" style="color:#94a3b8;">Track challenge participation and retention impact</p>
+      </div>
+      <button class="btn-primary flex items-center gap-2" onclick="openCreatePanel()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i>
+        Create New Challenge
+      </button>
+    </div>
+
+    <!-- Challenges Table -->
+    <div class="stat-card mb-6 overflow-hidden" style="padding:0;">
+      <table id="challengeTable">
+        <thead>
+          <tr>
+            <th>Challenge</th>
+            <th>Participants</th>
+            <th>Completion Rate</th>
+            <th>Retention Lift</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="challengeTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Challenge Impact Insight -->
+    <div class="rounded-xl p-5" style="background:#1e293b;border-left:4px solid #f59e0b;border:1px solid #78350f;border-left:4px solid #f59e0b;">
+      <div class="flex items-center gap-2 mb-2">
+        <span>⚡</span>
+        <div class="font-semibold text-sm" style="color:#fbbf24;">Challenge Impact Insight</div>
+      </div>
+      <p class="text-sm" style="color:#cbd5e1;">The <strong style="color:#f1f5f9;">Buddy Bonus</strong> challenge delivers the highest retention lift at <strong style="color:#10b981;">+31%</strong> — members who attend classes together are significantly more likely to renew. Consider increasing the challenge cap and promoting it with a "Bring a Buddy" campaign to maximize reach.</p>
+    </div>
+  </div>
+
+  <!-- SECTION: ISOLATED MEMBERS -->
+  <div class="section" id="section-isolated">
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold" style="color:#f1f5f9;">Members With No Social Connections</h1>
+        <p class="text-sm mt-1" style="color:#94a3b8;">5,160 members have 0 connections · high churn risk</p>
+      </div>
+    </div>
+
+    <!-- Stacked Bar -->
+    <div class="stat-card mb-6">
+      <div class="text-xs font-semibold mb-3" style="color:#94a3b8;">MEMBERSHIP BY CONNECTION SEGMENT</div>
+      <div style="height:36px;border-radius:10px;overflow:hidden;display:flex;width:100%;">
+        <div style="width:51.6%;background:#ef4444;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">51.6% — 0 conn.</div>
+        <div style="width:27.4%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">27.4%</div>
+        <div style="width:16.8%;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">16.8%</div>
+        <div style="width:4.2%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;">4.2%</div>
+      </div>
+      <div class="flex gap-5 mt-3">
+        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block;"></span>0 connections (5,160)</div>
+        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#f59e0b;border-radius:2px;display:inline-block;"></span>1–2 (2,740)</div>
+        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#6366f1;border-radius:2px;display:inline-block;"></span>3–4 (1,680)</div>
+        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#10b981;border-radius:2px;display:inline-block;"></span>5+ (420)</div>
+      </div>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="flex gap-2 mb-4" id="filterPills">
+      <button class="pill cursor-pointer" style="background:#6366f1;color:white;" onclick="filterIsolated('all',this)">All Isolated</button>
+      <button class="pill cursor-pointer" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;" onclick="filterIsolated('new',this)">New Members (≤60 days)</button>
+      <button class="pill cursor-pointer" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;" onclick="filterIsolated('longterm',this)">Long-term (6+ months)</button>
+    </div>
+
+    <!-- Isolated Members Table -->
+    <div class="stat-card mb-6 overflow-hidden" style="padding:0;">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Connections</th>
+            <th>Last Seen</th>
+            <th>Member Since</th>
+            <th>Risk Score</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="isolatedTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Insight Box -->
+    <div class="rounded-xl p-5" style="background:#1e293b;border-left:4px solid #6366f1;border:1px solid #334155;border-left:4px solid #6366f1;">
+      <div class="flex items-center gap-2 mb-2">
+        <span>💡</span>
+        <div class="font-semibold text-sm" style="color:#a5b4fc;">Early Connection Insight</div>
+      </div>
+      <p class="text-sm" style="color:#cbd5e1;">New members who make their first gym connection within the <strong style="color:#f1f5f9;">first 30 days</strong> are <strong style="color:#a5b4fc;">3x more likely</strong> to still be members at month 6. Prioritize introductions for members who joined in the last 60 days.</p>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- TOAST -->
+<div class="toast-desktop" id="toastDesktop"></div>
+
+<!-- SLIDE PANEL: Create Challenge -->
+<div class="slide-panel" id="createPanel">
+  <div class="flex items-center justify-between mb-6">
+    <div class="font-bold text-base" style="color:#f1f5f9;">Create New Challenge</div>
+    <button onclick="closeCreatePanel()" style="background:none;border:none;cursor:pointer;color:#64748b;">
+      <i data-lucide="x" style="width:20px;height:20px;"></i>
+    </button>
+  </div>
+  <div class="form-group">
+    <label>Challenge Name</label>
+    <input type="text" id="newChallengeName" placeholder="e.g. Spring Streak Challenge" />
+  </div>
+  <div class="form-group">
+    <label>Type</label>
+    <select id="newChallengeType">
+      <option>Group</option>
+      <option>Buddy-based</option>
+      <option>Individual</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Description</label>
+    <textarea id="newChallengeDesc" rows="2" placeholder="Describe what members need to do..."></textarea>
+  </div>
+  <div class="grid grid-cols-2 gap-3">
+    <div class="form-group">
+      <label>Target</label>
+      <input type="number" id="newChallengeTarget" placeholder="e.g. 15" />
+    </div>
+    <div class="form-group">
+      <label>Duration (days)</label>
+      <input type="number" id="newChallengeDuration" placeholder="e.g. 30" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Reward Points</label>
+    <input type="number" id="newChallengeReward" placeholder="e.g. 200" />
+  </div>
+  <button class="btn-primary w-full mt-2" style="width:100%;" onclick="createChallenge()">Create Challenge</button>
+</div>
+
+<!-- MODAL: Suggest Buddy -->
+<div class="modal-overlay-desktop" id="buddyModal">
+  <div class="modal-box-desktop" id="buddyModalBox"></div>
+</div>
+
+<div class="border-t py-6 text-center text-xs" style="margin-left:240px;border-color:#334155;color:#475569;">
+  FitPulse Prototype · Problem 1e: Community & Social Features · Console View
+</div>
+
+<script>
+const communityStats = { totalMembers:10000, membersWithConnections:4840, avgConnectionsPerMember:2.3, membersIn3PlusConnections:2100, activeInChallenges:1840, feedPostsThisWeek:2341, retentionWith3Plus:89, retentionIsolated:54 };
+const connectionRetention = [
+  { segment:"0 connections", retention:54, members:5160 },
+  { segment:"1–2 connections", retention:71, members:2740 },
+  { segment:"3–4 connections", retention:89, members:1680 },
+  { segment:"5+ connections", retention:94, members:420 }
+];
+let topChallengesByRetention = [
+  { name:"February Warrior", participants:287, completionRate:41, retentionLift:"+19%", status:"Active" },
+  { name:"Buddy Bonus", participants:94, completionRate:58, retentionLift:"+31%", status:"Active" },
+  { name:"Morning Crew", participants:156, completionRate:34, retentionLift:"+22%", status:"Active" }
+];
+const isolatedMembers = [
+  { name:"Oliver S.", connections:0, lastSeen:"8 days ago", joinDate:"Dec 2024", riskScore:74, nudgeSent:false },
+  { name:"Fatima A.", connections:0, lastSeen:"14 days ago", joinDate:"Jan 2025", riskScore:81, nudgeSent:false },
+  { name:"Ben C.", connections:1, lastSeen:"3 days ago", joinDate:"Nov 2024", riskScore:45, nudgeSent:false },
+  { name:"Yuki T.", connections:0, lastSeen:"5 days ago", joinDate:"Jan 2025", riskScore:62, nudgeSent:false },
+  { name:"Dan F.", connections:1, lastSeen:"1 day ago", joinDate:"Dec 2024", riskScore:38, nudgeSent:false }
+];
+
+// Determine new vs long-term
+function isNewMember(joinDate) {
+  // Jan 2025 and Dec 2024 = new (within ~60 days of Feb 2025)
+  return joinDate === "Jan 2025" || joinDate === "Dec 2024";
+}
+function isLongterm(joinDate) {
+  return joinDate === "Nov 2024" || joinDate === "Oct 2024" || joinDate === "Sep 2024";
+}
+
+let currentFilter = 'all';
+
+function switchSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toastDesktop');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ---- CHALLENGES TABLE ----
+function renderChallengeTable() {
+  const tbody = document.getElementById('challengeTableBody');
+  tbody.innerHTML = topChallengesByRetention.map((c, idx) => {
+    const isDraft = c.status === 'Draft';
+    const statusStyle = isDraft
+      ? 'background:#1e293b;color:#94a3b8;border:1px solid #475569;'
+      : 'background:#1e1b4b;color:#a5b4fc;';
+    return `
+      <tr>
+        <td><span class="font-semibold" style="color:#f1f5f9;">${c.name}</span></td>
+        <td><span style="color:#cbd5e1;">${c.participants}</span></td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div style="width:80px;height:6px;background:#334155;border-radius:3px;overflow:hidden;">
+              <div style="width:${c.completionRate}%;height:100%;background:#6366f1;border-radius:3px;"></div>
+            </div>
+            <span class="text-xs" style="color:#94a3b8;">${c.completionRate}%</span>
+          </div>
+        </td>
+        <td><span class="pill" style="background:#064e3b;color:#10b981;">${c.retentionLift}</span></td>
+        <td><span class="pill" style="${statusStyle}">${c.status}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ---- CREATE PANEL ----
+function openCreatePanel() {
+  document.getElementById('createPanel').classList.add('open');
+}
+function closeCreatePanel() {
+  document.getElementById('createPanel').classList.remove('open');
+}
+
+function createChallenge() {
+  const name = document.getElementById('newChallengeName').value.trim() || 'New Challenge';
+  const type = document.getElementById('newChallengeType').value;
+  const desc = document.getElementById('newChallengeDesc').value.trim();
+  const target = document.getElementById('newChallengeTarget').value || '10';
+  const duration = document.getElementById('newChallengeDuration').value || '30';
+  const reward = document.getElementById('newChallengeReward').value || '100';
+
+  topChallengesByRetention.push({
+    name,
+    participants: 0,
+    completionRate: 0,
+    retentionLift: "—",
+    status: "Draft"
+  });
+
+  renderChallengeTable();
+  closeCreatePanel();
+  showToast('Challenge created and saved as draft');
+
+  // Reset form
+  ['newChallengeName','newChallengeDesc','newChallengeTarget','newChallengeDuration','newChallengeReward'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+// ---- ISOLATED MEMBERS TABLE ----
+function getRiskPill(score) {
+  if (score >= 70) return `<span class="pill" style="background:#450a0a;color:#ef4444;">${score}</span>`;
+  if (score >= 40) return `<span class="pill" style="background:#451a03;color:#f59e0b;">${score}</span>`;
+  return `<span class="pill" style="background:#052e16;color:#10b981;">${score}</span>`;
+}
+
+function renderIsolatedTable(filter) {
+  currentFilter = filter;
+  const tbody = document.getElementById('isolatedTableBody');
+  let members = [...isolatedMembers];
+
+  if (filter === 'new') {
+    members = members.filter(m => isNewMember(m.joinDate));
+  } else if (filter === 'longterm') {
+    members = members.filter(m => isLongterm(m.joinDate));
+  }
+
+  if (members.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:32px;">No members match this filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = members.map((m, idx) => {
+    const origIdx = isolatedMembers.findIndex(om => om.name === m.name);
+    if (m.nudgeSent) {
+      return `
+        <tr id="iso-row-${origIdx}">
+          <td><span class="font-semibold" style="color:#f1f5f9;">${m.name}</span></td>
+          <td><span style="color:#cbd5e1;">${m.connections}</span></td>
+          <td><span style="color:#94a3b8;">${m.lastSeen}</span></td>
+          <td><span style="color:#94a3b8;">${m.joinDate}</span></td>
+          <td>${getRiskPill(m.riskScore)}</td>
+          <td><span class="text-xs font-semibold" style="color:#10b981;">✅ Introduction Sent</span></td>
+        </tr>
+      `;
+    }
+    return `
+      <tr id="iso-row-${origIdx}">
+        <td><span class="font-semibold" style="color:#f1f5f9;">${m.name}</span></td>
+        <td><span style="color:#cbd5e1;">${m.connections}</span></td>
+        <td><span style="color:#94a3b8;">${m.lastSeen}</span></td>
+        <td><span style="color:#94a3b8;">${m.joinDate}</span></td>
+        <td>${getRiskPill(m.riskScore)}</td>
+        <td><button class="btn-outline-sm" onclick="openBuddyModal(${origIdx})">Suggest a Buddy</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterIsolated(filter, btn) {
+  document.querySelectorAll('#filterPills .pill').forEach(p => {
+    p.style.background = '#1e293b';
+    p.style.color = '#94a3b8';
+    p.style.border = '1px solid #334155';
+  });
+  btn.style.background = '#6366f1';
+  btn.style.color = 'white';
+  btn.style.border = 'none';
+  renderIsolatedTable(filter);
+}
+
+// ---- BUDDY MODAL ----
+function openBuddyModal(idx) {
+  const m = isolatedMembers[idx];
+  document.getElementById('buddyModalBox').innerHTML = `
+    <div class="text-base font-bold mb-1" style="color:#f1f5f9;">Suggest a gym buddy for ${m.name}</div>
+    <div class="text-xs mb-5" style="color:#94a3b8;">Auto-matched based on schedule, attendance patterns & join date</div>
+    <div class="flex flex-col gap-3 mb-6">
+      <div class="flex items-start gap-4 p-4 rounded-xl" style="background:#0f172a;border:1px solid #334155;">
+        <div style="width:38px;height:38px;border-radius:50%;background:#d97706;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0;">A</div>
+        <div>
+          <div class="font-semibold text-sm mb-0.5" style="color:#f1f5f9;">Anna K.</div>
+          <div class="text-xs" style="color:#94a3b8;">Attends same classes · 2 mutual check-in times</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-4 p-4 rounded-xl" style="background:#0f172a;border:1px solid #334155;">
+        <div style="width:38px;height:38px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0;">T</div>
+        <div>
+          <div class="font-semibold text-sm mb-0.5" style="color:#f1f5f9;">Tom H.</div>
+          <div class="text-xs" style="color:#94a3b8;">Joined the same month · similar schedule</div>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button class="btn-outline-sm flex-1" onclick="closeBuddyModal()">Cancel</button>
+      <button class="btn-primary flex-1" onclick="sendIntroduction(${idx})">Send Introduction</button>
+    </div>
+  `;
+  document.getElementById('buddyModal').style.display = 'flex';
+}
+
+function closeBuddyModal() {
+  document.getElementById('buddyModal').style.display = 'none';
+}
+
+function sendIntroduction(idx) {
+  isolatedMembers[idx].nudgeSent = true;
+  const name = isolatedMembers[idx].name;
+  closeBuddyModal();
+  renderIsolatedTable(currentFilter);
+  showToast(`Buddy suggestion sent to ${name}`);
+}
+
+// ---- INIT ----
+function init() {
+  renderChallengeTable();
+  renderIsolatedTable('all');
+  lucide.createIcons();
+}
+
+init();
+</script>
+</body>
+</html>
