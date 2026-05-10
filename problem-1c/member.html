@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitPulse – Member Onboarding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    body { background: #0f172a; }
+    .phone-frame {
+      width: 390px;
+      min-height: 844px;
+      background: #0f172a;
+      border-radius: 40px;
+      border: 2px solid #334155;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 0 8px #1e293b, 0 30px 80px rgba(0,0,0,0.7);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .toast {
+      position: absolute;
+      bottom: 80px;
+      left: 16px;
+      right: 16px;
+      background: #1e293b;
+      border: 1px solid #10b981;
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #f1f5f9;
+      font-size: 14px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.show { display: flex; }
+    .step-line-done {
+      width: 2px;
+      background: #10b981;
+      margin: 0 auto;
+      height: 24px;
+    }
+    .step-line-pending {
+      width: 2px;
+      background: #334155;
+      margin: 0 auto;
+      height: 24px;
+      border-left: 2px dashed #334155;
+      border-right: none;
+      background: transparent;
+    }
+    .pulse-ring {
+      animation: pulse-border 2s infinite;
+    }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(99,102,241,0); }
+    }
+    .heatmap-day {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 3px;
+    }
+    .slot-pill {
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      background: #0f172a;
+    }
+    .slot-pill.selected {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+    .goal-card {
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #1e293b;
+      position: relative;
+      text-align: center;
+    }
+    .goal-card.selected {
+      border-color: #6366f1;
+      background: rgba(99,102,241,0.15);
+    }
+    .goal-check {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      display: none;
+    }
+    .goal-card.selected .goal-check { display: block; }
+    .nav-tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 4px;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 11px;
+      gap: 4px;
+      border-top: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-tab.active {
+      color: #6366f1;
+      border-top-color: #6366f1;
+    }
+    .scrollable-content {
+      overflow-y: auto;
+      height: calc(844px - 60px - 56px);
+    }
+    .scrollable-content::-webkit-scrollbar { width: 0; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start py-12 px-4" style="background:#0f172a;">
+
+  <!-- Phone Frame -->
+  <div class="phone-frame" id="phoneFrame">
+
+    <!-- Top Status Bar -->
+    <div class="flex justify-between items-center px-6 pt-4 pb-2" style="background:#0f172a;">
+      <span style="color:#94a3b8;font-size:12px;">9:41 AM</span>
+      <div class="flex gap-1 items-center">
+        <div style="width:16px;height:8px;border:1.5px solid #94a3b8;border-radius:2px;position:relative;">
+          <div style="position:absolute;left:1px;top:1px;width:10px;height:4px;background:#10b981;border-radius:1px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="scrollable-content px-4 pb-4" id="scrollArea">
+
+      <!-- TAB 1: MY JOURNEY -->
+      <div id="tab-journey" class="tab-content active">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4 pt-2">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-xl" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">FitPulse</span>
+          </div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;">M</div>
+        </div>
+
+        <!-- Welcome Banner -->
+        <div class="rounded-2xl p-4 mb-5" style="background:linear-gradient(135deg,#1e1b4b,#2e1065);">
+          <p class="font-semibold mb-1" style="color:#f1f5f9;font-size:15px;">👋 Welcome, Marcus!</p>
+          <p class="text-sm mb-2" style="color:#a5b4fc;">Day 12 of your first month.</p>
+          <p class="text-xs" style="color:#8b5cf6;">Complete your onboarding journey to unlock <span style="color:#a5b4fc;font-weight:600;">800 bonus pts</span></p>
+        </div>
+
+        <!-- Progress Ring -->
+        <div class="flex flex-col items-center mb-6">
+          <div class="relative" style="width:110px;height:110px;">
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="46" fill="none" stroke="#334155" stroke-width="8"/>
+              <circle cx="55" cy="55" r="46" fill="none" stroke="#6366f1" stroke-width="8"
+                stroke-dasharray="289.03" stroke-dashoffset="115.6"
+                stroke-linecap="round"
+                transform="rotate(-90 55 55)"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="font-bold text-xl" style="color:#f1f5f9;">3/5</span>
+              <span class="text-xs" style="color:#94a3b8;">60%</span>
+            </div>
+          </div>
+          <p class="text-xs mt-2" style="color:#94a3b8;"><span style="color:#a5b4fc;font-weight:600;">600 pts earned</span> · 450 pts remaining</p>
+        </div>
+
+        <!-- Milestone Steps -->
+        <div class="mb-4">
+          <!-- Step 1 -->
+          <div class="flex gap-3 items-start">
+            <div class="flex flex-col items-center" style="min-width:32px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#10b981;">
+                <i data-lucide="dumbbell" style="width:14px;height:14px;color:#fff;"></i>
+              </div>
+              <div class="step-line-done"></div>
+            </div>
+            <div class="flex-1 pb-2">
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-sm" style="color:#f1f5f9;">First Workout</p>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#312e81;color:#a5b4fc;">+100 pts</span>
+              </div>
+              <p class="text-xs" style="color:#94a3b8;">Complete your first gym floor session</p>
+              <p class="text-xs mt-1" style="color:#10b981;">✅ Done · Jan 6</p>
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="flex gap-3 items-start">
+            <div class="flex flex-col items-center" style="min-width:32px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#10b981;">
+                <i data-lucide="users" style="width:14px;height:14px;color:#fff;"></i>
+              </div>
+              <div class="step-line-done"></div>
+            </div>
+            <div class="flex-1 pb-2">
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-sm" style="color:#f1f5f9;">First Class</p>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#312e81;color:#a5b4fc;">+150 pts</span>
+              </div>
+              <p class="text-xs" style="color:#94a3b8;">Attend any group fitness class</p>
+              <p class="text-xs mt-1" style="color:#10b981;">✅ Done · Jan 8</p>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="flex gap-3 items-start">
+            <div class="flex flex-col items-center" style="min-width:32px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#10b981;">
+                <i data-lucide="target" style="width:14px;height:14px;color:#fff;"></i>
+              </div>
+              <div class="step-line-done"></div>
+            </div>
+            <div class="flex-1 pb-2">
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-sm" style="color:#f1f5f9;">Set Your Goals</p>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#312e81;color:#a5b4fc;">+100 pts</span>
+              </div>
+              <p class="text-xs" style="color:#94a3b8;">Tell us what you're working towards</p>
+              <p class="text-xs mt-1" style="color:#10b981;">✅ Done · Jan 7</p>
+            </div>
+          </div>
+          <!-- Step 4 -->
+          <div class="flex gap-3 items-start">
+            <div class="flex flex-col items-center" style="min-width:32px;">
+              <div id="step4-circle" class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#6366f1;">
+                <i data-lucide="user-check" style="width:14px;height:14px;color:#fff;"></i>
+              </div>
+              <div class="step-line-pending" id="step4-line"></div>
+            </div>
+            <div class="flex-1 pb-2">
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-sm" style="color:#f1f5f9;">Meet Your Trainer</p>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#312e81;color:#a5b4fc;">+200 pts</span>
+              </div>
+              <p class="text-xs" style="color:#94a3b8;">Complete a check-in session with Coach Amy</p>
+              <div id="step4-status" class="mt-2">
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full mr-2" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">→ Up Next</span>
+                <button id="bookNowBtn" onclick="openBookingModal()" class="text-xs font-semibold px-3 py-1 rounded-lg" style="background:#6366f1;color:#fff;">Book Now</button>
+              </div>
+              <div id="step4-booked" class="mt-1 hidden">
+                <p class="text-xs" style="color:#f59e0b;">⏳ Booked · Tue Jan 21</p>
+              </div>
+            </div>
+          </div>
+          <!-- Step 5 -->
+          <div class="flex gap-3 items-start">
+            <div class="flex flex-col items-center" style="min-width:32px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center relative" style="background:#334155;">
+                <i data-lucide="trending-up" style="width:14px;height:14px;color:#64748b;"></i>
+                <div class="absolute inset-0 flex items-center justify-center rounded-full" style="background:rgba(15,23,42,0.6);">
+                  <i data-lucide="lock" style="width:10px;height:10px;color:#94a3b8;"></i>
+                </div>
+              </div>
+            </div>
+            <div class="flex-1 pb-2">
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-sm" style="color:#64748b;">First Measurable Win</p>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#1e293b;color:#64748b;">+250 pts</span>
+              </div>
+              <p class="text-xs" style="color:#475569;">Log a personal best or hit your first progress milestone</p>
+              <p class="text-xs mt-1" style="color:#475569;">Complete step 4 first</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nudge Card -->
+        <div class="rounded-xl p-4 mb-4" style="background:#451a03;border-left:3px solid #f59e0b;">
+          <p class="text-xs font-semibold mb-1" style="color:#fbbf24;">📅 Coming on Day 14:</p>
+          <p class="text-xs" style="color:#fcd34d;">You haven't met Coach Amy yet — book your free check-in before Day 21 to stay on track</p>
+        </div>
+      </div>
+
+      <!-- TAB 2: GOALS -->
+      <div id="tab-goals" class="tab-content">
+        <div class="pt-2 mb-4">
+          <h2 class="font-bold text-lg" style="color:#f1f5f9;">Your Goals</h2>
+        </div>
+        <!-- Goals Empty State -->
+        <div id="goals-empty">
+          <p class="text-sm mb-4" style="color:#94a3b8;">What are you working towards? Pick up to 3.</p>
+          <div class="grid grid-cols-2 gap-3 mb-5" id="goalGrid">
+            <div class="goal-card" data-goal="weightloss" onclick="toggleGoal(this)">
+              <div class="goal-check"><i data-lucide="check-circle" style="width:16px;height:16px;color:#6366f1;"></i></div>
+              <i data-lucide="activity" style="width:24px;height:24px;color:#6366f1;margin:0 auto 8px;display:block;"></i>
+              <p class="text-xs font-semibold" style="color:#f1f5f9;">Lose Weight</p>
+            </div>
+            <div class="goal-card" data-goal="muscle" onclick="toggleGoal(this)">
+              <div class="goal-check"><i data-lucide="check-circle" style="width:16px;height:16px;color:#6366f1;"></i></div>
+              <i data-lucide="zap" style="width:24px;height:24px;color:#8b5cf6;margin:0 auto 8px;display:block;"></i>
+              <p class="text-xs font-semibold" style="color:#f1f5f9;">Build Muscle</p>
+            </div>
+            <div class="goal-card" data-goal="endurance" onclick="toggleGoal(this)">
+              <div class="goal-check"><i data-lucide="check-circle" style="width:16px;height:16px;color:#6366f1;"></i></div>
+              <i data-lucide="wind" style="width:24px;height:24px;color:#10b981;margin:0 auto 8px;display:block;"></i>
+              <p class="text-xs font-semibold" style="color:#f1f5f9;">Improve Endurance</p>
+            </div>
+            <div class="goal-card" data-goal="flexibility" onclick="toggleGoal(this)">
+              <div class="goal-check"><i data-lucide="check-circle" style="width:16px;height:16px;color:#6366f1;"></i></div>
+              <i data-lucide="move" style="width:24px;height:24px;color:#f59e0b;margin:0 auto 8px;display:block;"></i>
+              <p class="text-xs font-semibold" style="color:#f1f5f9;">Get More Flexible</p>
+            </div>
+            <div class="goal-card" data-goal="wellness" onclick="toggleGoal(this)">
+              <div class="goal-check"><i data-lucide="check-circle" style="width:16px;height:16px;color:#6366f1;"></i></div>
+              <i data-lucide="heart" style="width:24px;height:24px;color:#ef4444;margin:0 auto 8px;display:block;"></i>
+              <p class="text-xs font-semibold" style="color:#f1f5f9;">General Wellness</p>
+            </div>
+            <div class="goal-card" data-goal="sport" onclick="toggleGoal(this)">
+              <div class="goal-check"><i data-lucide="check-circle" style="width:16px;height:16px;color:#6366f1;"></i></div>
+              <i data-lucide="flag" style="width:24px;height:24px;color:#0ea5e9;margin:0 auto 8px;display:block;"></i>
+              <p class="text-xs font-semibold" style="color:#f1f5f9;">Train for a Sport</p>
+            </div>
+          </div>
+          <button id="saveGoalsBtn" onclick="saveGoals()" disabled class="w-full py-3 rounded-xl font-semibold text-sm transition-all" style="background:#334155;color:#64748b;cursor:not-allowed;">Save Goals</button>
+        </div>
+        <!-- Goals Set State -->
+        <div id="goals-set" class="hidden">
+          <div id="saved-goals-display" class="flex flex-wrap gap-2 mb-4"></div>
+          <button onclick="editGoals()" class="text-sm font-medium mb-5" style="color:#6366f1;">Edit Goals</button>
+          <!-- Recommendations -->
+          <div id="recommendations">
+            <p class="font-semibold text-sm mb-3" style="color:#f1f5f9;">Recommended for You</p>
+            <div id="rec-cards"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: PROGRESS -->
+      <div id="tab-progress" class="tab-content">
+        <div class="pt-2 mb-1">
+          <h2 class="font-bold text-lg" style="color:#f1f5f9;">Your First Month</h2>
+          <p class="text-xs" style="color:#94a3b8;">Day 12 of 30</p>
+        </div>
+
+        <!-- Calendar Heatmap -->
+        <div class="rounded-xl p-3 mb-4 mt-3" style="background:#1e293b;">
+          <p class="text-xs font-semibold mb-3" style="color:#94a3b8;">January 2025</p>
+          <div id="heatmap" class="grid gap-1" style="grid-template-columns:repeat(6,1fr);"></div>
+          <div class="flex gap-3 mt-3 items-center">
+            <div class="flex items-center gap-1"><div style="width:10px;height:10px;background:#10b981;border-radius:2px;"></div><span class="text-xs" style="color:#94a3b8;">Active</span></div>
+            <div class="flex items-center gap-1"><div style="width:10px;height:10px;background:#334155;border-radius:2px;"></div><span class="text-xs" style="color:#94a3b8;">Rest</span></div>
+            <div class="flex items-center gap-1"><div style="width:10px;height:10px;background:#6366f1;border-radius:2px;"></div><span class="text-xs" style="color:#94a3b8;">Today</span></div>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="rounded-xl p-3 text-center" style="background:#1e293b;">
+            <p class="font-bold text-xl" style="color:#f1f5f9;">8</p>
+            <p class="text-xs" style="color:#94a3b8;">Workouts</p>
+          </div>
+          <div class="rounded-xl p-3 text-center" style="background:#1e293b;">
+            <p class="font-bold text-xl" style="color:#f1f5f9;">3</p>
+            <p class="text-xs" style="color:#94a3b8;">Classes</p>
+          </div>
+          <div class="rounded-xl p-3 text-center" style="background:#1e293b;">
+            <p class="font-bold text-xl" style="color:#f1f5f9;">350</p>
+            <p class="text-xs" style="color:#94a3b8;">Pts Earned</p>
+          </div>
+        </div>
+
+        <!-- Milestone Timeline -->
+        <div class="rounded-xl p-4 mb-4" style="background:#1e293b;">
+          <p class="text-xs font-semibold mb-3" style="color:#94a3b8;">Milestones</p>
+          <div class="flex items-center gap-0 overflow-x-auto pb-1">
+            <!-- Milestone 1 -->
+            <div class="flex flex-col items-center" style="min-width:64px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center mb-1" style="background:#10b981;">
+                <i data-lucide="dumbbell" style="width:12px;height:12px;color:#fff;"></i>
+              </div>
+              <p class="text-center" style="font-size:10px;color:#10b981;font-weight:600;">1st Workout</p>
+              <p class="text-center" style="font-size:9px;color:#64748b;">Jan 6</p>
+            </div>
+            <div style="flex:1;height:2px;background:#10b981;min-width:12px;"></div>
+            <!-- Milestone 2 -->
+            <div class="flex flex-col items-center" style="min-width:64px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center mb-1" style="background:#10b981;">
+                <i data-lucide="users" style="width:12px;height:12px;color:#fff;"></i>
+              </div>
+              <p class="text-center" style="font-size:10px;color:#10b981;font-weight:600;">1st Class</p>
+              <p class="text-center" style="font-size:9px;color:#64748b;">Jan 8</p>
+            </div>
+            <div style="flex:1;height:2px;background:#10b981;min-width:12px;"></div>
+            <!-- Milestone 3 -->
+            <div class="flex flex-col items-center" style="min-width:64px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center mb-1" style="background:#10b981;">
+                <i data-lucide="target" style="width:12px;height:12px;color:#fff;"></i>
+              </div>
+              <p class="text-center" style="font-size:10px;color:#10b981;font-weight:600;">Goals Set</p>
+              <p class="text-center" style="font-size:9px;color:#64748b;">Jan 7</p>
+            </div>
+            <div style="flex:1;height:2px;border-top:2px dashed #6366f1;min-width:12px;"></div>
+            <!-- Milestone 4 -->
+            <div class="flex flex-col items-center" style="min-width:64px;">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center mb-1" style="background:#1e1b4b;border:2px dashed #6366f1;">
+                <i data-lucide="user-check" style="width:12px;height:12px;color:#6366f1;"></i>
+              </div>
+              <p class="text-center" style="font-size:10px;color:#6366f1;font-weight:600;">Trainer</p>
+              <p class="text-center" style="font-size:9px;color:#64748b;">Upcoming</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparison Card -->
+        <div class="rounded-xl p-4 mb-4" style="background:#1e1b4b;border-left:3px solid #6366f1;">
+          <p class="font-semibold text-sm mb-2" style="color:#f1f5f9;">Members like you who complete all 5 steps are <span style="color:#a5b4fc;">4x more likely</span> to still be here at month 12.</p>
+          <p class="text-xs" style="color:#64748b;">Powered by QArea retention analytics</p>
+        </div>
+      </div>
+
+    </div><!-- end scrollable-content -->
+
+    <!-- Bottom Nav -->
+    <div class="flex" style="background:#1e293b;border-top:1px solid #334155;height:56px;">
+      <button class="nav-tab active" id="nav-journey" onclick="switchTab('journey')">
+        <i data-lucide="map" style="width:18px;height:18px;"></i>
+        <span>My Journey</span>
+      </button>
+      <button class="nav-tab" id="nav-goals" onclick="switchTab('goals')">
+        <i data-lucide="target" style="width:18px;height:18px;"></i>
+        <span>Goals</span>
+      </button>
+      <button class="nav-tab" id="nav-progress" onclick="switchTab('progress')">
+        <i data-lucide="trending-up" style="width:18px;height:18px;"></i>
+        <span>Progress</span>
+      </button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Booking Modal -->
+    <div class="modal-backdrop" id="bookingModal" onclick="closeModalOutside(event)">
+      <div class="rounded-2xl p-5 mx-4" style="background:#1e293b;border:1px solid #334155;width:320px;" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="font-bold text-base" style="color:#f1f5f9;">Book Your Trainer Check-in</h3>
+            <p class="text-xs mt-1" style="color:#94a3b8;">Coach Amy · Free 20-min check-in for new members</p>
+          </div>
+          <button onclick="closeBookingModal()" style="color:#64748b;">
+            <i data-lucide="x" style="width:18px;height:18px;"></i>
+          </button>
+        </div>
+        <p class="text-xs font-semibold mb-3" style="color:#94a3b8;">Choose a time slot</p>
+        <div class="flex flex-col gap-2 mb-5">
+          <div class="slot-pill" onclick="selectSlot(this, 'Tue Jan 21 · 10:00am')">Tue Jan 21 · 10:00am</div>
+          <div class="slot-pill" onclick="selectSlot(this, 'Wed Jan 22 · 6:00pm')">Wed Jan 22 · 6:00pm</div>
+          <div class="slot-pill" onclick="selectSlot(this, 'Thu Jan 23 · 11:00am')">Thu Jan 23 · 11:00am</div>
+        </div>
+        <button id="confirmBookingBtn" onclick="confirmBooking()" disabled class="w-full py-3 rounded-xl font-semibold text-sm transition-all" style="background:#334155;color:#64748b;cursor:not-allowed;">Confirm Booking</button>
+      </div>
+    </div>
+
+  </div><!-- end phone-frame -->
+
+  <!-- Footer -->
+  <footer class="mt-8 text-center" style="color:#475569;font-size:12px;">
+    Prototype by <a href="#" style="color:#6366f1;">QArea</a> / <a href="#" style="color:#6366f1;">TestFort</a> · Problem 1c · Onboarding Experience Engineering
+  </footer>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+const currentMember = { name:"Marcus", avatar:"M", joinDate:"Jan 6, 2025", daysSinceJoin:12, onboardingProgress:3, goals:[], trainerName:"Coach Amy" };
+const onboardingSteps = [
+  { id:1, title:"First Workout", description:"Complete your first gym floor session", icon:"dumbbell", completed:true, completedDate:"Jan 6", points:100, trigger:"Automatic — detected via QR check-in" },
+  { id:2, title:"First Class", description:"Attend any group fitness class", icon:"users", completed:true, completedDate:"Jan 8", points:150, trigger:"Automatic — detected via class booking attendance" },
+  { id:3, title:"Set Your Goals", description:"Tell us what you're working towards", icon:"target", completed:true, completedDate:"Jan 7", points:100, trigger:"Completed in app during onboarding" },
+  { id:4, title:"Meet Your Trainer", description:"Complete a check-in session with Coach Amy", icon:"user-check", completed:false, completedDate:null, points:200, trigger:"Automatic — detected via PT session booking", ctaLabel:"Book Now", ctaAction:"bookTrainer" },
+  { id:5, title:"First Measurable Win", description:"Log a personal best or hit your first progress milestone", icon:"trending-up", completed:false, completedDate:null, points:250, trigger:"Logged manually or via connected wearable", ctaLabel:"Log a Win", ctaAction:"logWin" }
+];
+const goalOptions = [
+  { id:"weightloss", label:"Lose Weight", icon:"activity" },
+  { id:"muscle", label:"Build Muscle", icon:"zap" },
+  { id:"endurance", label:"Improve Endurance", icon:"wind" },
+  { id:"flexibility", label:"Get More Flexible", icon:"move" },
+  { id:"wellness", label:"General Wellness", icon:"heart" },
+  { id:"sport", label:"Train for a Sport", icon:"flag" }
+];
+const upcomingNudges = [
+  { day:14, message:"You haven't met Coach Amy yet — book your free check-in before Day 21 to stay on track", type:"warning" },
+  { day:21, message:"Halfway through your first month! Log your first win to complete your journey", type:"info" },
+  { day:30, message:"🎉 First month complete! Here's how you compare to members who stayed for 12 months", type:"success" }
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let selectedGoals = [];
+let selectedSlot = null;
+let toastTimer = null;
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+  document.getElementById('scrollArea').scrollTop = 0;
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── BOOKING MODAL ────────────────────────────────────────────────────────────
+function openBookingModal() {
+  document.getElementById('bookingModal').classList.add('show');
+}
+function closeBookingModal() {
+  document.getElementById('bookingModal').classList.remove('show');
+  selectedSlot = null;
+  document.querySelectorAll('.slot-pill').forEach(p => p.classList.remove('selected'));
+  const btn = document.getElementById('confirmBookingBtn');
+  btn.disabled = true;
+  btn.style.background = '#334155';
+  btn.style.color = '#64748b';
+  btn.style.cursor = 'not-allowed';
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('bookingModal')) closeBookingModal();
+}
+function selectSlot(el, slot) {
+  document.querySelectorAll('.slot-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSlot = slot;
+  const btn = document.getElementById('confirmBookingBtn');
+  btn.disabled = false;
+  btn.style.background = '#6366f1';
+  btn.style.color = '#fff';
+  btn.style.cursor = 'pointer';
+}
+function confirmBooking() {
+  if (!selectedSlot) return;
+  closeBookingModal();
+  // Update step 4
+  document.getElementById('step4-status').classList.add('hidden');
+  document.getElementById('step4-booked').classList.remove('hidden');
+  document.getElementById('step4-circle').style.background = '#f59e0b';
+  showToast('✅ Booked! Coach Amy will see you on Jan 21. +200 pts on completion.');
+}
+
+// ── GOALS ────────────────────────────────────────────────────────────────────
+function toggleGoal(el) {
+  const goal = el.dataset.goal;
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    selectedGoals = selectedGoals.filter(g => g !== goal);
+  } else {
+    if (selectedGoals.length >= 3) return;
+    el.classList.add('selected');
+    selectedGoals.push(goal);
+  }
+  const btn = document.getElementById('saveGoalsBtn');
+  if (selectedGoals.length >= 1) {
+    btn.disabled = false;
+    btn.style.background = '#6366f1';
+    btn.style.color = '#fff';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.style.background = '#334155';
+    btn.style.color = '#64748b';
+    btn.style.cursor = 'not-allowed';
+  }
+}
+function saveGoals() {
+  if (selectedGoals.length === 0) return;
+  currentMember.goals = [...selectedGoals];
+  document.getElementById('goals-empty').classList.add('hidden');
+  document.getElementById('goals-set').classList.remove('hidden');
+  // Display saved goals
+  const colors = { weightloss:'#6366f1', muscle:'#8b5cf6', endurance:'#10b981', flexibility:'#f59e0b', wellness:'#ef4444', sport:'#0ea5e9' };
+  const labels = { weightloss:'Lose Weight', muscle:'Build Muscle', endurance:'Improve Endurance', flexibility:'Get More Flexible', wellness:'General Wellness', sport:'Train for a Sport' };
+  const icons = { weightloss:'activity', muscle:'zap', endurance:'wind', flexibility:'move', wellness:'heart', sport:'flag' };
+  const display = document.getElementById('saved-goals-display');
+  display.innerHTML = '';
+  selectedGoals.forEach(g => {
+    const pill = document.createElement('div');
+    pill.className = 'flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold';
+    pill.style.background = colors[g] + '33';
+    pill.style.border = '1px solid ' + colors[g];
+    pill.style.color = colors[g];
+    pill.innerHTML = `<i data-lucide="${icons[g]}" style="width:14px;height:14px;"></i> ${labels[g]}`;
+    display.appendChild(pill);
+  });
+  // Recommendations
+  const firstGoal = selectedGoals[0];
+  let recData;
+  if (firstGoal === 'weightloss') {
+    recData = [{ name:'HIIT Blast', time:'Tue 7pm', duration:'45 min', color:'#ef4444' }];
+  } else if (firstGoal === 'muscle') {
+    recData = [{ name:'Strength Fundamentals', time:'Mon 6pm', duration:'60 min', color:'#8b5cf6' }];
+  } else {
+    recData = [{ name:'Indoor Cycling', time:'Wed 6:30pm', duration:'45 min', color:'#6366f1' }];
+  }
+  const recContainer = document.getElementById('rec-cards');
+  recContainer.innerHTML = '';
+  recData.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'rounded-xl p-4 mb-3 flex items-center justify-between';
+    card.style.background = '#1e293b';
+    card.style.border = '1px solid #334155';
+    card.innerHTML = `
+      <div>
+        <p class="font-semibold text-sm" style="color:#f1f5f9;">${r.name}</p>
+        <p class="text-xs mt-0.5" style="color:#94a3b8;">${r.time} · ${r.duration}</p>
+      </div>
+      <button onclick="bookClass(this, '${r.name}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background:rgba(99,102,241,0.2);color:#a5b4fc;border:1px solid #6366f1;">Book Class →</button>
+    `;
+    recContainer.appendChild(card);
+  });
+  lucide.createIcons();
+  showToast('✅ Goals saved! +100 pts awarded.');
+}
+function bookClass(btn, name) {
+  btn.textContent = '✅ Booked';
+  btn.disabled = true;
+  btn.style.background = 'rgba(16,185,129,0.2)';
+  btn.style.color = '#10b981';
+  btn.style.borderColor = '#10b981';
+  showToast('Class added to your schedule!');
+}
+function editGoals() {
+  currentMember.goals = [];
+  selectedGoals = [];
+  document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('goals-set').classList.add('hidden');
+  document.getElementById('goals-empty').classList.remove('hidden');
+  const btn = document.getElementById('saveGoalsBtn');
+  btn.disabled = true;
+  btn.style.background = '#334155';
+  btn.style.color = '#64748b';
+  btn.style.cursor = 'not-allowed';
+}
+
+// ── HEATMAP ──────────────────────────────────────────────────────────────────
+function buildHeatmap() {
+  const activeDays = new Set([1,2,4,6,8,9,11,12]);
+  const container = document.getElementById('heatmap');
+  container.innerHTML = '';
+  for (let d = 1; d <= 30; d++) {
+    const el = document.createElement('div');
+    el.className = 'heatmap-day';
+    if (d > 12) {
+      el.style.background = '#1e293b';
+      el.style.border = '1px solid #334155';
+    } else if (d === 12) {
+      el.style.background = '#6366f1';
+      el.classList.add('pulse-ring');
+    } else if (activeDays.has(d)) {
+      el.style.background = '#10b981';
+    } else {
+      el.style.background = '#334155';
+    }
+    el.title = `Day ${d}`;
+    container.appendChild(el);
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  buildHeatmap();
+});
+</script>
+</body>
+</html>

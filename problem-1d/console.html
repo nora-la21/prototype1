@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitPulse Console — Re-Engagement Automation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+
+    body { background: #0f172a; color: #f1f5f9; min-height: 100vh; }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gradient-btn {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    .sidebar { background: #1e293b; border-right: 1px solid #334155; width: 224px; min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 10; display: flex; flex-direction: column; }
+    .main-content { margin-left: 224px; padding: 2rem; min-height: 100vh; }
+
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; color: #94a3b8; transition: all 0.15s; }
+    .nav-item:hover { background: #334155; color: #f1f5f9; }
+    .nav-item.active { background: #312e81; color: #a5b4fc; }
+
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    @keyframes slide-up   { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slide-down { from { transform: translateY(0); opacity: 1; } to { transform: translateY(30px); opacity: 0; } }
+    .toast-in  { animation: slide-up   0.28s ease-out forwards; }
+    .toast-out { animation: slide-down 0.28s ease-in  forwards; }
+
+    .funnel-bar { border-radius: 8px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: white; transition: width 0.4s ease; }
+
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .pill-green  { background: #064e3b; color: #10b981; }
+    .pill-amber  { background: #451a03; color: #f59e0b; }
+    .pill-red    { background: #450a0a; color: #ef4444; }
+    .pill-orange { background: #431407; color: #f97316; }
+    .pill-blue   { background: #1e3a5f; color: #60a5fa; }
+    .pill-indigo { background: #312e81; color: #a5b4fc; }
+    .pill-violet { background: #2e1065; color: #c4b5fd; }
+    .pill-emerald { background: #064e3b; color: #34d399; }
+
+    .filter-pill { padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid #334155; color: #94a3b8; background: transparent; transition: all 0.15s; }
+    .filter-pill.active { background: #6366f1; color: white; border-color: #6366f1; }
+
+    .msg-preview-tab { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid #334155; color: #94a3b8; background: transparent; transition: all 0.15s; }
+    .msg-preview-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #334155; }
+    td { padding: 12px 12px; font-size: 13px; color: #f1f5f9; border-bottom: 1px solid #1e293b; vertical-align: middle; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .token { color: #a5b4fc; background: #312e81; padding: 1px 5px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar p-4">
+    <div class="mb-8">
+      <span class="text-xl font-black gradient-text tracking-tight">FitPulse</span>
+      <div class="text-xs mt-0.5" style="color:#64748b;">Console</div>
+    </div>
+
+    <nav class="space-y-1 flex-1">
+      <div class="nav-item active" onclick="switchSection('overview', this)" id="nav-overview">
+        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+        Overview
+      </div>
+      <div class="nav-item" onclick="switchSection('sequence', this)" id="nav-sequence">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        Sequence Performance
+      </div>
+      <div class="nav-item" onclick="switchSection('members', this)" id="nav-members">
+        <i data-lucide="user-minus" class="w-4 h-4"></i>
+        Drifting Members
+      </div>
+    </nav>
+
+    <div class="mt-auto pt-4">
+      <div class="flex items-center gap-2 p-3 rounded-xl" style="background:#0f172a;">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style="background:#6366f1;">O</div>
+        <div>
+          <div class="text-sm font-semibold text-white">Owner</div>
+          <div class="text-xs" style="color:#64748b;">FitPulse Admin</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- SECTION 1: OVERVIEW -->
+    <div id="section-overview" class="section active">
+      <div class="mb-6">
+        <h1 class="text-2xl font-extrabold text-white">Re-Engagement Automation</h1>
+        <p style="color:#94a3b8;" class="text-sm">January 2025 · 10,000 members</p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="user-minus" class="w-4 h-4" style="color:#ef4444;"></i>
+            <span class="text-xs font-semibold" style="color:#94a3b8;">Drifting Members</span>
+          </div>
+          <div class="text-3xl font-black text-white mb-1">423</div>
+          <div class="text-xs" style="color:#94a3b8;">Absent 7+ days</div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="send" class="w-4 h-4" style="color:#6366f1;"></i>
+            <span class="text-xs font-semibold" style="color:#94a3b8;">In Sequence</span>
+          </div>
+          <div class="text-3xl font-black text-white mb-1">312</div>
+          <div class="text-xs" style="color:#94a3b8;">Active automation</div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="check-circle" class="w-4 h-4" style="color:#10b981;"></i>
+            <span class="text-xs font-semibold" style="color:#94a3b8;">Recovered</span>
+          </div>
+          <div class="text-3xl font-black text-white mb-1">87</div>
+          <div class="text-xs" style="color:#94a3b8;">This month</div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="trending-up" class="w-4 h-4" style="color:#8b5cf6;"></i>
+            <span class="text-xs font-semibold" style="color:#94a3b8;">Recovery Rate</span>
+          </div>
+          <div class="text-3xl font-black text-white mb-1">21%</div>
+          <div class="text-xs" style="color:#94a3b8;">Of drifting members</div>
+        </div>
+      </div>
+
+      <!-- Drift Bars + Funnel side by side -->
+      <div class="grid grid-cols-2 gap-6 mb-8">
+
+        <!-- Drift Bars -->
+        <div class="card p-6">
+          <h2 class="text-base font-bold text-white mb-4">Members by Absence Duration</h2>
+          <div class="space-y-4 mb-4">
+            <!-- Day 7-13: 189 (max) -->
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium text-white">Day 7–13 absence</span>
+                <span class="text-sm font-bold" style="color:#60a5fa;">189</span>
+              </div>
+              <div class="h-3 rounded-full" style="background:#334155;">
+                <div class="h-3 rounded-full" style="background:#60a5fa;width:100%;"></div>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-xs pill pill-blue">Low Risk</span>
+                <span class="text-xs" style="color:#94a3b8;">38 recovered</span>
+              </div>
+            </div>
+            <!-- Day 14-20: 143 -->
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium text-white">Day 14–20 absence</span>
+                <span class="text-sm font-bold" style="color:#f59e0b;">143</span>
+              </div>
+              <div class="h-3 rounded-full" style="background:#334155;">
+                <div class="h-3 rounded-full" style="background:#f59e0b;width:75.7%;"></div>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-xs pill pill-amber">Medium Risk</span>
+                <span class="text-xs" style="color:#94a3b8;">31 recovered</span>
+              </div>
+            </div>
+            <!-- Day 21-29: 91 -->
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium text-white">Day 21–29 absence</span>
+                <span class="text-sm font-bold" style="color:#f97316;">91</span>
+              </div>
+              <div class="h-3 rounded-full" style="background:#334155;">
+                <div class="h-3 rounded-full" style="background:#f97316;width:48.1%;"></div>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-xs pill pill-orange">High Risk</span>
+                <span class="text-xs" style="color:#94a3b8;">18 recovered</span>
+              </div>
+            </div>
+            <!-- Day 30+: 74 -->
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium text-white">Day 30+ absence</span>
+                <span class="text-sm font-bold" style="color:#ef4444;">74</span>
+              </div>
+              <div class="h-3 rounded-full" style="background:#334155;">
+                <div class="h-3 rounded-full" style="background:#ef4444;width:39.2%;"></div>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-xs pill pill-red">Critical Risk</span>
+                <span class="text-xs" style="color:#94a3b8;">0 recovered</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-xs p-3 rounded-lg" style="background:#0f172a;color:#94a3b8;border:1px solid #334155;">
+            68% of members absent 20+ days cancel within 60 days without intervention <span style="color:#64748b;">(Wodify data)</span>
+          </div>
+        </div>
+
+        <!-- Recovery Funnel -->
+        <div class="card p-6">
+          <h2 class="text-base font-bold text-white mb-5">Re-Engagement Funnel — January</h2>
+          <div class="space-y-2">
+
+            <div class="flex flex-col items-center">
+              <div class="funnel-bar w-full" style="background:linear-gradient(135deg,#3730a3,#4f46e5);">
+                <span>Drifting Members · 423</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="text-xs text-center py-0.5" style="color:#94a3b8;">↓ 73.8% triggered</div>
+              <div class="funnel-bar" style="background:linear-gradient(135deg,#4f46e5,#6366f1);width:80%;">
+                <span>Sequence triggered · 312</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="text-xs text-center py-0.5" style="color:#94a3b8;">↓ 77.2% opened</div>
+              <div class="funnel-bar" style="background:linear-gradient(135deg,#6366f1,#7c3aed);width:65%;">
+                <span>Message opened · 241</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="text-xs text-center py-0.5" style="color:#94a3b8;">↓ 27.9% booked</div>
+              <div class="funnel-bar" style="background:linear-gradient(135deg,#059669,#10b981);width:45%;">
+                <span>Booking made · 87</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="text-xs text-center py-0.5" style="color:#94a3b8;">↓ 85% checked in</div>
+              <div class="funnel-bar" style="background:linear-gradient(135deg,#10b981,#34d399);width:30%;">
+                <span>Checked in · 74</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI Insight Card -->
+      <div class="rounded-2xl p-6 mb-8" style="background:#0c0a3e;border-left:4px solid #6366f1;border:1px solid #312e81;border-left:4px solid #6366f1;">
+        <h2 class="text-base font-bold text-white mb-4">💡 What Automated Re-Engagement Is Worth</h2>
+        <div class="grid grid-cols-3 gap-6 mb-4">
+          <div class="text-center">
+            <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">15–25%</div>
+            <div class="text-xs" style="color:#94a3b8;">Recovery rate with automated sequences</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">209%</div>
+            <div class="text-xs" style="color:#94a3b8;">Higher response rate — SMS vs. email alone</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">~$209K</div>
+            <div class="text-xs" style="color:#94a3b8;">Estimated revenue retained per year</div>
+          </div>
+        </div>
+        <div class="text-xs" style="color:#64748b;">Source: Wodify data + QArea analysis</div>
+      </div>
+
+    </div><!-- end overview -->
+
+    <!-- SECTION 2: SEQUENCE PERFORMANCE -->
+    <div id="section-sequence" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-extrabold text-white">Message Performance by Touch</h1>
+        <p style="color:#94a3b8;" class="text-sm">Across all drifting members in January 2025</p>
+      </div>
+
+      <!-- Performance Table -->
+      <div class="card mb-6 overflow-hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Touch</th>
+              <th>Sent</th>
+              <th>Opened</th>
+              <th>Open Rate</th>
+              <th>Bookings</th>
+              <th>Booking Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-semibold">Day 7 Push Notification</td>
+              <td>312</td>
+              <td>241</td>
+              <td><span class="pill pill-green">77%</span></td>
+              <td>63</td>
+              <td><span class="pill pill-amber">20%</span></td>
+            </tr>
+            <tr>
+              <td class="font-semibold">Day 14 SMS</td>
+              <td>249</td>
+              <td>198</td>
+              <td><span class="pill pill-green">80%</span></td>
+              <td>71</td>
+              <td><span class="pill pill-green">29%</span></td>
+            </tr>
+            <tr>
+              <td class="font-semibold">Day 21 Email + Offer</td>
+              <td>178</td>
+              <td>89</td>
+              <td><span class="pill pill-amber">50%</span></td>
+              <td>42</td>
+              <td><span class="pill pill-green">24%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Channel Insight Cards -->
+      <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="bell" class="w-4 h-4" style="color:#6366f1;"></i>
+            <span class="text-sm font-bold text-white">Push Notification</span>
+          </div>
+          <div class="text-xl font-black mb-1" style="color:#a5b4fc;">77% open rate</div>
+          <p class="text-xs" style="color:#94a3b8;">Best for Day 7 — low friction, high visibility. Members are still in habit mode and respond quickly.</p>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="message-square" class="w-4 h-4" style="color:#10b981;"></i>
+            <span class="text-sm font-bold text-white">SMS</span>
+          </div>
+          <div class="text-xl font-black mb-1" style="color:#34d399;">80% open rate</div>
+          <p class="text-xs" style="color:#94a3b8;">209% better than email alone. Use for Day 14 with class pre-selection to reduce friction to booking.</p>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="mail" class="w-4 h-4" style="color:#f59e0b;"></i>
+            <span class="text-sm font-bold text-white">Email</span>
+          </div>
+          <div class="text-xl font-black mb-1" style="color:#fcd34d;">50% open rate</div>
+          <p class="text-xs" style="color:#94a3b8;">Best for Day 21 with a tangible incentive. Email allows longer copy and a clear offer presentation.</p>
+        </div>
+      </div>
+
+      <!-- Message Previews -->
+      <div class="card p-6">
+        <h2 class="text-base font-bold text-white mb-4">Message Previews</h2>
+        <div class="flex gap-2 mb-5">
+          <button class="msg-preview-tab active" onclick="switchMsgTab('push', this)">Day 7 Push</button>
+          <button class="msg-preview-tab" onclick="switchMsgTab('sms', this)">Day 14 SMS</button>
+          <button class="msg-preview-tab" onclick="switchMsgTab('email', this)">Day 21 Email</button>
+        </div>
+
+        <!-- Push Preview -->
+        <div id="msg-push" class="msg-content">
+          <div class="rounded-xl p-5 max-w-sm" style="background:#1a1a2e;border:1px solid #334155;">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#6366f1;">
+                <i data-lucide="bell" class="w-4 h-4 text-white"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-white">FitPulse</div>
+                <div class="text-xs" style="color:#94a3b8;">now</div>
+              </div>
+            </div>
+            <p class="text-sm text-white leading-relaxed">
+              Hey <span class="token">{member_name}</span> 👋 We haven't seen you in a week — your <span class="token">{favourite_class}</span> crew misses you. Book back in?
+            </p>
+            <button class="mt-3 px-4 py-1.5 rounded-lg text-xs font-semibold gradient-btn text-white">Book a Class</button>
+          </div>
+        </div>
+
+        <!-- SMS Preview -->
+        <div id="msg-sms" class="msg-content hidden">
+          <div class="max-w-sm">
+            <div class="rounded-2xl rounded-tl-sm p-4" style="background:#1a472a;">
+              <p class="text-sm text-white leading-relaxed">
+                <span class="token">{member_name}</span>, it's been 2 weeks since your last visit. <span class="token">{instructor_name}</span> has a <span class="token">{favourite_class}</span> spot saved for you this Thursday at 7pm — tap to claim it before it's gone.
+              </p>
+            </div>
+            <div class="flex justify-end mt-2">
+              <button class="px-4 py-1.5 rounded-lg text-xs font-semibold gradient-btn text-white">Claim Spot</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Preview -->
+        <div id="msg-email" class="msg-content hidden">
+          <div class="rounded-xl overflow-hidden max-w-lg" style="background:white;">
+            <div class="p-4" style="background:#312e81;">
+              <span class="text-white font-black text-base">FitPulse</span>
+            </div>
+            <div class="p-6">
+              <p class="text-xs mb-3" style="color:#64748b;">Subject: A personal note from FitPulse</p>
+              <p class="text-sm mb-3" style="color:#1e293b;">Hi <span style="color:#6366f1;font-weight:600;background:#eef2ff;padding:1px 4px;border-radius:4px;">{member_name}</span>,</p>
+              <p class="text-sm mb-4" style="color:#475569;line-height:1.6;">
+                We noticed you haven't been in for 3 weeks. Life gets busy — we get it. As a valued member since March 2024, we'd like to offer you a complimentary personal training session with <span style="color:#6366f1;font-weight:600;background:#eef2ff;padding:1px 4px;border-radius:4px;">{instructor_name}</span> to help you get back on track. No strings attached.
+              </p>
+              <div class="text-center">
+                <button class="px-6 py-2.5 rounded-xl text-sm font-semibold text-white gradient-btn">Claim Free PT Session</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-xs mt-4" style="color:#64748b;">Messages are personalised per member at send time using automation tokens</p>
+      </div>
+
+    </div><!-- end sequence -->
+
+    <!-- SECTION 3: DRIFTING MEMBERS -->
+    <div id="section-members" class="section">
+      <div class="mb-6">
+        <h1 class="text-2xl font-extrabold text-white">Members Currently Drifting</h1>
+        <p style="color:#94a3b8;" class="text-sm">Real-time view of members in the re-engagement sequence</p>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="flex gap-2 mb-5" id="filter-pills">
+        <button class="filter-pill active" onclick="filterMembers('All', this)">All</button>
+        <button class="filter-pill" onclick="filterMembers('Low', this)">Low</button>
+        <button class="filter-pill" onclick="filterMembers('Medium', this)">Medium</button>
+        <button class="filter-pill" onclick="filterMembers('High', this)">High</button>
+        <button class="filter-pill" onclick="filterMembers('Critical', this)">Critical</button>
+      </div>
+
+      <!-- Members Table -->
+      <div class="card mb-6 overflow-hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Days Absent</th>
+              <th>Favourite Class</th>
+              <th>Seq. Step</th>
+              <th>Last Touch</th>
+              <th>Risk Level</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="members-table-body">
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Insight Box -->
+      <div class="rounded-xl p-5" style="border-left:4px solid #f59e0b;background:#1e293b;border:1px solid #334155;border-left:4px solid #f59e0b;">
+        <div class="flex items-start gap-3">
+          <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0 mt-0.5" style="color:#f59e0b;"></i>
+          <div>
+            <h3 class="text-sm font-bold text-white mb-1">Critical Members Need Human Touch</h3>
+            <p class="text-sm" style="color:#94a3b8;">Members absent 30+ days have a near-zero automated recovery rate. The 74 members in Critical status should be escalated to a personal staff call.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end members -->
+
+  </div><!-- end main -->
+
+  <!-- TOAST (global) -->
+  <div id="toast" class="fixed bottom-6 right-6 hidden z-50">
+    <div class="px-5 py-3 rounded-xl text-sm font-semibold text-white shadow-xl" style="background:#10b981;" id="toast-msg"></div>
+  </div>
+
+  <!-- MANUAL OFFER MODAL -->
+  <div id="offer-modal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background:rgba(0,0,0,0.7);">
+    <div class="rounded-2xl p-6 w-96" style="background:#1e293b;border:1px solid #334155;">
+      <h3 class="text-white font-bold text-base mb-1">Send Manual Comeback Offer</h3>
+      <p id="offer-modal-name" class="text-sm mb-4" style="color:#94a3b8;"></p>
+      <div class="mb-5">
+        <label class="text-xs font-semibold mb-2 block" style="color:#94a3b8;">Select Offer Type</label>
+        <select id="offer-select" class="w-full rounded-xl px-4 py-2.5 text-sm font-medium" style="background:#0f172a;color:#f1f5f9;border:1px solid #334155;">
+          <option>Free PT Session</option>
+          <option>1 Week Free</option>
+          <option>Class Pass</option>
+        </select>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeOfferModal()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold" style="background:#334155;color:#f1f5f9;">Cancel</button>
+        <button onclick="confirmOffer()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold gradient-btn text-white">Send Offer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="text-center py-6" style="margin-left:224px;border-top:1px solid #1e293b;">
+    <p class="text-xs" style="color:#475569;">FitPulse Console · Problem 1d — Re-Engagement Automation · Powered by QArea</p>
+  </div>
+
+  <script>
+    // DATA
+    const reEngagementStats = { totalDrifting:423, inActiveSequence:312, recoveredThisMonth:87, recoveryRate:21, cancelledDespiteSequence:34, avgDaysToRecovery:11 };
+    const driftingSegments = [
+      { segment:"Day 7–13 absence", count:189, risk:"Low", recovered:38 },
+      { segment:"Day 14–20 absence", count:143, risk:"Medium", recovered:31 },
+      { segment:"Day 21–29 absence", count:91, risk:"High", recovered:18 },
+      { segment:"Day 30+ absence", count:74, risk:"Critical", recovered:0 }
+    ];
+    const sequencePerformance = [
+      { touch:"Day 7 Push Notification", sent:312, opened:241, openRate:77, bookings:63, bookingRate:20 },
+      { touch:"Day 14 SMS", sent:249, opened:198, openRate:80, bookings:71, bookingRate:29 },
+      { touch:"Day 21 Email + Offer", sent:178, opened:89, openRate:50, bookings:42, bookingRate:24 }
+    ];
+
+    const driftingMembersData = [
+      { name:"Jordan K.", daysAbsent:16, favouriteClass:"HIIT Blast", sequenceStep:2, lastTouch:"SMS · Jan 21", riskLevel:"Medium", status:"In sequence" },
+      { name:"Priya S.", daysAbsent:23, favouriteClass:"Yoga Flow", sequenceStep:3, lastTouch:"Email · Jan 15", riskLevel:"High", status:"In sequence" },
+      { name:"Marcus W.", daysAbsent:31, favouriteClass:"Cycling", sequenceStep:3, lastTouch:"Email · Jan 8", riskLevel:"Critical", status:"No response" },
+      { name:"Aisha T.", daysAbsent:9, favouriteClass:"Pilates", sequenceStep:1, lastTouch:"Push · Jan 19", riskLevel:"Low", status:"In sequence" },
+      { name:"Ben C.", daysAbsent:18, favouriteClass:"Boxing", sequenceStep:2, lastTouch:"SMS · Jan 20", riskLevel:"Medium", status:"Recovered ✓" }
+    ];
+
+    // Member state (mutable)
+    let memberStates = driftingMembersData.map(m => ({ ...m }));
+    let currentFilterRisk = 'All';
+    let currentOfferMemberIndex = null;
+
+    // Section switching
+    function switchSection(sec, el) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('section-' + sec).classList.add('active');
+      el.classList.add('active');
+    }
+
+    // Message preview tabs
+    function switchMsgTab(tab, el) {
+      document.querySelectorAll('.msg-preview-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.msg-content').forEach(c => c.classList.add('hidden'));
+      el.classList.add('active');
+      document.getElementById('msg-' + tab).classList.remove('hidden');
+    }
+
+    // Filter members
+    function filterMembers(risk, el) {
+      currentFilterRisk = risk;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      renderMembersTable();
+    }
+
+    function getRiskPill(risk) {
+      if (risk === 'Low') return '<span class="pill pill-blue">Low</span>';
+      if (risk === 'Medium') return '<span class="pill pill-amber">Medium</span>';
+      if (risk === 'High') return '<span class="pill pill-orange">High</span>';
+      if (risk === 'Critical') return '<span class="pill pill-red">Critical</span>';
+      return risk;
+    }
+
+    function getStatusPill(status) {
+      if (status === 'In sequence') return '<span class="pill pill-indigo">In sequence</span>';
+      if (status === 'No response') return '<span class="pill pill-red">No response</span>';
+      if (status.startsWith('Recovered')) return '<span class="pill pill-emerald">' + status + '</span>';
+      if (status.startsWith('Offer Sent')) return '<span class="pill pill-violet">' + status + '</span>';
+      if (status === 'Staff Notified') return '<span class="pill pill-green">✅ Staff Notified</span>';
+      return status;
+    }
+
+    function getActionBtn(member, idx) {
+      if (member.status === 'In sequence') {
+        return `<button onclick="openOfferModal(${idx})" class="px-3 py-1.5 rounded-lg text-xs font-semibold gradient-btn text-white">Send Manual Offer</button>`;
+      }
+      if (member.status === 'No response') {
+        return `<button onclick="escalateStaff(${idx})" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style="background:#ef4444;">Escalate to Staff</button>`;
+      }
+      if (member.status.startsWith('Recovered') || member.status.startsWith('Offer Sent') || member.status === 'Staff Notified') {
+        return `<button disabled class="px-3 py-1.5 rounded-lg text-xs font-semibold" style="background:#1e293b;color:#64748b;cursor:not-allowed;border:1px solid #334155;">No action needed</button>`;
+      }
+      return '';
+    }
+
+    function renderMembersTable() {
+      const tbody = document.getElementById('members-table-body');
+      const filtered = memberStates.filter(m => currentFilterRisk === 'All' || m.riskLevel === currentFilterRisk);
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8" style="color:#64748b;">No members match this filter</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map((m, i) => {
+        const origIdx = memberStates.indexOf(m);
+        return `<tr>
+          <td class="font-semibold">${m.name}</td>
+          <td>${m.daysAbsent} days</td>
+          <td>${m.favouriteClass}</td>
+          <td>Step ${m.sequenceStep}</td>
+          <td style="color:#94a3b8;">${m.lastTouch}</td>
+          <td>${getRiskPill(m.riskLevel)}</td>
+          <td>${getStatusPill(m.status)}</td>
+          <td>${getActionBtn(m, origIdx)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Manual offer modal
+    function openOfferModal(idx) {
+      currentOfferMemberIndex = idx;
+      document.getElementById('offer-modal-name').textContent = 'Send a manual comeback offer to ' + memberStates[idx].name + '?';
+      document.getElementById('offer-modal').classList.remove('hidden');
+    }
+
+    function closeOfferModal() {
+      document.getElementById('offer-modal').classList.add('hidden');
+    }
+
+    function confirmOffer() {
+      const offer = document.getElementById('offer-select').value;
+      const m = memberStates[currentOfferMemberIndex];
+      m.status = 'Offer Sent · Manual';
+      closeOfferModal();
+      renderMembersTable();
+      showToast('Offer sent to ' + m.name + ': ' + offer);
+    }
+
+    // Escalate
+    function escalateStaff(idx) {
+      const m = memberStates[idx];
+      m.status = 'Staff Notified';
+      renderMembersTable();
+      showToast('Staff task created for ' + m.name);
+    }
+
+    // Toast
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.textContent = msg;
+      toast.classList.remove('hidden');
+      toast.querySelector('div').classList.remove('toast-out');
+      toast.querySelector('div').classList.add('toast-in');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.querySelector('div').classList.remove('toast-in');
+        toast.querySelector('div').classList.add('toast-out');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 2500);
+    }
+
+    // Init
+    renderMembersTable();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitPulse — Re-Engagement</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gradient-btn {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+    .gradient-hero {
+      background: linear-gradient(135deg, #1e1b4b, #2e1065);
+    }
+    .gradient-border-violet {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      padding: 2px;
+      border-radius: 1rem;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(1.3); }
+    }
+    .pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
+    @keyframes slide-up   { from { transform: translateY(80px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slide-down { from { transform: translateY(0); opacity: 1; } to { transform: translateY(80px); opacity: 0; } }
+    .toast-in  { animation: slide-up   0.28s ease-out forwards; }
+    .toast-out { animation: slide-down 0.28s ease-in  forwards; }
+
+    .screen { display: none; }
+    .screen.active { display: flex; flex-direction: column; height: 100%; }
+
+    .phone-scroll { overflow-y: auto; flex: 1 1 0%; scrollbar-width: none; }
+    .phone-scroll::-webkit-scrollbar { display: none; }
+
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; }
+
+    .timeline-line {
+      position: absolute;
+      left: 9px;
+      top: 20px;
+      bottom: -8px;
+      width: 2px;
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6" style="background:#0f172a;">
+
+  <!-- Phone Frame -->
+  <div class="relative flex flex-col" style="width:390px; height:780px; background:#0f172a; border-radius:2.5rem; border:2px solid #334155; overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,0.6);">
+
+    <!-- Notch -->
+    <div class="flex justify-center pt-3 pb-1 flex-shrink-0">
+      <div style="width:100px;height:22px;background:#1e293b;border-radius:999px;"></div>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="flex items-center justify-between px-4 py-2 flex-shrink-0">
+      <span class="text-lg font-black gradient-text tracking-tight">FitPulse</span>
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style="background:#6366f1;">J</div>
+    </div>
+
+    <!-- SCREENS -->
+    <!-- TAB 1: WELCOME BACK -->
+    <div id="screen-welcome" class="screen active">
+      <div class="phone-scroll px-3 pb-4 space-y-3">
+
+        <!-- Hero Card -->
+        <div class="rounded-2xl p-4 gradient-hero border border-indigo-800">
+          <div class="text-3xl mb-2">👋</div>
+          <h2 class="text-white font-extrabold text-lg leading-tight mb-1">Good to see you, Jordan.</h2>
+          <p class="text-indigo-200 text-sm mb-3">It's been 16 days — your HIIT Blast crew has missed you. Ready to pick up where you left off?</p>
+          <div class="text-xs mb-4" style="color:#94a3b8;">47 total visits · Member since March 2024 · Best streak: 9 days</div>
+          <button onclick="switchTab('classes')" class="gradient-btn w-full py-2.5 rounded-xl text-white font-semibold text-sm">
+            Book My Comeback Class →
+          </button>
+        </div>
+
+        <!-- Streak Recovery Card -->
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-1">
+            <i data-lucide="flame" class="w-5 h-5" style="color:#f59e0b;"></i>
+            <span class="text-white font-bold text-sm">Restart Your Streak</span>
+          </div>
+          <p class="text-sm mb-3" style="color:#94a3b8;">Your last streak was 9 days — one visit today puts you back on the board.</p>
+          <!-- 7-day heatmap -->
+          <div class="flex gap-1.5 mb-3">
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full" style="background:#334155;"></div>
+              <span class="text-xs" style="color:#94a3b8;">M</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full" style="background:#334155;"></div>
+              <span class="text-xs" style="color:#94a3b8;">T</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full" style="background:#334155;"></div>
+              <span class="text-xs" style="color:#94a3b8;">W</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full" style="background:#334155;"></div>
+              <span class="text-xs" style="color:#94a3b8;">T</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full" style="background:#334155;"></div>
+              <span class="text-xs" style="color:#94a3b8;">F</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full" style="background:#334155;"></div>
+              <span class="text-xs" style="color:#94a3b8;">S</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full pulse-dot" style="background:#f59e0b;"></div>
+              <span class="text-xs font-bold" style="color:#f59e0b;">Today</span>
+            </div>
+          </div>
+          <button onclick="showToast('Check in at the gym today to restart your streak! 🔥')" class="w-full py-2 rounded-xl text-sm font-semibold" style="border:1.5px solid #f59e0b;color:#f59e0b;background:transparent;">
+            Start Fresh →
+          </button>
+        </div>
+
+        <!-- Message Timeline Card -->
+        <div class="card p-4">
+          <h3 class="text-white font-bold text-sm mb-3">Messages from FitPulse</h3>
+          <div class="space-y-4">
+
+            <!-- Step 1 -->
+            <div class="flex gap-3 relative">
+              <div class="relative flex-shrink-0 mt-1">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background:#10b981;">
+                  <div class="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+                <div class="absolute left-2.5 top-5 bottom-0 w-px" style="background:#334155;height:calc(100% + 16px);"></div>
+              </div>
+              <div class="flex-1 pb-2">
+                <div class="flex items-center gap-2 mb-1">
+                  <i data-lucide="bell" class="w-3.5 h-3.5" style="color:#94a3b8;"></i>
+                  <span class="text-xs font-semibold" style="color:#94a3b8;">Day 7 · Push Notification</span>
+                </div>
+                <div class="text-xs font-medium mb-0.5" style="color:#10b981;">Sent Jan 14 · Opened</div>
+                <p class="text-xs" style="color:#94a3b8;">Hey Jordan 👋 We haven't seen you in a week — your HIIT Blast crew misses you...</p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="flex gap-3 relative">
+              <div class="relative flex-shrink-0 mt-1">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background:#10b981;">
+                  <div class="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+                <div class="absolute left-2.5 top-5 bottom-0 w-px" style="background:#334155;height:calc(100% + 16px);"></div>
+              </div>
+              <div class="flex-1 pb-2">
+                <div class="flex items-center gap-2 mb-1">
+                  <i data-lucide="message-square" class="w-3.5 h-3.5" style="color:#94a3b8;"></i>
+                  <span class="text-xs font-semibold" style="color:#94a3b8;">Day 14 · SMS</span>
+                </div>
+                <div class="text-xs font-medium mb-0.5" style="color:#10b981;">Sent Jan 21 · Opened</div>
+                <p class="text-xs" style="color:#94a3b8;">Jordan, it's been 2 weeks since your last visit. Coach Dana has a HIIT Blast spot saved...</p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex gap-3 relative">
+              <div class="relative flex-shrink-0 mt-1">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background:#334155;border:2px dashed #64748b;">
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <i data-lucide="mail" class="w-3.5 h-3.5" style="color:#94a3b8;"></i>
+                  <span class="text-xs font-semibold" style="color:#94a3b8;">Day 21 · Email</span>
+                </div>
+                <div class="text-xs font-medium mb-0.5" style="color:#64748b;">Scheduled Jan 28 · Pending</div>
+                <span class="inline-block text-xs px-2 py-0.5 rounded-full font-medium" style="background:#451a03;color:#f59e0b;">Coming in 5 days</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: CLASSES -->
+    <div id="screen-classes" class="screen">
+      <div class="phone-scroll px-3 pb-4 space-y-3">
+        <div>
+          <h2 class="text-white font-extrabold text-base">Classes for You</h2>
+          <p class="text-xs" style="color:#94a3b8;">HIIT Blast with Coach Dana — your favourite</p>
+        </div>
+
+        <!-- Class 1: HIIT Blast Thu - Recommended -->
+        <div id="class-card-1" class="card p-4" style="border:1.5px solid #6366f1;">
+          <div class="mb-2">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#312e81;color:#a5b4fc;">Recommended for you ⭐</span>
+          </div>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="text-white font-bold text-sm">HIIT Blast</div>
+              <div class="text-xs" style="color:#94a3b8;">Coach Dana</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs" style="color:#94a3b8;">45 min</div>
+            </div>
+          </div>
+          <div class="text-xs mb-1" style="color:#94a3b8;">Thu Jan 23 · 7:00pm</div>
+          <div id="class-1-spots" class="text-xs font-medium mb-3" style="color:#ef4444;">Only 3 spots left!</div>
+          <div id="class-1-booked" class="hidden text-xs font-semibold mb-3" style="color:#10b981;">✅ Booked · Thu Jan 23 · 7pm</div>
+          <button id="class-1-btn" onclick="openClassModal(1,'HIIT Blast','Coach Dana','Thu Jan 23 · 7:00pm','45 min')" class="gradient-btn w-full py-2 rounded-xl text-white font-semibold text-xs">
+            Book Now
+          </button>
+        </div>
+
+        <!-- Class 2: HIIT Blast Sat -->
+        <div class="card p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="text-white font-bold text-sm">HIIT Blast</div>
+              <div class="text-xs" style="color:#94a3b8;">Coach Dana</div>
+            </div>
+            <div class="text-xs" style="color:#94a3b8;">45 min</div>
+          </div>
+          <div class="text-xs mb-1" style="color:#94a3b8;">Sat Jan 25 · 9:00am</div>
+          <div id="class-2-spots" class="text-xs mb-3" style="color:#64748b;">6 spots available</div>
+          <div id="class-2-booked" class="hidden text-xs font-semibold mb-3" style="color:#10b981;">✅ Booked · Sat Jan 25 · 9am</div>
+          <button id="class-2-btn" onclick="openClassModal(2,'HIIT Blast','Coach Dana','Sat Jan 25 · 9:00am','45 min')" class="gradient-btn w-full py-2 rounded-xl text-white font-semibold text-xs">
+            Book Now
+          </button>
+        </div>
+
+        <!-- Class 3: Strength & Cardio -->
+        <div class="card p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="text-white font-bold text-sm">Strength & Cardio</div>
+              <div class="text-xs" style="color:#94a3b8;">Coach Mike</div>
+            </div>
+            <div class="text-xs" style="color:#94a3b8;">60 min</div>
+          </div>
+          <div class="text-xs mb-1" style="color:#94a3b8;">Fri Jan 24 · 6:00pm</div>
+          <div id="class-3-spots" class="text-xs mb-3" style="color:#64748b;">8 spots available</div>
+          <div id="class-3-booked" class="hidden text-xs font-semibold mb-3" style="color:#10b981;">✅ Booked · Fri Jan 24 · 6pm</div>
+          <button id="class-3-btn" onclick="openClassModal(3,'Strength &amp; Cardio','Coach Mike','Fri Jan 24 · 6:00pm','60 min')" class="gradient-btn w-full py-2 rounded-xl text-white font-semibold text-xs">
+            Book Now
+          </button>
+        </div>
+
+        <!-- Class 4: Boxing -->
+        <div class="card p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="text-white font-bold text-sm">Boxing Fundamentals</div>
+              <div class="text-xs" style="color:#94a3b8;">Coach Lee</div>
+            </div>
+            <div class="text-xs" style="color:#94a3b8;">45 min</div>
+          </div>
+          <div class="text-xs mb-1" style="color:#94a3b8;">Wed Jan 22 · 7:30pm</div>
+          <div id="class-4-spots" class="text-xs font-medium mb-3" style="color:#ef4444;">Only 2 spots left!</div>
+          <div id="class-4-booked" class="hidden text-xs font-semibold mb-3" style="color:#10b981;">✅ Booked · Wed Jan 22 · 7:30pm</div>
+          <button id="class-4-btn" onclick="openClassModal(4,'Boxing Fundamentals','Coach Lee','Wed Jan 22 · 7:30pm','45 min')" class="gradient-btn w-full py-2 rounded-xl text-white font-semibold text-xs">
+            Book Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: YOUR OFFER -->
+    <div id="screen-offer" class="screen">
+      <div class="phone-scroll px-3 pb-4 space-y-3">
+        <div>
+          <h2 class="text-white font-extrabold text-base">A Gift from FitPulse</h2>
+          <p class="text-xs" style="color:#94a3b8;">Because you're a valued member</p>
+        </div>
+
+        <!-- Offer Card -->
+        <div class="gradient-border-violet">
+          <div class="rounded-2xl p-4" style="background:#1e293b;">
+            <div class="flex justify-center mb-3">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:#2e1065;">
+                <i data-lucide="gift" class="w-7 h-7" style="color:#8b5cf6;"></i>
+              </div>
+            </div>
+            <h3 id="offer-title" class="text-white font-extrabold text-base text-center mb-1">Free Personal Training Session</h3>
+            <p class="text-sm text-center mb-3" style="color:#94a3b8;">One complimentary 30-min session with any trainer</p>
+
+            <!-- Expiry Banner -->
+            <div class="rounded-xl px-3 py-2 mb-3 text-center" style="background:#451a03;">
+              <span class="text-sm font-semibold" style="color:#f59e0b;">⏳ Expires in 5 days</span>
+            </div>
+
+            <!-- Code -->
+            <div id="offer-code-area" class="flex items-center gap-2 justify-center mb-4">
+              <span class="font-mono text-sm font-bold px-3 py-1.5 rounded-lg" style="background:#312e81;color:#a5b4fc;">COMEBACK-J47</span>
+              <button onclick="copyCode()" class="p-1.5 rounded-lg" style="background:#1e3a5f;">
+                <i data-lucide="copy" class="w-4 h-4" style="color:#94a3b8;"></i>
+              </button>
+            </div>
+            <div id="offer-redeemed-badge" class="hidden text-center mb-4">
+              <span class="font-mono text-sm font-bold px-3 py-1.5 rounded-lg" style="background:#064e3b;color:#10b981;">Redeemed</span>
+            </div>
+
+            <button id="book-pt-btn" onclick="openPTModal()" class="gradient-btn w-full py-2.5 rounded-xl text-white font-semibold text-sm">
+              Book PT Session →
+            </button>
+            <div id="pt-booked-msg" class="hidden text-center py-2 text-sm font-semibold" style="color:#10b981;">✅ Session Booked</div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="card p-4">
+          <h3 class="text-white font-bold text-sm mb-3">How it works</h3>
+          <div class="space-y-3">
+            <div class="flex gap-3 items-start">
+              <span class="text-lg">🔔</span>
+              <p class="text-xs" style="color:#94a3b8;"><span class="font-semibold" style="color:#f1f5f9;">Day 7</span> — We notice you're away and send a friendly nudge</p>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="text-lg">💬</span>
+              <p class="text-xs" style="color:#94a3b8;"><span class="font-semibold" style="color:#f1f5f9;">Day 14</span> — A personalised SMS with your favourite class pre-selected</p>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="text-lg">🎁</span>
+              <p class="text-xs" style="color:#94a3b8;"><span class="font-semibold" style="color:#f1f5f9;">Day 21</span> — A special offer, just for you</p>
+            </div>
+          </div>
+          <div class="mt-4 pt-3" style="border-top:1px solid #334155;">
+            <p class="text-xs text-center" style="color:#64748b;">Powered by QArea re-engagement automation</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="flex-shrink-0" style="background:#1e293b;border-top:1px solid #334155;">
+      <div class="flex">
+        <button onclick="switchTab('welcome')" id="nav-welcome" class="flex-1 flex flex-col items-center py-3 gap-1 nav-btn active-nav">
+          <i data-lucide="home" class="w-5 h-5" id="nav-welcome-icon" style="color:#6366f1;"></i>
+          <span class="text-xs font-medium" id="nav-welcome-text" style="color:#6366f1;">Welcome Back</span>
+          <div class="w-6 h-0.5 rounded-full" id="nav-welcome-line" style="background:#6366f1;"></div>
+        </button>
+        <button onclick="switchTab('classes')" id="nav-classes" class="flex-1 flex flex-col items-center py-3 gap-1 nav-btn">
+          <i data-lucide="calendar" class="w-5 h-5" id="nav-classes-icon" style="color:#64748b;"></i>
+          <span class="text-xs font-medium" id="nav-classes-text" style="color:#64748b;">Classes</span>
+          <div class="w-6 h-0.5 rounded-full" id="nav-classes-line" style="background:transparent;"></div>
+        </button>
+        <button onclick="switchTab('offer')" id="nav-offer" class="flex-1 flex flex-col items-center py-3 gap-1 nav-btn">
+          <i data-lucide="gift" class="w-5 h-5" id="nav-offer-icon" style="color:#64748b;"></i>
+          <span class="text-xs font-medium" id="nav-offer-text" style="color:#64748b;">Your Offer</span>
+          <div class="w-6 h-0.5 rounded-full" id="nav-offer-line" style="background:transparent;"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="absolute bottom-24 left-4 right-4 hidden">
+      <div class="px-4 py-3 rounded-xl text-sm font-semibold text-white" style="background:#10b981;" id="toast-msg"></div>
+    </div>
+
+  </div><!-- end phone -->
+
+  <!-- CLASS BOOKING MODAL -->
+  <div id="class-modal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background:rgba(0,0,0,0.7);">
+    <div class="rounded-2xl p-6 w-80" style="background:#1e293b;border:1px solid #334155;">
+      <h3 class="text-white font-bold text-base mb-1">Book a Class</h3>
+      <p id="modal-class-name" class="font-semibold mb-1" style="color:#a5b4fc;"></p>
+      <p id="modal-class-details" class="text-sm mb-5" style="color:#94a3b8;"></p>
+      <div class="flex gap-3">
+        <button onclick="closeClassModal()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold" style="background:#334155;color:#f1f5f9;">Cancel</button>
+        <button onclick="confirmBooking()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold gradient-btn text-white">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PT BOOKING MODAL -->
+  <div id="pt-modal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background:rgba(0,0,0,0.7);">
+    <div class="rounded-2xl p-6 w-80" style="background:#1e293b;border:1px solid #334155;">
+      <h3 class="text-white font-bold text-base mb-1">Redeem Your Free PT Session</h3>
+      <p class="text-sm mb-4" style="color:#94a3b8;">Choose your trainer and preferred time</p>
+
+      <p class="text-xs font-semibold mb-2" style="color:#94a3b8;">Select Trainer</p>
+      <div class="space-y-2 mb-4">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="radio" name="trainer" value="Coach Dana" checked class="accent-indigo-500">
+          <span class="text-sm text-white">Coach Dana</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="radio" name="trainer" value="Coach Mike" class="accent-indigo-500">
+          <span class="text-sm text-white">Coach Mike</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="radio" name="trainer" value="Coach Amy" class="accent-indigo-500">
+          <span class="text-sm text-white">Coach Amy</span>
+        </label>
+      </div>
+
+      <p class="text-xs font-semibold mb-2" style="color:#94a3b8;">Select Time Slot</p>
+      <div class="flex gap-2 flex-wrap mb-5" id="time-slots">
+        <button onclick="selectSlot(this)" class="slot-btn px-3 py-1.5 rounded-lg text-xs font-medium selected-slot" style="background:#312e81;color:#a5b4fc;border:1.5px solid #6366f1;">Mon Jan 27 · 10am</button>
+        <button onclick="selectSlot(this)" class="slot-btn px-3 py-1.5 rounded-lg text-xs font-medium" style="background:#1e293b;color:#94a3b8;border:1.5px solid #334155;">Tue Jan 28 · 6pm</button>
+        <button onclick="selectSlot(this)" class="slot-btn px-3 py-1.5 rounded-lg text-xs font-medium" style="background:#1e293b;color:#94a3b8;border:1.5px solid #334155;">Wed Jan 29 · 11am</button>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="closePTModal()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold" style="background:#334155;color:#f1f5f9;">Cancel</button>
+        <button onclick="confirmPT()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold gradient-btn text-white">Confirm Redemption</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <p class="mt-6 text-xs" style="color:#475569;">FitPulse · Problem 1d — Member App · Re-Engagement Automation</p>
+
+  <script>
+    // DATA
+    const currentMember = { name:"Jordan", avatar:"J", daysSinceLastVisit:16, favouriteClass:"HIIT Blast", favouriteInstructor:"Coach Dana", memberSince:"March 2024", totalVisits:47, streakBefore:9, currentSequenceStep:2, offerUnlocked:true };
+
+    let currentClassId = null;
+    let currentClassName = '';
+    let currentClassTime = '';
+
+    // Tab switching
+    function switchTab(tab) {
+      const tabs = ['welcome','classes','offer'];
+      tabs.forEach(t => {
+        const screen = document.getElementById('screen-' + t);
+        const icon = document.getElementById('nav-' + t + '-icon');
+        const text = document.getElementById('nav-' + t + '-text');
+        const line = document.getElementById('nav-' + t + '-line');
+        if (t === tab) {
+          screen.classList.add('active');
+          icon.style.color = '#6366f1';
+          text.style.color = '#6366f1';
+          line.style.background = '#6366f1';
+        } else {
+          screen.classList.remove('active');
+          icon.style.color = '#64748b';
+          text.style.color = '#64748b';
+          line.style.background = 'transparent';
+        }
+      });
+    }
+
+    // Toast
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.textContent = msg;
+      toast.classList.remove('hidden');
+      toast.querySelector('div').classList.remove('toast-out');
+      toast.querySelector('div').classList.add('toast-in');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.querySelector('div').classList.remove('toast-in');
+        toast.querySelector('div').classList.add('toast-out');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 2500);
+    }
+
+    // Class modal
+    function openClassModal(id, name, instructor, time, duration) {
+      const btn = document.getElementById('class-' + id + '-btn');
+      if (btn && btn.disabled) return;
+      currentClassId = id;
+      currentClassName = name;
+      currentClassTime = time;
+      document.getElementById('modal-class-name').textContent = 'Book ' + name + ' with ' + instructor + '?';
+      document.getElementById('modal-class-details').textContent = time + ' · ' + duration;
+      document.getElementById('class-modal').classList.remove('hidden');
+    }
+
+    function closeClassModal() {
+      document.getElementById('class-modal').classList.add('hidden');
+    }
+
+    function confirmBooking() {
+      closeClassModal();
+      const id = currentClassId;
+      const spotsEl = document.getElementById('class-' + id + '-spots');
+      const bookedEl = document.getElementById('class-' + id + '-booked');
+      const btn = document.getElementById('class-' + id + '-btn');
+      if (spotsEl) spotsEl.classList.add('hidden');
+      if (bookedEl) bookedEl.classList.remove('hidden');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Booked';
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+      }
+      showToast('🎉 You\'re back! See you ' + (id === 1 ? 'Thursday' : 'soon') + ', Jordan.');
+    }
+
+    // PT modal
+    function openPTModal() {
+      document.getElementById('pt-modal').classList.remove('hidden');
+    }
+
+    function closePTModal() {
+      document.getElementById('pt-modal').classList.add('hidden');
+    }
+
+    function selectSlot(el) {
+      document.querySelectorAll('.slot-btn').forEach(btn => {
+        btn.style.background = '#1e293b';
+        btn.style.color = '#94a3b8';
+        btn.style.borderColor = '#334155';
+      });
+      el.style.background = '#312e81';
+      el.style.color = '#a5b4fc';
+      el.style.borderColor = '#6366f1';
+    }
+
+    function confirmPT() {
+      closePTModal();
+      document.getElementById('book-pt-btn').classList.add('hidden');
+      document.getElementById('pt-booked-msg').classList.remove('hidden');
+      document.getElementById('offer-code-area').classList.add('hidden');
+      document.getElementById('offer-redeemed-badge').classList.remove('hidden');
+      showToast('✅ PT session confirmed! See you soon.');
+    }
+
+    function copyCode() {
+      navigator.clipboard.writeText('COMEBACK-J47').catch(() => {});
+      showToast('Code copied! 📋');
+    }
+
+    // Init icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitPulse Console – Onboarding Analytics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #0f172a; min-height: 100vh; margin: 0; }
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      border-left: 2px solid transparent;
+    }
+    .sidebar-nav-item:hover { background: rgba(99,102,241,0.1); color: #c7d2fe; }
+    .sidebar-nav-item.active {
+      background: rgba(99,102,241,0.15);
+      color: #818cf8;
+      border-left-color: #6366f1;
+      border-radius: 0 8px 8px 0;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+    .toast-console {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border-left: 3px solid #10b981;
+      border-radius: 10px;
+      padding: 14px 20px;
+      color: #f1f5f9;
+      font-size: 14px;
+      transform: translateY(10px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+      max-width: 360px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .toast-console.show { transform: translateY(0); opacity: 1; }
+    .funnel-bar-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+    .funnel-bar {
+      height: 36px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+      transition: width 0.5s ease;
+      position: relative;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .filter-pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      background: transparent;
+      transition: all 0.2s;
+    }
+    .filter-pill.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+    .stat-card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid #334155;
+    }
+    .risk-high { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .risk-medium { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .risk-low { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .table-row:hover { background: rgba(255,255,255,0.03); }
+  </style>
+</head>
+<body class="flex" style="background:#0f172a;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <aside class="flex flex-col flex-shrink-0" style="width:224px;background:#1e293b;border-right:1px solid #334155;min-height:100vh;position:fixed;top:0;left:0;bottom:0;">
+    <!-- Logo -->
+    <div class="px-4 py-5 border-b border-slate-700">
+      <span class="font-bold text-lg" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">FitPulse</span>
+      <span class="block text-xs mt-0.5" style="color:#64748b;">Console</span>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 py-4 px-2 flex flex-col gap-1">
+      <div class="sidebar-nav-item active" id="nav-overview" onclick="switchSection('overview')">
+        <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i>
+        Onboarding Overview
+      </div>
+      <div class="sidebar-nav-item" id="nav-funnel" onclick="switchSection('funnel')">
+        <i data-lucide="filter" style="width:16px;height:16px;"></i>
+        Funnel Analysis
+      </div>
+      <div class="sidebar-nav-item" id="nav-atrisk" onclick="switchSection('atrisk')">
+        <i data-lucide="alert-triangle" style="width:16px;height:16px;"></i>
+        At-Risk New Members
+      </div>
+    </nav>
+
+    <!-- Owner pill -->
+    <div class="px-4 py-4 border-t border-slate-700">
+      <span class="text-xs px-3 py-1 rounded-full font-medium" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">Owner</span>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto" style="margin-left:224px;padding:32px;min-height:100vh;">
+
+    <!-- SECTION: OVERVIEW -->
+    <div id="section-overview" class="section active">
+      <div class="mb-6">
+        <h1 class="font-bold text-2xl" style="color:#f1f5f9;">New Member Onboarding</h1>
+        <p class="text-sm mt-1" style="color:#94a3b8;">January 2025 · 847 new members</p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="stat-card">
+          <p class="text-xs font-medium mb-2" style="color:#94a3b8;">New Members</p>
+          <p class="font-bold text-3xl" style="color:#f1f5f9;">847</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs font-medium mb-2" style="color:#94a3b8;">Funnel Completion</p>
+          <p class="font-bold text-3xl" style="color:#ef4444;">22%</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs font-medium mb-2" style="color:#94a3b8;">Avg Steps Completed</p>
+          <p class="font-bold text-3xl" style="color:#f59e0b;">2.9<span class="text-lg" style="color:#64748b;">/5</span></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs font-medium mb-2" style="color:#94a3b8;">6-mo Retention (Full)</p>
+          <p class="font-bold text-3xl" style="color:#10b981;">87%</p>
+        </div>
+      </div>
+
+      <!-- Funnel Chart -->
+      <div class="rounded-2xl p-6 mb-6" style="background:#1e293b;border:1px solid #334155;">
+        <h2 class="font-semibold text-base mb-5" style="color:#f1f5f9;">Onboarding Funnel</h2>
+        <div class="flex flex-col gap-2" id="funnelChart"></div>
+        <!-- Annotation -->
+        <div class="rounded-xl p-4 mt-5" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);">
+          <p class="text-sm" style="color:#fca5a5;">⚠ <strong style="color:#ef4444;">Biggest drop-off:</strong> 28% of new members never book their trainer check-in. Automating this nudge could recover <strong style="color:#fca5a5;">~140 members/month</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Retention by Completion -->
+      <div class="rounded-2xl p-6 mb-6" style="background:#1e293b;border:1px solid #334155;">
+        <h2 class="font-semibold text-base mb-5" style="color:#f1f5f9;">6-Month Retention by Completion Level</h2>
+        <div id="retentionChart" class="flex flex-col gap-4"></div>
+        <div class="rounded-xl p-4 mt-5" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);">
+          <p class="text-sm" style="color:#c7d2fe;">The gap between full completion (<strong style="color:#a5b4fc;">87%</strong>) and no onboarding (<strong style="color:#a5b4fc;">38%</strong>) = <strong style="color:#a5b4fc;">49 retention points</strong>. At this gym, that's worth <strong style="color:#a5b4fc;">~$1.46M/year</strong>.</p>
+        </div>
+      </div>
+
+      <!-- ROI Insight Card -->
+      <div class="rounded-2xl p-6 mb-2" style="background:#1e1b4b;border-left:4px solid #6366f1;border:1px solid rgba(99,102,241,0.4);border-left:4px solid #6366f1;">
+        <h3 class="font-bold text-lg mb-4" style="color:#f1f5f9;">💡 The Cost of Skipping Onboarding</h3>
+        <div class="grid grid-cols-3 gap-6">
+          <div class="text-center p-4 rounded-xl" style="background:rgba(99,102,241,0.1);">
+            <p class="font-bold text-2xl mb-1" style="color:#a5b4fc;">4×</p>
+            <p class="text-xs" style="color:#94a3b8;">more likely to stay at month 12</p>
+          </div>
+          <div class="text-center p-4 rounded-xl" style="background:rgba(99,102,241,0.1);">
+            <p class="font-bold text-2xl mb-1" style="color:#a5b4fc;">87% vs 66.4%</p>
+            <p class="text-xs" style="color:#94a3b8;">retention at 6 months</p>
+          </div>
+          <div class="text-center p-4 rounded-xl" style="background:rgba(99,102,241,0.1);">
+            <p class="font-bold text-2xl mb-1" style="color:#a5b4fc;">~$1.46M</p>
+            <p class="text-xs" style="color:#94a3b8;">/year retained revenue</p>
+          </div>
+        </div>
+        <p class="text-xs mt-4" style="color:#475569;">Source: IHRSA + QArea analysis</p>
+      </div>
+    </div>
+
+    <!-- SECTION: FUNNEL ANALYSIS -->
+    <div id="section-funnel" class="section">
+      <div class="mb-6">
+        <h1 class="font-bold text-2xl" style="color:#f1f5f9;">Funnel Analysis</h1>
+        <p class="text-sm mt-1" style="color:#94a3b8;">Step-by-step onboarding breakdown · January 2025</p>
+      </div>
+
+      <!-- Table -->
+      <div class="rounded-2xl overflow-hidden mb-6" style="background:#1e293b;border:1px solid #334155;">
+        <table class="w-full" style="border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid #334155;">
+              <th class="text-left px-5 py-4 text-xs font-semibold" style="color:#64748b;">Step</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Members Reached</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Completed</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Drop-off</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Avg Days</th>
+              <th class="text-left px-5 py-4 text-xs font-semibold" style="color:#64748b;">Automated Trigger</th>
+            </tr>
+          </thead>
+          <tbody id="funnelTable"></tbody>
+        </table>
+      </div>
+
+      <!-- Insight Box -->
+      <div class="rounded-2xl p-5" style="background:#1c1209;border:1px solid rgba(245,158,11,0.4);border-left:4px solid #f59e0b;">
+        <div class="flex items-start gap-3">
+          <i data-lucide="alert-triangle" style="width:18px;height:18px;color:#f59e0b;flex-shrink:0;margin-top:2px;"></i>
+          <div>
+            <p class="font-semibold text-sm mb-1" style="color:#fbbf24;">High Drop-off Alert: Step 4 – Trainer Check-in</p>
+            <p class="text-sm" style="color:#fcd34d;">Step 4 (Trainer Check-in) has the highest drop-off at 41%. Adding an automated Day 10 push notification + SMS nudge is estimated to recover <strong>60–70 additional completions</strong> per cohort.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION: AT-RISK NEW MEMBERS -->
+    <div id="section-atrisk" class="section">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="font-bold text-2xl" style="color:#f1f5f9;">New Members Falling Behind</h1>
+          <p class="text-sm mt-1" style="color:#94a3b8;">Members who may need extra support to complete onboarding</p>
+        </div>
+        <button onclick="openBulkModal()" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold" style="border:1px solid #ef4444;color:#ef4444;background:rgba(239,68,68,0.08);cursor:pointer;">
+          <i data-lucide="send" style="width:14px;height:14px;"></i>
+          Send to All High Risk
+        </button>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="flex gap-2 mb-6">
+        <button class="filter-pill active" id="filter-all" onclick="filterRisk('all')">All</button>
+        <button class="filter-pill" id="filter-high" onclick="filterRisk('high')">High Risk</button>
+        <button class="filter-pill" id="filter-medium" onclick="filterRisk('medium')">Medium Risk</button>
+      </div>
+
+      <!-- Table -->
+      <div class="rounded-2xl overflow-hidden" style="background:#1e293b;border:1px solid #334155;">
+        <table class="w-full" style="border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid #334155;">
+              <th class="text-left px-5 py-4 text-xs font-semibold" style="color:#64748b;">Name</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Days Since Join</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Steps Complete</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Last Seen</th>
+              <th class="text-center px-5 py-4 text-xs font-semibold" style="color:#64748b;">Risk Level</th>
+              <th class="text-right px-5 py-4 text-xs font-semibold" style="color:#64748b;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="atRiskTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bulk Send Modal -->
+  <div class="modal-overlay" id="bulkModal" onclick="closeBulkModalOutside(event)">
+    <div class="rounded-2xl p-6" style="background:#1e293b;border:1px solid #334155;width:420px;" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-start mb-4">
+        <h3 class="font-bold text-lg" style="color:#f1f5f9;">Send Bulk Nudge</h3>
+        <button onclick="closeBulkModal()" style="color:#64748b;cursor:pointer;">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+      <p class="text-sm mb-6" style="color:#94a3b8;">Send onboarding nudge to all <strong style="color:#ef4444;">2 high-risk</strong> new members?</p>
+      <div class="flex gap-3">
+        <button onclick="closeBulkModal()" class="flex-1 py-2.5 rounded-xl text-sm font-medium" style="background:#334155;color:#94a3b8;cursor:pointer;">Cancel</button>
+        <button onclick="confirmBulkSend()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold" style="background:#ef4444;color:#fff;cursor:pointer;">Confirm Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-console" id="consoleToast"></div>
+
+  <!-- Footer -->
+  <footer style="position:fixed;bottom:0;left:224px;right:0;padding:10px 32px;background:#0f172a;border-top:1px solid #1e293b;font-size:11px;color:#475569;z-index:10;">
+    Prototype by <a href="#" style="color:#6366f1;">QArea</a> / <a href="#" style="color:#6366f1;">TestFort</a> · Problem 1c · Onboarding Experience Engineering
+  </footer>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+const onboardingFunnel = [
+  { step:"Joined", count:847, pct:100 },
+  { step:"First Workout", count:791, pct:93 },
+  { step:"First Class", count:612, pct:72 },
+  { step:"Goals Set", count:534, pct:63 },
+  { step:"Trainer Check-in", count:298, pct:35 },
+  { step:"First Measurable Win", count:187, pct:22 }
+];
+const retentionByCompletion = [
+  { segment:"All 5 steps completed", retention6mo:87, members:187 },
+  { segment:"3–4 steps completed", retention6mo:74, members:347 },
+  { segment:"1–2 steps completed", retention6mo:51, members:258 },
+  { segment:"No onboarding steps", retention6mo:38, members:55 }
+];
+const atRiskNewMembers = [
+  { name:"James P.", daysSinceJoin:18, stepsComplete:1, lastSeen:"10 days ago", riskLevel:"High" },
+  { name:"Chloe R.", daysSinceJoin:14, stepsComplete:2, lastSeen:"5 days ago", riskLevel:"High" },
+  { name:"David M.", daysSinceJoin:9, stepsComplete:2, lastSeen:"2 days ago", riskLevel:"Medium" },
+  { name:"Yuki T.", daysSinceJoin:21, stepsComplete:3, lastSeen:"1 day ago", riskLevel:"Medium" },
+  { name:"Sophie L.", daysSinceJoin:7, stepsComplete:3, lastSeen:"Yesterday", riskLevel:"Low" }
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+let nudgeSentMap = {};
+let toastTimer = null;
+
+// ── SECTION SWITCHING ─────────────────────────────────────────────────────────
+function switchSection(section) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + section).classList.add('active');
+  document.getElementById('nav-' + section).classList.add('active');
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function showConsoleToast(msg) {
+  const t = document.getElementById('consoleToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── FUNNEL CHART ─────────────────────────────────────────────────────────────
+function buildFunnelChart() {
+  const colors = ['#10b981','#10b981','#6366f1','#6366f1','#f59e0b','#ef4444'];
+  const container = document.getElementById('funnelChart');
+  container.innerHTML = '';
+
+  onboardingFunnel.forEach((item, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'funnel-bar-container w-full';
+
+    // Annotation between Goals Set and Trainer Check-in
+    if (idx === 4) {
+      const annotation = document.createElement('div');
+      annotation.style.cssText = 'width:100%;text-align:center;';
+      annotation.innerHTML = `<span class="text-xs font-medium" style="color:#fca5a5;">↑ 28% drop here</span>`;
+      container.appendChild(annotation);
+    }
+
+    const bar = document.createElement('div');
+    bar.className = 'funnel-bar';
+    bar.style.width = item.pct + '%';
+    bar.style.background = colors[idx];
+    bar.style.minWidth = '120px';
+    bar.innerHTML = `<span style="white-space:nowrap;">${item.step} — ${item.count.toLocaleString()} (${item.pct}%)</span>`;
+
+    wrap.appendChild(bar);
+    container.appendChild(wrap);
+  });
+}
+
+// ── RETENTION CHART ───────────────────────────────────────────────────────────
+function buildRetentionChart() {
+  const colors = ['#10b981','#6366f1','#f59e0b','#ef4444'];
+  const container = document.getElementById('retentionChart');
+  container.innerHTML = '';
+
+  retentionByCompletion.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="text-sm flex-shrink-0" style="color:#94a3b8;width:180px;">${item.segment}</div>
+        <div class="flex-1 relative" style="height:28px;">
+          <div class="h-full rounded-md flex items-center px-3" style="width:${item.retention6mo}%;background:${colors[idx]};min-width:60px;transition:width 0.5s ease;">
+            <span class="font-semibold text-sm" style="color:#fff;">${item.retention6mo}%</span>
+          </div>
+        </div>
+        <div class="text-xs flex-shrink-0" style="color:#64748b;width:80px;text-align:right;">${item.members.toLocaleString()} members</div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ── FUNNEL TABLE ──────────────────────────────────────────────────────────────
+function buildFunnelTable() {
+  const triggers = [
+    "Membership signup",
+    "Automatic — QR check-in",
+    "Automatic — class booking",
+    "Completed in app",
+    "Automatic — PT booking",
+    "Manual / wearable"
+  ];
+  const avgDays = ["—", "1.2", "3.4", "4.1", "11.8", "18.3"];
+  const tbody = document.getElementById('funnelTable');
+  tbody.innerHTML = '';
+
+  for (let i = 0; i < onboardingFunnel.length; i++) {
+    const item = onboardingFunnel[i];
+    const next = onboardingFunnel[i + 1];
+    const dropoff = next ? (item.count - next.count) : 0;
+    const dropoffPct = next ? Math.round((dropoff / item.count) * 100) : 0;
+
+    let dropPillClass = '';
+    if (dropoffPct > 20) dropPillClass = 'background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);';
+    else if (dropoffPct >= 10) dropPillClass = 'background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);';
+    else if (dropoffPct > 0) dropPillClass = 'background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);';
+
+    const row = document.createElement('tr');
+    row.className = 'table-row';
+    row.style.borderBottom = '1px solid #334155';
+    row.innerHTML = `
+      <td class="px-5 py-4 text-sm font-medium" style="color:#f1f5f9;">${item.step}</td>
+      <td class="px-5 py-4 text-sm text-right" style="color:#94a3b8;">${item.count.toLocaleString()}</td>
+      <td class="px-5 py-4 text-sm text-right" style="color:#94a3b8;">${item.pct}%</td>
+      <td class="px-5 py-4 text-right">
+        ${dropoffPct > 0 ? `<span class="text-xs px-2 py-1 rounded-full font-medium" style="${dropPillClass}">-${dropoffPct}%</span>` : '<span class="text-xs" style="color:#64748b;">—</span>'}
+      </td>
+      <td class="px-5 py-4 text-sm text-right" style="color:#94a3b8;">${avgDays[i]}</td>
+      <td class="px-5 py-4 text-xs" style="color:#64748b;">${triggers[i]}</td>
+    `;
+    tbody.appendChild(row);
+  }
+}
+
+// ── AT-RISK TABLE ─────────────────────────────────────────────────────────────
+function buildAtRiskTable(filter) {
+  const tbody = document.getElementById('atRiskTable');
+  tbody.innerHTML = '';
+  const filtered = atRiskNewMembers.filter(m => {
+    if (filter === 'all') return true;
+    return m.riskLevel.toLowerCase() === filter;
+  });
+
+  filtered.forEach(member => {
+    const riskClass = member.riskLevel === 'High' ? 'risk-high' : member.riskLevel === 'Medium' ? 'risk-medium' : 'risk-low';
+    const isSent = nudgeSentMap[member.name];
+
+    const row = document.createElement('tr');
+    row.className = 'table-row';
+    row.dataset.risk = member.riskLevel.toLowerCase();
+    row.style.borderBottom = '1px solid #334155';
+    row.innerHTML = `
+      <td class="px-5 py-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;">${member.name.charAt(0)}</div>
+          <span class="text-sm font-medium" style="color:#f1f5f9;">${member.name}</span>
+        </div>
+      </td>
+      <td class="px-5 py-4 text-sm text-right" style="color:#94a3b8;">Day ${member.daysSinceJoin}</td>
+      <td class="px-5 py-4 text-sm text-right">
+        <span style="color:#f1f5f9;">${member.stepsComplete}</span><span style="color:#64748b;">/5</span>
+      </td>
+      <td class="px-5 py-4 text-sm text-right" style="color:#94a3b8;">${member.lastSeen}</td>
+      <td class="px-5 py-4 text-center">
+        <span class="text-xs font-semibold px-3 py-1 rounded-full ${riskClass}">${member.riskLevel}</span>
+      </td>
+      <td class="px-5 py-4 text-right">
+        ${isSent
+          ? `<span class="text-xs font-medium" style="color:#10b981;">✅ Nudge Sent</span>`
+          : `<button onclick="sendNudge(this, '${member.name}')" class="text-xs font-semibold px-3 py-2 rounded-lg" style="background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3);cursor:pointer;">Send Onboarding Nudge</button>`
+        }
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// ── FILTER ───────────────────────────────────────────────────────────────────
+function filterRisk(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('filter-' + filter).classList.add('active');
+  buildAtRiskTable(filter);
+}
+
+// ── SEND NUDGE ────────────────────────────────────────────────────────────────
+function sendNudge(btn, name) {
+  nudgeSentMap[name] = true;
+  btn.outerHTML = `<span class="text-xs font-medium" style="color:#10b981;">✅ Nudge Sent</span>`;
+  showConsoleToast(`Personalised onboarding reminder sent to ${name}`);
+}
+
+// ── BULK MODAL ────────────────────────────────────────────────────────────────
+function openBulkModal() {
+  document.getElementById('bulkModal').classList.add('show');
+}
+function closeBulkModal() {
+  document.getElementById('bulkModal').classList.remove('show');
+}
+function closeBulkModalOutside(e) {
+  if (e.target === document.getElementById('bulkModal')) closeBulkModal();
+}
+function confirmBulkSend() {
+  closeBulkModal();
+  // Mark all high-risk as sent
+  atRiskNewMembers.forEach(m => {
+    if (m.riskLevel === 'High') nudgeSentMap[m.name] = true;
+  });
+  buildAtRiskTable(currentFilter);
+  showConsoleToast('2 members notified');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  buildFunnelChart();
+  buildRetentionChart();
+  buildFunnelTable();
+  buildAtRiskTable('all');
+});
+</script>
+</body>
+</html>

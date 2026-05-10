@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FitPulse – Community & Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { background: #0f172a; font-family: 'Inter', system-ui, sans-serif; }
+  .phone-frame { width: 390px; min-height: 844px; background: #0f172a; border-radius: 44px; box-shadow: 0 0 0 2px #334155, 0 30px 80px rgba(0,0,0,0.6); overflow: hidden; position: relative; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .toast { position: absolute; bottom: 80px; left: 16px; right: 16px; background: #1e293b; color: #f1f5f9; border-radius: 12px; padding: 12px 16px; font-size: 13px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 1px solid #334155; z-index: 999; opacity: 0; transform: translateY(8px); transition: all 0.3s ease; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; }
+  .modal-box { background: #1e293b; border-radius: 20px; padding: 24px; margin: 0 20px; width: 100%; border: 1px solid #334155; }
+  .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px; cursor: pointer; color: #64748b; font-size: 10px; transition: color 0.2s; }
+  .nav-tab.active { color: #6366f1; }
+  .nav-tab svg { width: 20px; height: 20px; }
+  .progress-bar { height: 6px; background: #334155; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #6366f1; border-radius: 3px; transition: width 0.5s ease; }
+  .buddy-card { background: #1e293b; border-radius: 16px; padding: 14px; border: 1px solid #334155; }
+  .feed-card { background: #1e293b; border-radius: 14px; padding: 12px; border: 1px solid #334155; }
+  .feed-card.milestone { border-left: 3px solid #f59e0b; }
+  .feed-card.achievement { border-left: 3px solid #f59e0b; }
+  .challenge-card { background: #1e293b; border-radius: 16px; padding: 16px; border: 1px solid #334155; }
+  .class-card { background: #1e293b; border-radius: 16px; padding: 16px; border: 1px solid #334155; }
+  .btn-indigo { background: #6366f1; color: white; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-indigo:hover { background: #5254cc; }
+  .btn-outline { background: transparent; color: #6366f1; border: 1px solid #6366f1; border-radius: 10px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-outline:hover { background: rgba(99,102,241,0.1); }
+  .reaction-btn { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; border: 1px solid #475569; background: transparent; color: #94a3b8; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .reaction-btn.reacted { background: #6366f1; border-color: #6366f1; color: white; }
+  .avatar-circle { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; flex-shrink: 0; }
+  .avatar-sm { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; color: white; flex-shrink: 0; }
+  .high-five-btn { transition: transform 0.15s; }
+  .high-five-btn.pop { transform: scale(1.2); }
+  ::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center py-10 px-4">
+
+<div class="phone-frame" id="phone">
+
+  <!-- STATUS BAR -->
+  <div class="flex justify-between items-center px-6 pt-3 pb-1" style="font-size:11px;color:#94a3b8;">
+    <span>9:41</span>
+    <div class="flex gap-1 items-center">
+      <i data-lucide="wifi" style="width:13px;height:13px;"></i>
+      <i data-lucide="battery" style="width:15px;height:15px;"></i>
+    </div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="flex items-center justify-between px-5 py-3">
+    <span class="text-xl font-black" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">FitPulse</span>
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <i data-lucide="bell" style="width:20px;height:20px;color:#94a3b8;"></i>
+        <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-white" style="background:#ef4444;font-size:7px;">3</span>
+      </div>
+      <div class="avatar-circle" style="background:#6366f1;width:32px;height:32px;font-size:12px;">S</div>
+    </div>
+  </div>
+
+  <!-- SCROLLABLE CONTENT -->
+  <div style="height:calc(100% - 150px);overflow-y:auto;padding-bottom:8px;" id="scrollArea">
+
+    <!-- TAB: FEED -->
+    <div class="tab-content active" id="tab-feed">
+      <div class="px-4">
+        <!-- Community Pulse -->
+        <div class="rounded-xl px-4 py-3 mb-4 text-xs" style="background:#334155;color:#cbd5e1;">
+          🏃 312 members active today &nbsp;·&nbsp; 🔥 1,840 in challenges &nbsp;·&nbsp; ⭐ 2,341 moments shared this week
+        </div>
+        <!-- Feed Cards -->
+        <div class="flex flex-col gap-3" id="feedList"></div>
+      </div>
+    </div>
+
+    <!-- TAB: BUDDIES -->
+    <div class="tab-content" id="tab-buddies">
+      <div class="px-4">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-bold text-base" style="color:#f1f5f9;">Your Gym Buddies</span>
+          <span class="text-xs font-bold px-2 py-1 rounded-full" style="background:#064e3b;color:#10b981;" id="connectionBadge">3 connections</span>
+        </div>
+        <!-- Buddy List -->
+        <div class="flex flex-col gap-3" id="buddyList"></div>
+        <!-- Suggested -->
+        <div class="mt-5 mb-2 font-semibold text-sm" style="color:#94a3b8;">People You Might Know</div>
+        <div class="flex flex-col gap-3" id="suggestedList"></div>
+        <!-- Connection Insight -->
+        <div class="mt-5 rounded-xl p-4" style="background:#1e1b4b;border-left:4px solid #6366f1;">
+          <div class="text-xs font-semibold mb-2" style="color:#a5b4fc;">Social Connection Insight</div>
+          <div class="text-xs mb-3" style="color:#cbd5e1;" id="insightText">Members with 3+ gym buddies are 5x more likely to stay long-term. You're at 3 — keep building!</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="insightBar" style="width:60%;"></div>
+          </div>
+          <div class="text-xs mt-1" style="color:#6366f1;" id="insightBarLabel">3 / 5 connections</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CHALLENGES -->
+    <div class="tab-content" id="tab-challenges">
+      <div class="px-4">
+        <div class="font-bold text-base mb-4" style="color:#f1f5f9;">Group Challenges</div>
+        <div class="flex flex-col gap-4" id="challengeList"></div>
+      </div>
+    </div>
+
+    <!-- TAB: CLASSES -->
+    <div class="tab-content" id="tab-classes">
+      <div class="px-4">
+        <div class="font-bold text-base mb-4" style="color:#f1f5f9;">Classes Your Buddies Are Attending</div>
+        <div class="flex flex-col gap-3" id="sharedClassList"></div>
+        <div class="mt-5 mb-2 font-semibold text-sm" style="color:#94a3b8;">Discover Classes</div>
+        <div class="flex flex-col gap-3">
+          <div class="class-card">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="font-semibold text-sm" style="color:#f1f5f9;">HIIT Blast</div>
+                <div class="text-xs mt-0.5" style="color:#94a3b8;">Thu 7pm · 31 members attended last week</div>
+                <div class="text-xs mt-1" style="color:#f59e0b;">🔥 Mike T. and 2 others are going</div>
+              </div>
+              <button class="btn-indigo" onclick="bookDiscover('HIIT Blast')">Book →</button>
+            </div>
+          </div>
+          <div class="class-card">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="font-semibold text-sm" style="color:#f1f5f9;">Yoga Flow</div>
+                <div class="text-xs mt-0.5" style="color:#94a3b8;">Sat 9am · 24 members attended last week</div>
+                <div class="text-xs mt-1" style="color:#8b5cf6;">🧘 Priya M. is going</div>
+              </div>
+              <button class="btn-indigo" onclick="bookDiscover('Yoga Flow')">Book →</button>
+            </div>
+          </div>
+          <div class="class-card">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="font-semibold text-sm" style="color:#f1f5f9;">Cycling</div>
+                <div class="text-xs mt-0.5" style="color:#94a3b8;">Fri 6am · 19 members attended last week</div>
+                <div class="text-xs mt-1" style="color:#10b981;">🚴 James R. is going</div>
+              </div>
+              <button class="btn-indigo" onclick="bookDiscover('Cycling')">Book →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end scroll area -->
+
+  <!-- BOTTOM NAV -->
+  <div class="flex border-t" style="border-color:#1e293b;background:#0f172a;position:absolute;bottom:0;left:0;right:0;">
+    <div class="nav-tab active" id="nav-feed" onclick="switchTab('feed')">
+      <i data-lucide="activity" style="width:20px;height:20px;"></i>
+      <span>Feed</span>
+    </div>
+    <div class="nav-tab" id="nav-buddies" onclick="switchTab('buddies')">
+      <i data-lucide="users" style="width:20px;height:20px;"></i>
+      <span>Buddies</span>
+    </div>
+    <div class="nav-tab" id="nav-challenges" onclick="switchTab('challenges')">
+      <i data-lucide="flag" style="width:20px;height:20px;"></i>
+      <span>Challenges</span>
+    </div>
+    <div class="nav-tab" id="nav-classes" onclick="switchTab('classes')">
+      <i data-lucide="calendar" style="width:20px;height:20px;"></i>
+      <span>Classes</span>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none;">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+</div><!-- end phone-frame -->
+
+<div class="text-center mt-6 text-xs" style="color:#475569;">
+  FitPulse Prototype · Problem 1e: Community & Social Features · Member View
+</div>
+
+<script>
+const currentMember = { name:"Sara", avatar:"S", connections:3, memberSince:"October 2024", totalVisits:52, currentStreak:11 };
+let gymBuddies = [
+  { id:1, name:"Mike T.", avatar:"M", streak:31, lastClass:"HIIT Blast · Yesterday", sharedClasses:8, status:"active" },
+  { id:2, name:"Priya M.", avatar:"P", streak:9, lastClass:"Yoga Flow · Today", sharedClasses:5, status:"active" },
+  { id:3, name:"James R.", avatar:"J", streak:18, lastClass:"Cycling · 2 days ago", sharedClasses:12, status:"active" }
+];
+let suggestedConnections = [
+  { id:4, name:"Anna K.", avatar:"A", reason:"You've attended 4 of the same HIIT Blast classes", mutualFriends:2, streak:22 },
+  { id:5, name:"Tom H.", avatar:"T", reason:"Both signed up in October 2024", mutualFriends:1, streak:6 },
+  { id:6, name:"Lisa W.", avatar:"L", reason:"You both train with Coach Dana", mutualFriends:3, streak:5 }
+];
+let activityFeed = [
+  { id:1, member:"Mike T.", avatar:"M", action:"completed a 30-day streak 🔥", time:"2 min ago", reactions:14, reacted:false, type:"milestone" },
+  { id:2, member:"Priya M.", avatar:"P", action:"joined the February Warrior challenge 💪", time:"18 min ago", reactions:6, reacted:false, type:"challenge" },
+  { id:3, member:"James R.", avatar:"J", action:"checked in for the 50th time 🏅", time:"1 hr ago", reactions:22, reacted:true, type:"milestone" },
+  { id:4, member:"Anna K.", avatar:"A", action:"booked HIIT Blast this Thursday — 2 spots left!", time:"2 hrs ago", reactions:3, reacted:false, type:"booking" },
+  { id:5, member:"Tom H.", avatar:"T", action:"hit a new personal best in Strength class 💥", time:"3 hrs ago", reactions:9, reacted:false, type:"achievement" },
+  { id:6, member:"Lisa W.", avatar:"L", action:"completed the Yoga 5x Challenge 🧘", time:"5 hrs ago", reactions:17, reacted:true, type:"challenge" },
+  { id:7, member:"Chris B.", avatar:"C", action:"just joined FitPulse — welcome! 👋", time:"Yesterday", reactions:11, reacted:false, type:"new_member" },
+  { id:8, member:"Emma D.", avatar:"E", action:"is attending Cycling tomorrow at 7am — join her?", time:"Yesterday", reactions:2, reacted:false, type:"booking" }
+];
+let groupChallenges = [
+  { id:1, name:"February Warrior", description:"Complete 20 check-ins in February", participants:287, target:20, duration:"28 days", daysLeft:21, reward:250, joined:true, userProgress:8, topMembers:[{name:"Mike T.",avatar:"M",progress:12},{name:"James R.",avatar:"J",progress:10},{name:"Sara",avatar:"S",progress:8,isCurrentUser:true}] },
+  { id:2, name:"Buddy Bonus", description:"Attend 5 classes with the same gym buddy", participants:94, target:5, duration:"14 days", daysLeft:9, reward:300, joined:true, userProgress:3, topMembers:[{name:"Anna K.",avatar:"A",progress:4},{name:"Sara",avatar:"S",progress:3,isCurrentUser:true},{name:"Tom H.",avatar:"T",progress:2}] },
+  { id:3, name:"Morning Crew", description:"10 pre-9am workouts this month", participants:156, target:10, duration:"30 days", daysLeft:18, reward:200, joined:false, userProgress:0, topMembers:[{name:"Priya M.",avatar:"P",progress:7},{name:"Lisa W.",avatar:"L",progress:6},{name:"Ben C.",avatar:"C",progress:5}] }
+];
+let upcomingSharedClasses = [
+  { class:"HIIT Blast", instructor:"Coach Dana", time:"Thu Feb 6 · 7pm", buddiesGoing:["Mike T.","Anna K."], spotsLeft:2, booked:false },
+  { class:"Yoga Flow", instructor:"Coach Sarah", time:"Sat Feb 8 · 9am", buddiesGoing:["Priya M."], spotsLeft:6, booked:false }
+];
+let connectionCount = 3;
+
+const avatarColors = {
+  M:"bg-indigo-600", P:"bg-violet-600", J:"bg-emerald-600", A:"bg-amber-600",
+  T:"bg-blue-600", L:"bg-pink-600", C:"bg-orange-600", E:"bg-teal-600", S:"bg-indigo-500"
+};
+const avatarBg = {
+  M:"#4f46e5", P:"#7c3aed", J:"#059669", A:"#d97706",
+  T:"#2563eb", L:"#db2777", C:"#ea580c", E:"#0d9488", S:"#6366f1"
+};
+
+function getAvatarStyle(letter, size=38) {
+  const bg = avatarBg[letter] || "#6366f1";
+  return `width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${size>30?14:11}px;color:white;flex-shrink:0;`;
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function showModal(html) {
+  document.getElementById('modalBox').innerHTML = html;
+  document.getElementById('modalOverlay').style.display = 'flex';
+  lucide.createIcons();
+}
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+  document.getElementById('scrollArea').scrollTop = 0;
+}
+
+// ---- FEED ----
+function renderFeed() {
+  const list = document.getElementById('feedList');
+  list.innerHTML = activityFeed.map(item => {
+    const borderClass = (item.type === 'milestone' || item.type === 'achievement') ? 'border-l-4' : '';
+    const borderStyle = (item.type === 'milestone' || item.type === 'achievement') ? 'border-left:3px solid #f59e0b;' : '';
+    const joinBtn = item.type === 'booking' ? `<button class="btn-outline" style="font-size:10px;padding:4px 8px;" onclick="joinFromFeed(${item.id})">Join them →</button>` : '';
+    const reactedStyle = item.reacted ? 'background:#6366f1;border-color:#6366f1;color:white;' : 'background:transparent;border:1px solid #475569;color:#94a3b8;';
+    return `
+      <div class="feed-card" style="${borderStyle}">
+        <div class="flex items-start gap-3">
+          <div style="${getAvatarStyle(item.avatar)}">${item.avatar}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-2">
+              <div class="text-xs flex-1" style="color:#f1f5f9;">
+                <span class="font-bold">${item.member}</span>
+                <span style="color:#cbd5e1;"> ${item.action}</span>
+              </div>
+              ${joinBtn}
+            </div>
+            <div class="text-xs mt-1" style="color:#64748b;">${item.time}</div>
+            <div class="flex items-center gap-2 mt-2">
+              <button class="reaction-btn" style="${reactedStyle}" onclick="toggleReaction(${item.id})">
+                👏 <span>${item.reactions}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleReaction(id) {
+  const item = activityFeed.find(f => f.id === id);
+  if (!item) return;
+  item.reacted = !item.reacted;
+  item.reactions += item.reacted ? 1 : -1;
+  renderFeed();
+}
+
+function joinFromFeed(id) {
+  showToast("Added to your schedule! 🎉");
+}
+
+// ---- BUDDIES ----
+function renderBuddies() {
+  const list = document.getElementById('buddyList');
+  list.innerHTML = gymBuddies.map(b => `
+    <div class="buddy-card">
+      <div class="flex items-center gap-3 mb-3">
+        <div style="${getAvatarStyle(b.avatar)}">${b.avatar}</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm" style="color:#f1f5f9;">${b.name}</div>
+          <div class="text-xs" style="color:#f59e0b;">🔥 ${b.streak}-day streak</div>
+          <div class="text-xs mt-0.5" style="color:#64748b;">${b.lastClass}</div>
+        </div>
+      </div>
+      <div class="text-xs mb-3 px-1" style="color:#94a3b8;">Shared classes together: <span style="color:#a5b4fc;font-weight:600;">${b.sharedClasses}</span></div>
+      <div class="flex gap-2">
+        <button class="btn-indigo flex-1" style="font-size:11px;" onclick="openInviteModal('${b.name}')">Invite to Class →</button>
+        <button class="btn-outline high-five-btn" id="hf-${b.id}" onclick="highFive(${b.id},'${b.name}')">High Five 👋</button>
+      </div>
+    </div>
+  `).join('');
+  renderSuggested();
+  updateConnectionBadge();
+}
+
+function renderSuggested() {
+  const list = document.getElementById('suggestedList');
+  list.innerHTML = suggestedConnections.map(s => `
+    <div class="buddy-card" id="sug-${s.id}">
+      <div class="flex items-center gap-3 mb-3">
+        <div style="${getAvatarStyle(s.avatar)}">${s.avatar}</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm" style="color:#f1f5f9;">${s.name}</div>
+          <div class="text-xs mt-0.5" style="color:#6366f1;background:#1e1b4b;border:1px solid #4338ca;padding:2px 8px;border-radius:20px;display:inline-block;">${s.reason}</div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="text-xs" style="color:#64748b;">${s.mutualFriends} mutual friends · 🔥 ${s.streak}-day streak</div>
+        <button class="btn-indigo" style="font-size:11px;" onclick="connectBuddy(${s.id})">Connect →</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateConnectionBadge() {
+  document.getElementById('connectionBadge').textContent = `${connectionCount} connections`;
+  const pct = Math.min((connectionCount / 5) * 100, 100);
+  document.getElementById('insightBar').style.width = pct + '%';
+  document.getElementById('insightBarLabel').textContent = `${connectionCount} / 5 connections`;
+  document.getElementById('insightText').textContent = `Members with 3+ gym buddies are 5x more likely to stay long-term. You're at ${connectionCount} — keep building!`;
+}
+
+function openInviteModal(name) {
+  showModal(`
+    <div class="text-base font-bold mb-1" style="color:#f1f5f9;">Invite ${name} to a Class</div>
+    <div class="text-xs mb-4" style="color:#94a3b8;">Select a class to invite your buddy</div>
+    <div class="flex flex-col gap-3" id="inviteOptions">
+      <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer" style="background:#0f172a;border:1px solid #334155;">
+        <input type="radio" name="inviteClass" value="HIIT Blast Thu 7pm" class="accent-indigo-500" />
+        <div>
+          <div class="font-semibold text-sm" style="color:#f1f5f9;">HIIT Blast</div>
+          <div class="text-xs" style="color:#94a3b8;">Thu Feb 6 · 7pm · 2 spots left</div>
+        </div>
+      </label>
+      <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer" style="background:#0f172a;border:1px solid #334155;">
+        <input type="radio" name="inviteClass" value="Yoga Flow Sat 9am" class="accent-indigo-500" />
+        <div>
+          <div class="font-semibold text-sm" style="color:#f1f5f9;">Yoga Flow</div>
+          <div class="text-xs" style="color:#94a3b8;">Sat Feb 8 · 9am · 6 spots left</div>
+        </div>
+      </label>
+    </div>
+    <div class="flex gap-2 mt-5">
+      <button class="btn-outline flex-1" onclick="closeModal()">Cancel</button>
+      <button class="btn-indigo flex-1" onclick="sendInvite('${name}')">Send Invite</button>
+    </div>
+  `);
+}
+
+function sendInvite(name) {
+  closeModal();
+  showToast(`Invite sent to ${name}!`);
+}
+
+function highFive(id, name) {
+  const btn = document.getElementById('hf-' + id);
+  if (!btn) return;
+  btn.classList.add('pop');
+  setTimeout(() => btn.classList.remove('pop'), 200);
+  showToast(`👋 High five sent to ${name}!`);
+}
+
+function connectBuddy(id) {
+  const idx = suggestedConnections.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  const s = suggestedConnections[idx];
+  gymBuddies.push({ id:s.id, name:s.name, avatar:s.avatar, streak:s.streak, lastClass:"New connection", sharedClasses:0, status:"active" });
+  suggestedConnections.splice(idx, 1);
+  connectionCount++;
+  renderBuddies();
+  showToast(`🎉 You're now connected with ${s.name}!`);
+}
+
+// ---- CHALLENGES ----
+function renderChallenges() {
+  const joined = groupChallenges.filter(c => c.joined);
+  const available = groupChallenges.filter(c => !c.joined);
+  const list = document.getElementById('challengeList');
+  let html = '';
+
+  if (joined.length) {
+    html += `<div class="text-xs font-semibold mb-1" style="color:#10b981;">IN PROGRESS</div>`;
+    joined.forEach(c => {
+      const pct = Math.round((c.userProgress / c.target) * 100);
+      const leaderRows = c.topMembers.map(m => `
+        <div class="flex items-center gap-2 py-1.5 px-2 rounded-lg ${m.isCurrentUser ? '' : ''}" style="${m.isCurrentUser ? 'border:1px solid #6366f1;background:#1e1b4b;' : ''}">
+          <div style="${getAvatarStyle(m.avatar, 24)}">${m.avatar}</div>
+          <span class="text-xs flex-1" style="color:${m.isCurrentUser ? '#a5b4fc' : '#cbd5e1'};">${m.name}${m.isCurrentUser ? ' (you)' : ''}</span>
+          <span class="text-xs font-bold" style="color:#f1f5f9;">${m.progress}/${c.target}</span>
+        </div>
+      `).join('');
+      html += `
+        <div class="challenge-card">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="font-bold text-sm" style="color:#f1f5f9;">${c.name}</div>
+              <div class="text-xs mt-0.5" style="color:#94a3b8;">${c.description}</div>
+            </div>
+            <div class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#064e3b;color:#10b981;">Active</div>
+          </div>
+          <div class="flex gap-3 text-xs mb-3" style="color:#94a3b8;">
+            <span>👥 ${c.participants}</span>
+            <span>⏳ ${c.daysLeft}d left</span>
+            <span>⭐ ${c.reward} pts</span>
+          </div>
+          <div class="text-xs mb-1 flex justify-between" style="color:#94a3b8;">
+            <span>Your progress</span><span style="color:#a5b4fc;">${c.userProgress}/${c.target}</span>
+          </div>
+          <div class="progress-bar mb-3">
+            <div class="progress-fill" style="width:${pct}%;"></div>
+          </div>
+          <div class="text-xs font-semibold mb-2" style="color:#94a3b8;">Top Members</div>
+          <div class="flex flex-col gap-1">${leaderRows}</div>
+          <button class="btn-outline w-full mt-3" style="font-size:11px;width:100%;text-align:center;" onclick="toggleLeaderboard(${c.id})">View Full Leaderboard ▾</button>
+          <div id="lb-${c.id}" style="display:none;" class="mt-2">
+            <div class="text-xs px-2 py-2 rounded-lg" style="color:#94a3b8;background:#0f172a;">Full leaderboard: ${c.participants} participants ranked by check-ins. Keep going! 💪</div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  if (available.length) {
+    html += `<div class="text-xs font-semibold mt-2 mb-1" style="color:#94a3b8;">AVAILABLE TO JOIN</div>`;
+    available.forEach(c => {
+      html += `
+        <div class="challenge-card" id="ch-${c.id}">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="font-bold text-sm" style="color:#f1f5f9;">${c.name}</div>
+              <div class="text-xs mt-0.5" style="color:#94a3b8;">${c.description}</div>
+            </div>
+          </div>
+          <div class="flex gap-3 text-xs mb-3" style="color:#94a3b8;">
+            <span>👥 ${c.participants}</span>
+            <span>⏳ ${c.daysLeft}d left</span>
+            <span>⭐ ${c.reward} pts</span>
+          </div>
+          <button class="btn-indigo w-full" style="font-size:12px;width:100%;" onclick="joinChallenge(${c.id})">Join Challenge →</button>
+        </div>
+      `;
+    });
+  }
+
+  list.innerHTML = html;
+}
+
+function toggleLeaderboard(id) {
+  const lb = document.getElementById('lb-' + id);
+  if (lb) lb.style.display = lb.style.display === 'none' ? 'block' : 'none';
+}
+
+function joinChallenge(id) {
+  const c = groupChallenges.find(ch => ch.id === id);
+  if (!c) return;
+  c.joined = true;
+  c.participants++;
+  c.topMembers.push({ name:"Sara", avatar:"S", progress:0, isCurrentUser:true });
+  renderChallenges();
+  showToast(`💪 You joined ${c.name}!`);
+}
+
+// ---- CLASSES ----
+function renderSharedClasses() {
+  const list = document.getElementById('sharedClassList');
+  list.innerHTML = upcomingSharedClasses.map((sc, idx) => {
+    const spotsColor = sc.spotsLeft <= 3 ? '#ef4444' : '#10b981';
+    const buddyAvatars = sc.buddiesGoing.map(name => {
+      const letter = name.charAt(0);
+      return `<div style="${getAvatarStyle(letter, 26)}">${letter}</div>`;
+    }).join('');
+    const saraAvatar = sc.booked ? `<div style="${getAvatarStyle('S', 26)}">S</div>` : '';
+    if (sc.booked) {
+      return `
+        <div class="class-card" style="border:1px solid #059669;">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="font-semibold text-sm" style="color:#f1f5f9;">${sc.class}</div>
+              <div class="text-xs mt-0.5" style="color:#94a3b8;">${sc.instructor} · ${sc.time}</div>
+            </div>
+            <span class="text-xs font-bold" style="color:#10b981;">✅ You're going!</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-xs" style="color:#94a3b8;">Going:</span>
+            <div class="flex gap-1">${buddyAvatars}${saraAvatar}</div>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="class-card">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <div class="font-semibold text-sm" style="color:#f1f5f9;">${sc.class}</div>
+            <div class="text-xs mt-0.5" style="color:#94a3b8;">${sc.instructor} · ${sc.time}</div>
+          </div>
+          <span class="text-xs" style="color:${spotsColor};">${sc.spotsLeft} spots left</span>
+        </div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-xs" style="color:#94a3b8;">Going:</span>
+          <div class="flex gap-1">${buddyAvatars}</div>
+          <span class="text-xs" style="color:#cbd5e1;">${sc.buddiesGoing.join(' & ')}</span>
+        </div>
+        <button class="btn-indigo w-full" style="font-size:12px;width:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);" onclick="openJoinClassModal(${idx})">Join Them →</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function openJoinClassModal(idx) {
+  const sc = upcomingSharedClasses[idx];
+  const buddyAvatars = sc.buddiesGoing.map(name => {
+    const letter = name.charAt(0);
+    return `<div style="${getAvatarStyle(letter, 32)}">${letter}</div>`;
+  }).join('');
+  showModal(`
+    <div class="text-base font-bold mb-1" style="color:#f1f5f9;">Join ${sc.class} with your buddies?</div>
+    <div class="text-xs mb-4" style="color:#94a3b8;">${sc.time} · ${sc.instructor}</div>
+    <div class="flex gap-2 items-center mb-5 p-3 rounded-xl" style="background:#0f172a;">
+      ${buddyAvatars}
+      <div class="text-xs ml-2" style="color:#cbd5e1;">${sc.buddiesGoing.join(' & ')} will see you there!</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn-outline flex-1" onclick="closeModal()">Cancel</button>
+      <button class="btn-indigo flex-1" onclick="confirmJoinClass(${idx})">Book Now</button>
+    </div>
+  `);
+}
+
+function confirmJoinClass(idx) {
+  upcomingSharedClasses[idx].booked = true;
+  closeModal();
+  renderSharedClasses();
+  showToast("🎉 Booked! Your buddies will see you there.");
+}
+
+function bookDiscover(name) {
+  showToast(`Class booked!`);
+}
+
+// ---- INIT ----
+function init() {
+  renderFeed();
+  renderBuddies();
+  renderChallenges();
+  renderSharedClasses();
+  lucide.createIcons();
+}
+
+init();
+</script>
+</body>
+</html>
