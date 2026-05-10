@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPulse — Member App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { background: #0f172a; font-family: 'Inter', system-ui, sans-serif; }
+  .phone-frame {
+    width: 390px;
+    min-height: 844px;
+    background: #0f172a;
+    border-radius: 44px;
+    border: 2px solid #334155;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 0 8px #1e293b, 0 30px 80px rgba(0,0,0,0.6);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 8px 4px; cursor: pointer; border-top: 2px solid transparent; transition: all 0.2s; }
+  .nav-tab.active { border-top-color: #6366f1; color: #6366f1; }
+  .nav-tab:not(.active) { color: #64748b; }
+  .nav-tab span { font-size: 10px; }
+  .tier-progress { background: #334155; border-radius: 9999px; height: 8px; overflow: hidden; }
+  .tier-progress-fill { background: #f59e0b; height: 100%; border-radius: 9999px; transition: width 0.5s ease; }
+  .reward-card { background: #1e293b; border-radius: 12px; padding: 12px; border: 1px solid #334155; transition: all 0.2s; }
+  .reward-card.claimed { background: #064e3b; border-color: #10b981; }
+  .reward-card.locked { opacity: 0.5; }
+  .toast { position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1e293b; border: 1px solid #334155; color: #f1f5f9; padding: 10px 18px; border-radius: 20px; font-size: 13px; white-space: nowrap; z-index: 100; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: #1e293b; border-radius: 16px; padding: 20px; width: 320px; border: 1px solid #334155; }
+  .pill-filter { padding: 5px 14px; border-radius: 9999px; font-size: 12px; cursor: pointer; border: 1px solid #334155; transition: all 0.2s; }
+  .pill-filter.active { background: #6366f1; border-color: #6366f1; color: white; }
+  .pill-filter:not(.active) { background: transparent; color: #94a3b8; }
+  .scroll-area { overflow-y: auto; scrollbar-width: none; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+  .tier-col { border-radius: 8px; padding: 8px; cursor: pointer; transition: all 0.2s; position: relative; }
+  .tier-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 10px; font-size: 11px; color: #f1f5f9; white-space: nowrap; z-index: 10; display: none; min-width: 160px; }
+  .tier-col:hover .tier-tooltip { display: block; }
+  .history-bar { height: 6px; border-radius: 9999px; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center py-12">
+
+<!-- Phone Frame -->
+<div class="phone-frame" id="app">
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- MODAL: Share Link -->
+  <div class="modal-overlay" id="modalShare">
+    <div class="modal-box">
+      <h3 class="text-white font-bold text-base mb-1">Share Your Referral Link</h3>
+      <p class="text-slate-400 text-xs mb-3">Friends who join via your link get 50% off their first month.</p>
+      <div class="bg-slate-700 rounded-lg px-3 py-2 mb-4 text-center">
+        <span class="text-indigo-300 text-xs font-mono">fitpulse.app/join/SARA-FP47</span>
+      </div>
+      <div class="flex gap-2 mb-4">
+        <button onclick="shareAction('WhatsApp')" class="flex-1 bg-green-600 hover:bg-green-500 text-white rounded-lg py-2 text-xs font-semibold flex items-center justify-center gap-1">📱 WhatsApp</button>
+        <button onclick="shareAction('Email')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-semibold flex items-center justify-center gap-1">📧 Email</button>
+        <button onclick="shareAction('Link')" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white rounded-lg py-2 text-xs font-semibold flex items-center justify-center gap-1">🔗 Copy</button>
+      </div>
+      <button onclick="closeModal('modalShare')" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg py-2 text-xs">Close</button>
+    </div>
+  </div>
+
+  <!-- MODAL: Leaderboard -->
+  <div class="modal-overlay" id="modalLeaderboard">
+    <div class="modal-box">
+      <h3 class="text-white font-bold text-base mb-3">🏆 Top Referrers</h3>
+      <div id="leaderboardBody" class="space-y-2"></div>
+      <button onclick="closeModal('modalLeaderboard')" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg py-2 text-xs mt-4">Close</button>
+    </div>
+  </div>
+
+  <!-- MODAL: Redeem Reward -->
+  <div class="modal-overlay" id="modalRedeem">
+    <div class="modal-box" id="redeemModalContent"></div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area" style="height:780px; padding-bottom: 56px;">
+
+    <!-- TAB: STATUS -->
+    <div class="tab-content active" id="tab-status">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-5 pt-6 pb-2">
+        <span class="text-xl font-extrabold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">FitPulse</span>
+        <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">S</div>
+      </div>
+
+      <div class="px-4 space-y-4 pb-4">
+        <!-- Tier Hero Card -->
+        <div class="rounded-2xl bg-gradient-to-br from-slate-700 to-slate-600 p-5 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-28 h-28 bg-white opacity-5 rounded-full -translate-y-8 translate-x-8"></div>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-full bg-slate-500 flex items-center justify-center">
+              <i data-lucide="medal" class="text-slate-300 w-7 h-7"></i>
+            </div>
+            <div>
+              <div class="text-white font-extrabold text-xl">Silver Member</div>
+              <div class="text-slate-400 text-xs">Member since October 2024 · Silver since December 2024</div>
+            </div>
+          </div>
+          <div class="text-white font-extrabold text-3xl mb-1" id="statusPoints">1,840 pts</div>
+          <div class="text-slate-400 text-xs mb-2" id="statusToGold">660 pts to Gold</div>
+          <div class="tier-progress mb-2">
+            <div class="tier-progress-fill" id="statusProgressBar" style="width:0%"></div>
+          </div>
+          <div class="text-slate-400 text-xs">Earn pts by checking in, attending classes, completing challenges, and referring friends</div>
+        </div>
+
+        <!-- Tier Perks -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-white font-bold mb-3">Your Silver Perks</div>
+          <ul class="space-y-2 mb-3" id="silverPerksList"></ul>
+          <button onclick="toggleGoldPerks()" class="text-indigo-400 text-sm font-semibold flex items-center gap-1" id="goldToggleBtn">
+            See what Gold unlocks <i data-lucide="chevron-down" class="w-4 h-4"></i>
+          </button>
+          <div id="goldPerksSection" class="hidden mt-3 pt-3 border-t border-slate-700">
+            <div class="text-amber-400 text-xs font-semibold mb-2 flex items-center gap-1">
+              <i data-lucide="lock" class="w-3 h-3"></i>
+              Gold-only perks — <span id="goldPtsAway">660 pts away</span>
+            </div>
+            <ul class="space-y-2" id="goldPerksList"></ul>
+          </div>
+        </div>
+
+        <!-- Tier Comparison -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-white font-bold mb-3 text-sm">Tier Comparison</div>
+          <div class="grid grid-cols-3 gap-2" id="tierComparisonGrid"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB: REFER -->
+    <div class="tab-content" id="tab-refer">
+      <div class="px-4 pt-6 pb-4 space-y-4">
+        <!-- Header -->
+        <div>
+          <div class="text-white font-extrabold text-lg">Refer Friends, Earn Points</div>
+          <div class="text-slate-400 text-xs mt-1">You earn 500 pts per friend who joins — they get their first month at half price</div>
+        </div>
+
+        <!-- Referral Code Card -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-slate-400 text-xs mb-2">Your referral code</div>
+          <div class="bg-indigo-900 rounded-xl px-4 py-3 text-center mb-3">
+            <span class="text-indigo-300 font-mono font-extrabold text-2xl tracking-widest">SARA-FP47</span>
+          </div>
+          <div class="flex gap-2 mb-4">
+            <button onclick="copyCode()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white rounded-xl py-2.5 text-sm font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="copy" class="w-4 h-4"></i> Copy Code
+            </button>
+            <button onclick="openModal('modalShare')" class="flex-1 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white rounded-xl py-2.5 text-sm font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="share-2" class="w-4 h-4"></i> Share Link
+            </button>
+          </div>
+          <div class="text-slate-400 text-xs text-center">3 referrals sent · 2 joined · 1 pending</div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-white font-semibold text-sm mb-3">How It Works</div>
+          <div class="flex items-center justify-between">
+            <div class="flex flex-col items-center text-center flex-1">
+              <div class="w-10 h-10 rounded-full bg-indigo-900 flex items-center justify-center mb-1">
+                <i data-lucide="share-2" class="text-indigo-400 w-5 h-5"></i>
+              </div>
+              <div class="text-white text-xs font-semibold">Share Code</div>
+            </div>
+            <div class="text-slate-600 text-lg font-bold">→</div>
+            <div class="flex flex-col items-center text-center flex-1">
+              <div class="w-10 h-10 rounded-full bg-violet-900 flex items-center justify-center mb-1">
+                <i data-lucide="user-plus" class="text-violet-400 w-5 h-5"></i>
+              </div>
+              <div class="text-white text-xs font-semibold">Friend Joins</div>
+            </div>
+            <div class="text-slate-600 text-lg font-bold">→</div>
+            <div class="flex flex-col items-center text-center flex-1">
+              <div class="w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center mb-1">
+                <i data-lucide="gift" class="text-emerald-400 w-5 h-5"></i>
+              </div>
+              <div class="text-white text-xs font-semibold">Both Rewarded</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Referral History -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-white font-semibold text-sm mb-3">Referral History</div>
+          <div class="space-y-3" id="referralHistoryList"></div>
+        </div>
+
+        <!-- Leaderboard Teaser -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-yellow-400 text-sm font-semibold mb-1">🏆 Top referrer: James R. with 7 referrals</div>
+          <div class="text-slate-400 text-xs mb-3">You're #4 — refer 1 more friend to move up</div>
+          <button onclick="openLeaderboard()" class="text-indigo-400 text-xs font-semibold hover:text-indigo-300">See full leaderboard →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: REWARDS -->
+    <div class="tab-content" id="tab-rewards">
+      <div class="px-4 pt-6 pb-4 space-y-4">
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+          <div class="text-white font-extrabold text-lg">Redeem Points</div>
+          <div class="text-indigo-400 font-extrabold text-lg" id="rewardsPoints">1,840 pts</div>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" style="scrollbar-width:none;">
+          <button class="pill-filter active" onclick="filterRewards(this,'All')">All</button>
+          <button class="pill-filter" onclick="filterRewards(this,'Food & Drink')">Food &amp; Drink</button>
+          <button class="pill-filter" onclick="filterRewards(this,'Access')">Access</button>
+          <button class="pill-filter" onclick="filterRewards(this,'Training')">Training</button>
+          <button class="pill-filter" onclick="filterRewards(this,'Membership')">Membership</button>
+        </div>
+
+        <!-- Rewards Grid -->
+        <div class="grid grid-cols-2 gap-3" id="rewardsGrid"></div>
+      </div>
+    </div>
+
+    <!-- TAB: HISTORY -->
+    <div class="tab-content" id="tab-history">
+      <div class="px-4 pt-6 pb-4 space-y-4">
+        <!-- Header -->
+        <div>
+          <div class="text-white font-extrabold text-lg">Points History</div>
+          <div class="text-slate-400 text-xs mt-1">Current balance: <span class="text-indigo-400 font-semibold" id="historyBalance">1,840 pts</span></div>
+        </div>
+
+        <!-- Monthly Summary -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-white font-semibold text-sm mb-1" id="monthlySummaryTitle"></div>
+          <div class="text-slate-400 text-xs mb-3" id="monthlySummaryDetail"></div>
+          <div class="flex gap-1 mb-2" id="monthlySummaryBar"></div>
+          <div class="text-slate-500 text-xs" id="monthlySummaryBest"></div>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+          <div class="text-white font-semibold text-sm mb-3">All Transactions</div>
+          <div class="space-y-3" id="transactionList"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end scroll-area -->
+
+  <!-- BOTTOM NAV -->
+  <div class="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex h-14" style="z-index:20;">
+    <div class="nav-tab active" onclick="switchTab('status', this)" id="navStatus">
+      <i data-lucide="award" class="w-5 h-5"></i>
+      <span>Status</span>
+    </div>
+    <div class="nav-tab" onclick="switchTab('refer', this)" id="navRefer">
+      <i data-lucide="share-2" class="w-5 h-5"></i>
+      <span>Refer</span>
+    </div>
+    <div class="nav-tab" onclick="switchTab('rewards', this)" id="navRewards">
+      <i data-lucide="gift" class="w-5 h-5"></i>
+      <span>Rewards</span>
+    </div>
+    <div class="nav-tab" onclick="switchTab('history', this)" id="navHistory">
+      <i data-lucide="clock" class="w-5 h-5"></i>
+      <span>History</span>
+    </div>
+  </div>
+
+</div><!-- end phone-frame -->
+
+<!-- Footer -->
+<div class="mt-8 text-slate-600 text-xs text-center">
+  FitPulse Member App · Problem 1f: Loyalty &amp; Referral Program Automation · Prototype by QArea
+</div>
+
+<script>
+// ========== DATA ==========
+let currentPoints = 1840;
+const currentMember = {
+  name:"Sara", avatar:"S", tier:"Silver", points:1840,
+  pointsToNextTier:2500, totalReferrals:3, activeReferrals:1,
+  referralCode:"SARA-FP47", memberSince:"October 2024", tierSince:"December 2024"
+};
+const tierStructure = [
+  { name:"Bronze", minPoints:0, maxPoints:999, perks:["Access to member app","Basic class booking","Monthly newsletter"] },
+  { name:"Silver", minPoints:1000, maxPoints:2499, perks:["All Bronze perks","Priority class booking (24hr early access)","1 free guest pass per month","Birthday bonus: 200 pts"] },
+  { name:"Gold", minPoints:2500, maxPoints:null, perks:["All Silver perks","Free PT session every 3 months","Exclusive Gold-only classes","Locker reservation priority","10% off all in-gym purchases"] }
+];
+const referralHistory = [
+  { id:1, name:"Mike T.", status:"Joined", joinDate:"Nov 2024", reward:500, rewardPaid:true, retention:"3 months and counting 🟢" },
+  { id:2, name:"Priya S.", status:"Joined", joinDate:"Dec 2024", reward:500, rewardPaid:true, retention:"2 months and counting 🟢" },
+  { id:3, name:"Tom H.", status:"Pending", joinDate:null, reward:500, rewardPaid:false, retention:"Invite sent · Not yet joined" }
+];
+const rewards = [
+  { id:1, name:"Free Smoothie", cost:300, icon:"coffee", category:"Food & Drink", available:true },
+  { id:2, name:"Guest Pass", cost:500, icon:"ticket", category:"Access", available:true },
+  { id:3, name:"Protein Bar Pack", cost:200, icon:"package", category:"Food & Drink", available:true },
+  { id:4, name:"PT Session (30 min)", cost:1500, icon:"user-check", category:"Training", available:false },
+  { id:5, name:"Exclusive Gold Class", cost:2000, icon:"star", category:"Access", available:false, tierRequired:"Gold" },
+  { id:6, name:"1 Month Free", cost:5000, icon:"gift", category:"Membership", available:false }
+];
+const pointsHistory = [
+  { date:"Feb 3", action:"Check-in", points:10 },
+  { date:"Feb 2", action:"Class attended", points:25 },
+  { date:"Feb 1", action:"Referral bonus — Mike", points:500 },
+  { date:"Jan 31", action:"Check-in", points:10 },
+  { date:"Jan 30", action:"Challenge completed", points:200 },
+  { date:"Jan 29", action:"Redeemed Guest Pass", points:-500 },
+  { date:"Jan 28", action:"Check-in", points:10 },
+  { date:"Jan 27", action:"Class attended", points:25 }
+];
+const topReferrers = [
+  { name:"James R.", avatar:"J", referrals:7, earned:3500, tier:"Gold" },
+  { name:"Anna K.", avatar:"A", referrals:5, earned:2500, tier:"Gold" },
+  { name:"Mike T.", avatar:"M", referrals:4, earned:2000, tier:"Silver" },
+  { name:"Sara", avatar:"S", referrals:3, earned:1500, tier:"Silver" },
+  { name:"Priya M.", avatar:"P", referrals:2, earned:1000, tier:"Silver" }
+];
+let rewardsClaimed = new Set();
+let rewardsFilterCategory = 'All';
+let goldPerksExpanded = false;
+
+// ========== UTILS ==========
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ========== TAB SWITCHING ==========
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+  if(tab === 'status') renderStatus();
+  if(tab === 'rewards') renderRewards();
+  if(tab === 'history') renderHistory();
+  // Scroll to top
+  document.querySelector('.scroll-area').scrollTop = 0;
+  lucide.createIcons();
+}
+
+// ========== STATUS TAB ==========
+function renderStatus() {
+  const ptsToGold = Math.max(0, 2500 - currentPoints);
+  const progress = Math.min(100, (currentPoints / 2500) * 100);
+  document.getElementById('statusPoints').textContent = currentPoints.toLocaleString() + ' pts';
+  document.getElementById('statusToGold').textContent = ptsToGold.toLocaleString() + ' pts to Gold';
+  document.getElementById('statusProgressBar').style.width = progress + '%';
+
+  // Silver perks
+  const silver = tierStructure[1];
+  const silverList = document.getElementById('silverPerksList');
+  silverList.innerHTML = silver.perks.map(p => `
+    <li class="flex items-start gap-2 text-slate-300 text-xs">
+      <i data-lucide="check-circle" class="text-emerald-400 w-4 h-4 flex-shrink-0 mt-0.5"></i>
+      ${p}
+    </li>
+  `).join('');
+
+  // Gold perks
+  const gold = tierStructure[2];
+  const goldPerksList = document.getElementById('goldPerksList');
+  goldPerksList.innerHTML = gold.perks.slice(1).map(p => `
+    <li class="flex items-start gap-2 text-slate-400 text-xs">
+      <i data-lucide="lock" class="text-amber-500 w-4 h-4 flex-shrink-0 mt-0.5"></i>
+      ${p}
+    </li>
+  `).join('');
+  document.getElementById('goldPtsAway').textContent = ptsToGold + ' pts away';
+
+  // Tier comparison
+  const grid = document.getElementById('tierComparisonGrid');
+  const tierColors = ['text-amber-700', 'text-slate-300', 'text-amber-400'];
+  const tierBorders = ['border border-slate-700', 'border-2 border-indigo-500', 'border border-slate-700'];
+  grid.innerHTML = tierStructure.map((tier, i) => `
+    <div class="tier-col ${tierBorders[i]} bg-slate-900 relative">
+      <div class="tier-tooltip">
+        <div class="font-semibold ${tierColors[i]} mb-1">${tier.name}</div>
+        ${tier.perks.map(p => `<div class="text-slate-300 mt-0.5">• ${p}</div>`).join('')}
+      </div>
+      <div class="font-bold text-xs ${tierColors[i]} mb-1">${tier.name}</div>
+      <div class="text-slate-500 text-xs mb-1">${tier.maxPoints ? tier.minPoints.toLocaleString()+'–'+tier.maxPoints.toLocaleString() : tier.minPoints.toLocaleString()+'+'} pts</div>
+      <div class="text-slate-400 text-xs">${tier.perks.length} perks</div>
+      ${i === 1 ? '<div class="absolute -top-2 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold" style="font-size:9px;">YOU</div>' : ''}
+    </div>
+  `).join('');
+
+  lucide.createIcons();
+}
+
+function toggleGoldPerks() {
+  goldPerksExpanded = !goldPerksExpanded;
+  const section = document.getElementById('goldPerksSection');
+  const btn = document.getElementById('goldToggleBtn');
+  if(goldPerksExpanded) {
+    section.classList.remove('hidden');
+    btn.innerHTML = 'Hide Gold perks <i data-lucide="chevron-up" class="w-4 h-4"></i>';
+  } else {
+    section.classList.add('hidden');
+    btn.innerHTML = 'See what Gold unlocks <i data-lucide="chevron-down" class="w-4 h-4"></i>';
+  }
+  lucide.createIcons();
+}
+
+// ========== REFER TAB ==========
+function renderRefer() {
+  const list = document.getElementById('referralHistoryList');
+  list.innerHTML = referralHistory.map(r => {
+    const statusPill = r.status === 'Joined'
+      ? `<span class="bg-emerald-900 text-emerald-400 text-xs px-2 py-0.5 rounded-full font-semibold">Joined</span>`
+      : `<span class="bg-amber-900 text-amber-400 text-xs px-2 py-0.5 rounded-full font-semibold">Pending</span>`;
+    const pointsBadge = r.rewardPaid
+      ? `<span class="text-emerald-400 text-xs font-bold">+500 pts</span>`
+      : `<span class="text-slate-600 text-xs font-bold">+500 pts</span>`;
+    const sub = r.status === 'Joined'
+      ? `<div class="text-slate-500 text-xs">${r.joinDate} · ${r.retention}</div>`
+      : `<div class="flex items-center gap-2 mt-1">
+           <span class="text-slate-500 text-xs">Invite sent — nudge them?</span>
+           <button onclick="sendReminder('${r.name}')" class="text-indigo-400 text-xs font-semibold border border-indigo-800 rounded px-2 py-0.5 hover:bg-indigo-900">Send Reminder</button>
+         </div>`;
+    const avatarColors = ['bg-indigo-600','bg-violet-600','bg-blue-600'];
+    return `
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-full ${avatarColors[r.id-1]} flex items-center justify-center text-white font-bold text-sm flex-shrink-0">${r.name.charAt(0)}</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-white text-sm font-semibold">${r.name}</span>
+              ${statusPill}
+            </div>
+            ${sub}
+          </div>
+        </div>
+        ${pointsBadge}
+      </div>
+    `;
+  }).join('');
+  lucide.createIcons();
+}
+
+function sendReminder(name) {
+  showToast(`Reminder sent to ${name}! 📨`);
+}
+
+function copyCode() {
+  showToast('Code copied! 📋');
+}
+
+function shareAction(platform) {
+  showToast(`Link ready to share! 🔗`);
+}
+
+function openLeaderboard() {
+  const body = document.getElementById('leaderboardBody');
+  const tierColors = { Gold: 'bg-amber-900 text-amber-400', Silver: 'bg-slate-700 text-slate-300', Bronze: 'bg-amber-950 text-amber-700' };
+  body.innerHTML = topReferrers.map((r, i) => `
+    <div class="flex items-center gap-2 py-2 ${i < topReferrers.length - 1 ? 'border-b border-slate-700' : ''}">
+      <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-amber-500 text-white' : i === 1 ? 'bg-slate-400 text-slate-900' : i === 2 ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-300'}">
+        ${i+1}
+      </div>
+      <div class="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center text-white text-xs font-bold">${r.avatar}</div>
+      <div class="flex-1">
+        <div class="text-white text-xs font-semibold">${r.name}</div>
+        <div class="text-slate-500 text-xs">${r.referrals} referrals · ${r.earned.toLocaleString()} pts</div>
+      </div>
+      <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${tierColors[r.tier]}">${r.tier}</span>
+    </div>
+  `).join('');
+  openModal('modalLeaderboard');
+}
+
+// ========== REWARDS TAB ==========
+function filterRewards(btn, cat) {
+  document.querySelectorAll('.pill-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  rewardsFilterCategory = cat;
+  renderRewards();
+}
+
+function renderRewards() {
+  const pts = currentPoints;
+  document.getElementById('rewardsPoints').textContent = pts.toLocaleString() + ' pts';
+
+  const filtered = rewardsFilterCategory === 'All' ? rewards : rewards.filter(r => r.category === rewardsFilterCategory);
+  const grid = document.getElementById('rewardsGrid');
+
+  grid.innerHTML = filtered.map(r => {
+    const affordable = pts >= r.cost;
+    const claimed = rewardsClaimed.has(r.id);
+    const goldLocked = r.tierRequired === 'Gold' && currentMember.tier !== 'Gold';
+
+    let cardClass = 'reward-card';
+    let iconColor = 'text-slate-400';
+    let btnHtml = '';
+
+    if (claimed) {
+      cardClass += ' claimed';
+      iconColor = 'text-emerald-400';
+      btnHtml = `<div class="mt-2 text-center text-emerald-400 text-xs font-semibold">✅ Claimed</div>`;
+    } else if (goldLocked) {
+      cardClass += ' locked';
+      btnHtml = `<div class="mt-2 text-center text-amber-600 text-xs font-semibold">Gold members only 🔒</div>`;
+    } else if (affordable) {
+      iconColor = 'text-indigo-400';
+      btnHtml = `<button onclick="openRedeem(${r.id})" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-1.5 text-xs font-semibold">Redeem</button>`;
+    } else {
+      btnHtml = `<div class="mt-2 text-center text-slate-500 text-xs">Need ${(r.cost - pts).toLocaleString()} more pts</div>`;
+    }
+
+    return `
+      <div class="${cardClass}">
+        <div class="flex items-start justify-between mb-1">
+          <div class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
+            <i data-lucide="${r.icon}" class="${iconColor} w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="text-white text-xs font-semibold mt-1 leading-tight">${r.name}</div>
+        <div class="text-slate-500 text-xs">${r.category}</div>
+        <div class="text-indigo-400 text-sm font-bold mt-1">${r.cost.toLocaleString()} pts</div>
+        ${btnHtml}
+      </div>
+    `;
+  }).join('');
+  lucide.createIcons();
+}
+
+function openRedeem(id) {
+  const r = rewards.find(x => x.id === id);
+  const after = currentPoints - r.cost;
+  const content = document.getElementById('redeemModalContent');
+  content.innerHTML = `
+    <h3 class="text-white font-bold text-base mb-1">Redeem ${r.name}?</h3>
+    <p class="text-slate-400 text-xs mb-4">Confirm your redemption below.</p>
+    <div class="bg-slate-700 rounded-xl p-3 mb-4 space-y-1">
+      <div class="flex justify-between text-xs"><span class="text-slate-400">Cost</span><span class="text-white font-semibold">${r.cost.toLocaleString()} pts</span></div>
+      <div class="flex justify-between text-xs"><span class="text-slate-400">Current balance</span><span class="text-white font-semibold">${currentPoints.toLocaleString()} pts</span></div>
+      <div class="flex justify-between text-xs border-t border-slate-600 pt-1 mt-1"><span class="text-slate-400">After redemption</span><span class="text-indigo-400 font-bold">${after.toLocaleString()} pts</span></div>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="closeModal('modalRedeem')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl py-2.5 text-sm">Cancel</button>
+      <button onclick="confirmRedeem(${id})" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-2.5 text-sm font-semibold">Confirm</button>
+    </div>
+  `;
+  openModal('modalRedeem');
+}
+
+function confirmRedeem(id) {
+  const r = rewards.find(x => x.id === id);
+  currentPoints -= r.cost;
+  rewardsClaimed.add(id);
+  closeModal('modalRedeem');
+  renderRewards();
+  renderStatusPoints();
+  showToast('✅ Redeemed! Show this at reception.');
+}
+
+function renderStatusPoints() {
+  const ptsEl = document.getElementById('statusPoints');
+  const toGoldEl = document.getElementById('statusToGold');
+  const barEl = document.getElementById('statusProgressBar');
+  const histEl = document.getElementById('historyBalance');
+  const rewEl = document.getElementById('rewardsPoints');
+  if(ptsEl) ptsEl.textContent = currentPoints.toLocaleString() + ' pts';
+  if(toGoldEl) toGoldEl.textContent = Math.max(0, 2500 - currentPoints).toLocaleString() + ' pts to Gold';
+  if(barEl) barEl.style.width = Math.min(100, (currentPoints / 2500) * 100) + '%';
+  if(histEl) histEl.textContent = currentPoints.toLocaleString() + ' pts';
+  if(rewEl) rewEl.textContent = currentPoints.toLocaleString() + ' pts';
+}
+
+// ========== HISTORY TAB ==========
+function renderHistory() {
+  document.getElementById('historyBalance').textContent = currentPoints.toLocaleString() + ' pts';
+
+  // Monthly summary
+  const febEntries = pointsHistory.filter(e => e.date.startsWith('Feb'));
+  const febEarned = febEntries.filter(e => e.points > 0).reduce((a,b) => a + b.points, 0);
+  const febSpent = febEntries.filter(e => e.points < 0).reduce((a,b) => a + Math.abs(b.points), 0);
+  document.getElementById('monthlySummaryTitle').textContent = 'February so far';
+  document.getElementById('monthlySummaryDetail').textContent = `+${febEarned} pts earned · ${febSpent > 0 ? febSpent + ' pts spent' : '0 pts spent'}`;
+
+  const bestEarn = febEntries.filter(e => e.points > 0).sort((a,b) => b.points - a.points)[0];
+  document.getElementById('monthlySummaryBest').textContent = bestEarn ? `Best earning action: ${bestEarn.action} (${bestEarn.points} pts)` : '';
+
+  // Summary bar
+  const total = febEarned + febSpent || 1;
+  const earnPct = (febEarned / total * 100).toFixed(0);
+  const spendPct = (febSpent / total * 100).toFixed(0);
+  const barEl = document.getElementById('monthlySummaryBar');
+  barEl.innerHTML = `
+    <div class="h-2 rounded-l-full bg-emerald-500" style="width:${earnPct}%"></div>
+    ${febSpent > 0 ? `<div class="h-2 rounded-r-full bg-red-500" style="width:${spendPct}%"></div>` : ''}
+    <div class="text-xs text-slate-500 ml-2">${febEarned > 0 ? '<span class=\'text-emerald-400\'>+' + febEarned + '</span>' : ''}</div>
+  `;
+
+  // Icons per type
+  const typeIcon = (action, pts) => {
+    if (action.toLowerCase().includes('check')) return 'map-pin';
+    if (action.toLowerCase().includes('class')) return 'users';
+    if (action.toLowerCase().includes('referral')) return 'user-plus';
+    if (action.toLowerCase().includes('challenge')) return 'flag';
+    if (pts < 0) return 'gift';
+    return 'zap';
+  };
+
+  const list = document.getElementById('transactionList');
+  list.innerHTML = pointsHistory.map((e, i) => {
+    const positive = e.points > 0;
+    const icon = typeIcon(e.action, e.points);
+    return `
+      <div class="flex items-center gap-3 ${i < pointsHistory.length - 1 ? 'pb-3 border-b border-slate-700' : ''}">
+        <div class="w-8 h-8 rounded-full ${positive ? 'bg-indigo-900' : 'bg-red-900'} flex items-center justify-center flex-shrink-0">
+          <i data-lucide="${icon}" class="${positive ? 'text-indigo-400' : 'text-red-400'} w-4 h-4"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-white text-xs font-semibold truncate">${e.action}</div>
+          <div class="text-slate-500 text-xs">${e.date}</div>
+        </div>
+        <div class="text-${positive ? 'emerald' : 'red'}-400 font-bold text-sm">${positive ? '+' : ''}${e.points}</div>
+      </div>
+    `;
+  }).join('');
+  lucide.createIcons();
+}
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', () => {
+  renderStatus();
+  renderRefer();
+  renderRewards();
+  renderHistory();
+  // Set initial progress bar after a brief delay for animation
+  setTimeout(() => {
+    const bar = document.getElementById('statusProgressBar');
+    if(bar) bar.style.width = Math.min(100, (currentPoints / 2500) * 100) + '%';
+  }, 100);
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>

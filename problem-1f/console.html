@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPulse Console — Loyalty & Referral</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { background: #0f172a; font-family: 'Inter', system-ui, sans-serif; }
+  .sidebar-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 10px; cursor: pointer; transition: all 0.2s; color: #94a3b8; font-size: 14px; }
+  .sidebar-nav-item:hover { background: rgba(99,102,241,0.1); color: #a5b4fc; }
+  .sidebar-nav-item.active { background: #4f46e5; color: white; font-weight: 600; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; }
+  .funnel-bar { border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: width 0.6s ease; position: relative; }
+  .tier-bar-wrap { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; }
+  .tier-bar { width: 56px; border-radius: 6px 6px 0 0; transition: height 0.6s ease; }
+  .toast-desktop { position: fixed; bottom: 24px; right: 24px; background: #1e293b; border: 1px solid #334155; color: #f1f5f9; padding: 12px 20px; border-radius: 12px; font-size: 14px; z-index: 100; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast-desktop.show { opacity: 1; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: #1e293b; border-radius: 16px; padding: 24px; border: 1px solid #334155; min-width: 360px; }
+  .tier-stacked-bar { border-radius: 9999px; overflow: hidden; display: flex; }
+  .radio-opt { display: flex; align-items: center; gap-10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; border: 1px solid #334155; transition: all 0.2s; }
+  .radio-opt:hover { border-color: #6366f1; }
+  .radio-opt.selected { border-color: #6366f1; background: rgba(99,102,241,0.1); }
+</style>
+</head>
+<body class="min-h-screen flex">
+
+<!-- TOAST -->
+<div class="toast-desktop" id="toastDesktop"></div>
+
+<!-- MODAL: Bonus -->
+<div class="modal-overlay" id="modalBonus">
+  <div class="modal-box" id="bonusModalContent"></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col min-h-screen fixed left-0 top-0 bottom-0">
+  <div class="px-5 py-6 border-b border-slate-800">
+    <div class="text-xl font-extrabold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">FitPulse</div>
+    <div class="text-slate-500 text-xs mt-0.5">Console Dashboard</div>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-1">
+    <div class="sidebar-nav-item active" onclick="switchSection('loyalty', this)" id="navLoyalty">
+      <i data-lucide="award" class="w-4 h-4 flex-shrink-0"></i>
+      Loyalty Overview
+    </div>
+    <div class="sidebar-nav-item" onclick="switchSection('pipeline', this)" id="navPipeline">
+      <i data-lucide="git-branch" class="w-4 h-4 flex-shrink-0"></i>
+      Referral Pipeline
+    </div>
+    <div class="sidebar-nav-item" onclick="switchSection('referrers', this)" id="navReferrers">
+      <i data-lucide="trophy" class="w-4 h-4 flex-shrink-0"></i>
+      Top Referrers
+    </div>
+  </nav>
+  <div class="px-5 py-4 border-t border-slate-800">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">O</div>
+      <div>
+        <div class="text-white text-xs font-semibold">Gym Owner</div>
+        <span class="bg-indigo-900 text-indigo-400 text-xs px-2 py-0.5 rounded-full font-semibold">Owner</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="ml-64 flex-1 overflow-y-auto min-h-screen">
+
+  <!-- SECTION: LOYALTY OVERVIEW -->
+  <div class="section active px-8 py-8" id="section-loyalty">
+    <div class="mb-6">
+      <h1 class="text-white text-2xl font-extrabold">Loyalty &amp; Referral Programme</h1>
+      <div class="text-slate-400 text-sm mt-1">February 2025 · 10,000 members</div>
+    </div>
+
+    <!-- 4 Stat Cards -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs mb-2 flex items-center gap-1">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i> Referrals This Month
+        </div>
+        <div class="text-white text-3xl font-extrabold">284</div>
+        <div class="text-slate-500 text-xs mt-1">New referral codes used</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs mb-2 flex items-center gap-1">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Converted
+        </div>
+        <div class="text-white text-3xl font-extrabold">187</div>
+        <div class="text-emerald-400 text-xs mt-1 font-semibold">66% conversion rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs mb-2 flex items-center gap-1">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i> Points Issued
+        </div>
+        <div class="text-white text-3xl font-extrabold">284K</div>
+        <div class="text-slate-500 text-xs mt-1">This month</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs mb-2 flex items-center gap-1">
+          <i data-lucide="gift" class="w-3.5 h-3.5"></i> Points Redeemed
+        </div>
+        <div class="text-white text-3xl font-extrabold">91.2K</div>
+        <div class="text-slate-500 text-xs mt-1">This month</div>
+      </div>
+    </div>
+
+    <!-- Tier Distribution Bar -->
+    <div class="stat-card mb-6">
+      <div class="text-white font-bold mb-4">Member Tier Distribution</div>
+      <div class="flex items-end justify-between mb-2">
+        <div class="text-xs text-amber-700 font-semibold">Bronze: 4,200 (42%)</div>
+        <div class="text-xs text-slate-400 font-semibold">Silver: 3,800 (38%)</div>
+        <div class="text-xs text-amber-400 font-semibold">Gold: 2,000 (20%)</div>
+      </div>
+      <div class="tier-stacked-bar h-8">
+        <div class="bg-amber-800 flex items-center justify-center" style="width:42%">
+          <span class="text-white text-xs font-bold">42%</span>
+        </div>
+        <div class="bg-slate-500 flex items-center justify-center" style="width:38%">
+          <span class="text-white text-xs font-bold">38%</span>
+        </div>
+        <div class="bg-amber-400 flex items-center justify-center" style="width:20%">
+          <span class="text-slate-900 text-xs font-bold">20%</span>
+        </div>
+      </div>
+      <div class="flex gap-4 mt-3">
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-full bg-amber-800"></div><span class="text-slate-400 text-xs">Bronze</span></div>
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-full bg-slate-500"></div><span class="text-slate-400 text-xs">Silver</span></div>
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-full bg-amber-400"></div><span class="text-slate-400 text-xs">Gold</span></div>
+      </div>
+      <div class="text-slate-500 text-xs mt-3 border-t border-slate-700 pt-3">
+        Gold members represent 20% of members but generate disproportionate referral activity and have 93% retention.
+      </div>
+    </div>
+
+    <!-- Retention Chart -->
+    <div class="stat-card mb-6">
+      <div class="text-white font-bold mb-6">Retention Rate by Tier</div>
+      <div class="flex items-end justify-center gap-12" style="height:260px;">
+        <!-- Bronze: 52/93 * 200 = ~111.8 -->
+        <div class="tier-bar-wrap">
+          <div class="text-amber-700 font-extrabold text-xl mb-2">52%</div>
+          <div class="tier-bar bg-amber-800" style="height: 112px;"></div>
+          <div class="mt-3 text-center">
+            <div class="text-amber-700 font-semibold text-sm">Bronze</div>
+            <div class="text-slate-500 text-xs">4,200 members</div>
+          </div>
+        </div>
+        <!-- Silver: 74/93 * 200 = ~159.1 -->
+        <div class="tier-bar-wrap">
+          <div class="text-slate-300 font-extrabold text-xl mb-2">74%</div>
+          <div class="tier-bar bg-slate-400" style="height: 159px;"></div>
+          <div class="mt-3 text-center">
+            <div class="text-slate-300 font-semibold text-sm">Silver</div>
+            <div class="text-slate-500 text-xs">3,800 members</div>
+          </div>
+        </div>
+        <!-- Gold: 93/93 * 200 = 200 -->
+        <div class="tier-bar-wrap">
+          <div class="text-amber-400 font-extrabold text-xl mb-2">93%</div>
+          <div class="tier-bar bg-amber-400" style="height: 200px;"></div>
+          <div class="mt-3 text-center">
+            <div class="text-amber-400 font-semibold text-sm">Gold</div>
+            <div class="text-slate-500 text-xs">2,000 members</div>
+          </div>
+        </div>
+      </div>
+      <div class="text-slate-500 text-xs mt-4 border-t border-slate-700 pt-3 text-center">
+        Each tier upgrade is worth approximately +20 retention points.
+      </div>
+    </div>
+
+    <!-- ROI Insight -->
+    <div class="rounded-2xl bg-indigo-950 border-l-4 border-indigo-500 p-6 mb-6">
+      <div class="text-white font-bold text-base mb-1">💡 What Referrals and Loyalty Are Worth</div>
+      <div class="text-indigo-300 text-xs mb-4">The compounding business value of your programme</div>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-indigo-900 bg-opacity-50 rounded-xl p-4">
+          <div class="text-indigo-400 font-extrabold text-2xl">37%</div>
+          <div class="text-white text-sm font-semibold mt-1">More likely to stay long-term</div>
+          <div class="text-indigo-300 text-xs mt-1">Referred members vs standard acquisition</div>
+        </div>
+        <div class="bg-indigo-900 bg-opacity-50 rounded-xl p-4">
+          <div class="text-indigo-400 font-extrabold text-2xl">3–5x</div>
+          <div class="text-white text-sm font-semibold mt-1">Higher conversion rate</div>
+          <div class="text-indigo-300 text-xs mt-1">Referral vs cold outreach conversion</div>
+        </div>
+        <div class="bg-indigo-900 bg-opacity-50 rounded-xl p-4">
+          <div class="text-indigo-400 font-extrabold text-2xl">$130,560</div>
+          <div class="text-white text-sm font-semibold mt-1">Estimated LTV revenue</div>
+          <div class="text-indigo-300 text-xs mt-1">From referral-acquired members this month</div>
+        </div>
+      </div>
+      <div class="text-indigo-400 text-xs mt-4 opacity-70">Source: Industry benchmarks + QArea analysis</div>
+    </div>
+  </div>
+
+  <!-- SECTION: REFERRAL PIPELINE -->
+  <div class="section px-8 py-8" id="section-pipeline">
+    <div class="mb-6">
+      <h1 class="text-white text-2xl font-extrabold">Referral Funnel</h1>
+      <div class="text-slate-400 text-sm mt-1">February 2025 — Full conversion pipeline</div>
+    </div>
+
+    <!-- Funnel -->
+    <div class="stat-card mb-6">
+      <div class="text-white font-bold mb-6">Referral Funnel — February 2025</div>
+      <div class="space-y-2" id="funnelChart"></div>
+    </div>
+
+    <!-- Retention Comparison -->
+    <div class="stat-card mb-6 border-l-4 border-indigo-500">
+      <div class="text-white font-bold mb-4">Referred vs Standard Retention (6 months)</div>
+      <div class="grid grid-cols-2 gap-6 mb-4">
+        <div class="text-center">
+          <div class="text-emerald-400 font-extrabold text-5xl mb-2">79%</div>
+          <div class="text-white font-semibold text-sm">Referred member</div>
+          <div class="text-slate-400 text-xs">6-month retention rate</div>
+        </div>
+        <div class="text-center">
+          <div class="text-amber-400 font-extrabold text-5xl mb-2">58%</div>
+          <div class="text-white font-semibold text-sm">Standard member</div>
+          <div class="text-slate-400 text-xs">6-month retention rate</div>
+        </div>
+      </div>
+      <div class="bg-slate-700 rounded-full h-2 mb-3">
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 rounded-full" style="width:79%"></div>
+      </div>
+      <div class="bg-slate-700 rounded-full h-2 mb-4">
+        <div class="bg-gradient-to-r from-amber-500 to-amber-400 h-2 rounded-full" style="width:58%"></div>
+      </div>
+      <div class="text-slate-400 text-sm border-t border-slate-700 pt-4">
+        Referred members retain 21 points higher — worth significant incremental LTV per cohort.
+      </div>
+    </div>
+
+    <!-- Referral Reward Settings -->
+    <div class="stat-card mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-white font-bold">Current Referral Reward Structure</div>
+        <button onclick="showToast('Settings editing available in full platform')" class="border border-indigo-500 text-indigo-400 text-sm px-4 py-2 rounded-lg hover:bg-indigo-900 transition-colors">Edit Settings</button>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-slate-700 rounded-xl p-4">
+          <div class="text-slate-400 text-xs mb-1">Referrer Reward</div>
+          <div class="text-white font-semibold text-sm">500 pts on friend's first payment</div>
+        </div>
+        <div class="bg-slate-700 rounded-xl p-4">
+          <div class="text-slate-400 text-xs mb-1">Referee Reward</div>
+          <div class="text-white font-semibold text-sm">50% off first month</div>
+        </div>
+        <div class="bg-slate-700 rounded-xl p-4">
+          <div class="text-slate-400 text-xs mb-1">Pending Period</div>
+          <div class="text-white font-semibold text-sm">Points held 30 days (chargeback window)</div>
+        </div>
+        <div class="bg-slate-700 rounded-xl p-4">
+          <div class="text-slate-400 text-xs mb-1">Programme Status</div>
+          <div class="flex items-center gap-2">
+            <span class="bg-emerald-900 text-emerald-400 text-xs px-2 py-0.5 rounded-full font-bold">Active</span>
+            <span class="text-white text-sm font-semibold">Running</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: TOP REFERRERS -->
+  <div class="section px-8 py-8" id="section-referrers">
+    <div class="mb-6">
+      <h1 class="text-white text-2xl font-extrabold">Top Referrers This Month</h1>
+      <div class="text-slate-400 text-sm mt-1">February 2025 · Recognise and reward your best advocates</div>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="stat-card mb-6">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-slate-700">
+              <th class="text-left text-slate-500 text-xs font-semibold pb-3 pr-4 w-12">Rank</th>
+              <th class="text-left text-slate-500 text-xs font-semibold pb-3 pr-4">Member</th>
+              <th class="text-left text-slate-500 text-xs font-semibold pb-3 pr-4">Tier</th>
+              <th class="text-left text-slate-500 text-xs font-semibold pb-3 pr-4">Referrals</th>
+              <th class="text-left text-slate-500 text-xs font-semibold pb-3 pr-4">Points Earned</th>
+              <th class="text-left text-slate-500 text-xs font-semibold pb-3">Action</th>
+            </tr>
+          </thead>
+          <tbody id="referrersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ambassador Callout -->
+    <div class="rounded-2xl bg-gradient-to-r from-indigo-900 to-violet-900 border border-indigo-700 p-6">
+      <div class="text-white font-extrabold text-lg mb-2">🌟 Turn Top Referrers Into Brand Ambassadors</div>
+      <div class="text-indigo-200 text-sm mb-4 leading-relaxed">
+        Your top referrers already believe in your gym — they're actively telling others. An ambassador programme formalises that relationship: give them exclusive perks, co-branded content, early access to new offerings, and special recognition. Ambassadors generate 2–3x more referrals than standard members and become long-term advocates who reduce your paid acquisition costs.
+      </div>
+      <button onclick="showToast('Talk to QArea about ambassador programme setup')" class="border border-white text-white text-sm px-5 py-2 rounded-xl hover:bg-white hover:text-indigo-900 transition-colors font-semibold">
+        Learn More
+      </button>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- Footer -->
+<div class="ml-64 fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-800 py-3 px-8 text-slate-600 text-xs">
+  FitPulse Console · Problem 1f: Loyalty &amp; Referral Program Automation · Prototype by QArea
+</div>
+
+<script>
+// ========== DATA ==========
+const loyaltyStats = {
+  totalMembers:10000, bronzeMembers:4200, silverMembers:3800, goldMembers:2000,
+  totalReferralsThisMonth:284, referralsConverted:187, conversionRate:66,
+  referralRetention6mo:79, standardRetention6mo:58,
+  pointsIssuedThisMonth:284000, pointsRedeemedThisMonth:91200, revenueFromReferrals:130560
+};
+const referralFunnel = [
+  { stage:"Referral codes shared", count:1840 },
+  { stage:"Links clicked", count:612 },
+  { stage:"Trial booked", count:341 },
+  { stage:"Joined as member", count:187 },
+  { stage:"Still active at 3 months", count:148 }
+];
+const tierRetention = [
+  { tier:"Bronze", retention:52, members:4200, color:"#b45309" },
+  { tier:"Silver", retention:74, members:3800, color:"#94a3b8" },
+  { tier:"Gold", retention:93, members:2000, color:"#f59e0b" }
+];
+let topReferrers = [
+  { name:"James R.", avatar:"J", referrals:7, earned:3500, tier:"Gold", bonusSent:false },
+  { name:"Anna K.", avatar:"A", referrals:5, earned:2500, tier:"Gold", bonusSent:false },
+  { name:"Mike T.", avatar:"M", referrals:4, earned:2000, tier:"Silver", bonusSent:false },
+  { name:"Sara", avatar:"S", referrals:3, earned:1500, tier:"Silver", bonusSent:false },
+  { name:"Priya M.", avatar:"P", referrals:2, earned:1000, tier:"Silver", bonusSent:false }
+];
+
+let selectedBonus = '+200 pts';
+let bonusTargetIndex = -1;
+
+// ========== UTILS ==========
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toastDesktop');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ========== SECTION SWITCHING ==========
+function switchSection(section, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + section).classList.add('active');
+  el.classList.add('active');
+  if(section === 'referrers') renderReferrers();
+  lucide.createIcons();
+}
+
+// ========== FUNNEL ==========
+function renderFunnel() {
+  const maxCount = referralFunnel[0].count;
+  const funnelColors = ['bg-indigo-500', 'bg-violet-500', 'bg-blue-500', 'bg-emerald-500', 'bg-teal-500'];
+  const chart = document.getElementById('funnelChart');
+
+  chart.innerHTML = referralFunnel.map((stage, i) => {
+    const pct = ((stage.count / maxCount) * 100).toFixed(1);
+    const nextPct = i < referralFunnel.length - 1
+      ? ((referralFunnel[i+1].count / stage.count) * 100).toFixed(1) + '% →'
+      : '';
+    return `
+      <div class="flex flex-col items-center">
+        <div class="flex items-center w-full mb-1 gap-3">
+          <div class="text-slate-400 text-xs w-40 text-right flex-shrink-0">${stage.stage}</div>
+          <div class="flex-1 flex justify-center">
+            <div class="funnel-bar ${funnelColors[i]} h-10" style="width: ${pct}%; min-width: 60px; max-width: 100%;">
+              <span class="text-white font-bold text-sm">${stage.count.toLocaleString()}</span>
+            </div>
+          </div>
+          <div class="text-slate-500 text-xs w-20">${pct}%</div>
+        </div>
+        ${i < referralFunnel.length - 1 ? `
+        <div class="flex items-center gap-3 mb-1 w-full">
+          <div class="w-40 flex-shrink-0"></div>
+          <div class="flex-1 text-center">
+            <span class="text-slate-500 text-xs">${nextPct}</span>
+          </div>
+          <div class="w-20"></div>
+        </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== REFERRERS TABLE ==========
+function renderReferrers() {
+  const tbody = document.getElementById('referrersTableBody');
+  const tierPills = {
+    Gold: 'bg-amber-900 text-amber-400',
+    Silver: 'bg-slate-700 text-slate-300',
+    Bronze: 'bg-amber-950 text-amber-700'
+  };
+  const rankBadge = (i) => {
+    if(i === 0) return `<div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-sm">1</div>`;
+    if(i === 1) return `<div class="w-8 h-8 rounded-full bg-slate-400 flex items-center justify-center text-slate-900 font-bold text-sm">2</div>`;
+    if(i === 2) return `<div class="w-8 h-8 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold text-sm">3</div>`;
+    return `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold text-sm">${i+1}</div>`;
+  };
+
+  tbody.innerHTML = topReferrers.map((r, i) => `
+    <tr class="border-b border-slate-800 hover:bg-slate-800 transition-colors">
+      <td class="py-4 pr-4">
+        ${rankBadge(i)}
+      </td>
+      <td class="py-4 pr-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-indigo-700 flex items-center justify-center text-white font-bold text-sm">${r.avatar}</div>
+          <div class="text-white font-semibold text-sm">${r.name}</div>
+        </div>
+      </td>
+      <td class="py-4 pr-4">
+        <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${tierPills[r.tier]}">${r.tier}</span>
+      </td>
+      <td class="py-4 pr-4">
+        <span class="text-white font-bold">${r.referrals}</span>
+        <span class="text-slate-500 text-xs ml-1">this month</span>
+      </td>
+      <td class="py-4 pr-4">
+        <span class="text-indigo-400 font-bold">${r.earned.toLocaleString()}</span>
+        <span class="text-slate-500 text-xs ml-1">pts</span>
+      </td>
+      <td class="py-4">
+        ${r.bonusSent
+          ? `<span class="text-emerald-400 text-sm font-semibold flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> Bonus Sent</span>`
+          : `<button onclick="openBonusModal(${i})" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-lg font-semibold transition-colors">Send Thank You Bonus</button>`
+        }
+      </td>
+    </tr>
+  `).join('');
+  lucide.createIcons();
+}
+
+function openBonusModal(index) {
+  bonusTargetIndex = index;
+  selectedBonus = '+200 pts';
+  const r = topReferrers[index];
+  const content = document.getElementById('bonusModalContent');
+  content.innerHTML = `
+    <h3 class="text-white font-bold text-lg mb-1">Send a bonus reward to ${r.name}?</h3>
+    <p class="text-slate-400 text-sm mb-5">Choose the type of bonus reward to send.</p>
+    <div class="space-y-2 mb-6" id="bonusOptions">
+      <div class="radio-opt selected" onclick="selectBonus(this, '+200 pts')">
+        <div class="flex items-center gap-3">
+          <div class="w-4 h-4 rounded-full border-2 border-indigo-500 bg-indigo-500 flex-shrink-0"></div>
+          <div>
+            <div class="text-white text-sm font-semibold">+200 pts</div>
+            <div class="text-slate-400 text-xs">Bonus points added to their account</div>
+          </div>
+        </div>
+      </div>
+      <div class="radio-opt" onclick="selectBonus(this, 'Guest Pass')">
+        <div class="flex items-center gap-3">
+          <div class="w-4 h-4 rounded-full border-2 border-slate-500 flex-shrink-0"></div>
+          <div>
+            <div class="text-white text-sm font-semibold">Guest Pass</div>
+            <div class="text-slate-400 text-xs">A free day pass for them to share</div>
+          </div>
+        </div>
+      </div>
+      <div class="radio-opt" onclick="selectBonus(this, 'Personal Note')">
+        <div class="flex items-center gap-3">
+          <div class="w-4 h-4 rounded-full border-2 border-slate-500 flex-shrink-0"></div>
+          <div>
+            <div class="text-white text-sm font-semibold">Personal Note</div>
+            <div class="text-slate-400 text-xs">A personalised thank-you message from the owner</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeModal('modalBonus')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl py-3 text-sm">Cancel</button>
+      <button onclick="confirmBonus()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-3 text-sm font-semibold">Send Bonus</button>
+    </div>
+  `;
+  openModal('modalBonus');
+}
+
+function selectBonus(el, value) {
+  selectedBonus = value;
+  document.querySelectorAll('.radio-opt').forEach(opt => {
+    opt.classList.remove('selected');
+    const dot = opt.querySelector('.rounded-full');
+    dot.classList.remove('bg-indigo-500', 'border-indigo-500');
+    dot.classList.add('border-slate-500');
+  });
+  el.classList.add('selected');
+  const dot = el.querySelector('.rounded-full');
+  dot.classList.remove('border-slate-500');
+  dot.classList.add('bg-indigo-500', 'border-indigo-500');
+}
+
+function confirmBonus() {
+  const r = topReferrers[bonusTargetIndex];
+  topReferrers[bonusTargetIndex].bonusSent = true;
+  closeModal('modalBonus');
+  renderReferrers();
+  showToast(`Bonus sent to ${r.name} 🎉`);
+}
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', () => {
+  renderFunnel();
+  renderReferrers();
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>
