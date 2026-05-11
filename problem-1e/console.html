@@ -1,617 +1,626 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FitPulse Console – Community & Social</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-<style>
-  body { background: #0f172a; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
-  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; z-index: 50; }
-  .main { margin-left: 240px; min-height: 100vh; padding: 32px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 10px; cursor: pointer; color: #94a3b8; font-size: 14px; font-weight: 500; transition: all 0.2s; margin: 2px 8px; }
-  .nav-item:hover { background: #0f172a; color: #f1f5f9; }
-  .nav-item.active { background: #6366f1; color: white; }
-  .nav-item svg { width: 18px; height: 18px; }
-  .stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; }
-  .section { display: none; }
-  .section.active { display: block; }
-  .toast-desktop { position: fixed; bottom: 32px; right: 32px; background: #1e293b; color: #f1f5f9; border-radius: 12px; padding: 14px 20px; font-size: 13px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid #334155; z-index: 999; opacity: 0; transform: translateY(8px); transition: all 0.3s ease; pointer-events: none; min-width: 260px; }
-  .toast-desktop.show { opacity: 1; transform: translateY(0); }
-  .slide-panel { position: fixed; right: -420px; top: 0; bottom: 0; width: 400px; background: #1e293b; border-left: 1px solid #334155; z-index: 200; transition: right 0.3s ease; padding: 32px 24px; overflow-y: auto; }
-  .slide-panel.open { right: 0; }
-  .modal-overlay-desktop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 150; display: none; align-items: center; justify-content: center; }
-  .modal-box-desktop { background: #1e293b; border-radius: 20px; padding: 32px; max-width: 480px; width: 90%; border: 1px solid #334155; }
-  .progress-bar { height: 8px; background: #334155; border-radius: 4px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; }
-  .pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .btn-primary { background: #6366f1; color: white; border-radius: 10px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
-  .btn-primary:hover { background: #5254cc; }
-  .btn-outline-sm { background: transparent; color: #6366f1; border: 1px solid #6366f1; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-  .btn-outline-sm:hover { background: rgba(99,102,241,0.1); }
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 16px; border-bottom: 1px solid #334155; }
-  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #1e293b; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-  input, select, textarea { background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; padding: 9px 12px; font-size: 13px; width: 100%; outline: none; transition: border 0.2s; }
-  input:focus, select:focus, textarea:focus { border-color: #6366f1; }
-  label { font-size: 12px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 5px; }
-  .form-group { margin-bottom: 16px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitPulse — Community &amp; Social Features</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #6366f1;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .slide-panel { transition: transform 0.3s ease; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .toast-show { animation: toastIn 0.25s ease forwards; }
+  </style>
 </head>
-<body>
+<body class="flex h-screen overflow-hidden">
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="px-5 py-6 border-b" style="border-color:#334155;">
-    <span class="text-lg font-black" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">FitPulse</span>
-    <div class="text-xs mt-0.5" style="color:#64748b;">Owner Console</div>
+<!-- ===================== SIDEBAR ===================== -->
+<aside class="w-56 flex-shrink-0 h-full flex flex-col border-r border-slate-700/60" style="background:#1e293b;">
+  <!-- Logo -->
+  <div class="px-4 py-5 border-b border-slate-700/60">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+        <i data-lucide="activity" class="w-4 h-4 text-white"></i>
+      </div>
+      <span class="font-bold text-base" style="background:linear-gradient(90deg,#818cf8,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">FitPulse</span>
+    </div>
+    <p class="text-xs mt-1" style="color:var(--muted);">Community &amp; Social</p>
   </div>
-  <nav class="flex flex-col flex-1 py-4 gap-1">
-    <div class="nav-item active" id="nav-overview" onclick="switchSection('overview')">
-      <i data-lucide="users"></i>
-      <span>Community Overview</span>
-    </div>
-    <div class="nav-item" id="nav-challenges" onclick="switchSection('challenges')">
-      <i data-lucide="flag"></i>
-      <span>Challenges</span>
-    </div>
-    <div class="nav-item" id="nav-isolated" onclick="switchSection('isolated')">
-      <i data-lucide="user-x"></i>
-      <span>Isolated Members</span>
-    </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 py-3 flex flex-col gap-0.5 px-2">
+    <button onclick="showSection('community-health')" id="nav-community-health"
+      class="nav-btn w-full text-left px-3 py-2.5 rounded-r-md text-sm font-medium flex items-center gap-3 transition-all"
+      style="background:#1e3a5f;color:#a5b4fc;border-left:2px solid #6366f1;">
+      <i data-lucide="heart-pulse" class="w-4 h-4 flex-shrink-0"></i>
+      Community Health
+    </button>
+    <button onclick="showSection('social-challenges')" id="nav-social-challenges"
+      class="nav-btn w-full text-left px-3 py-2.5 rounded-md text-sm font-medium flex items-center gap-3 transition-all"
+      style="background:transparent;color:var(--muted);border-left:2px solid transparent;">
+      <i data-lucide="trophy" class="w-4 h-4 flex-shrink-0"></i>
+      Social Challenges
+    </button>
+    <button onclick="showSection('member-connections')" id="nav-member-connections"
+      class="nav-btn w-full text-left px-3 py-2.5 rounded-md text-sm font-medium flex items-center gap-3 transition-all"
+      style="background:transparent;color:var(--muted);border-left:2px solid transparent;">
+      <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
+      Member Connections
+    </button>
   </nav>
-  <div class="px-5 py-5 border-t" style="border-color:#334155;">
-    <div class="flex items-center gap-3">
-      <div style="width:34px;height:34px;border-radius:50%;background:#6366f1;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:white;">O</div>
+
+  <!-- Role pill -->
+  <div class="px-4 py-4 border-t border-slate-700/60">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background:#312e81;color:#a5b4fc;">G</div>
       <div>
-        <div class="text-sm font-semibold" style="color:#f1f5f9;">Gym Owner</div>
-        <span class="pill" style="background:#1e1b4b;color:#a5b4fc;font-size:10px;">Owner</span>
+        <p class="text-xs font-medium" style="color:var(--text);">Gym Manager</p>
+        <span class="text-xs px-1.5 py-0.5 rounded-full font-medium" style="background:#1e1b4b;color:#818cf8;">Admin</span>
       </div>
     </div>
   </div>
-</div>
+</aside>
 
-<!-- MAIN CONTENT -->
-<div class="main">
+<!-- ===================== MAIN ===================== -->
+<main class="flex-1 overflow-y-auto h-full" style="background:var(--bg);">
 
-  <!-- SECTION: COMMUNITY OVERVIEW -->
-  <div class="section active" id="section-overview">
-    <div class="flex items-start justify-between mb-6">
+  <!-- ===== SECTION 1: Community Health ===== -->
+  <section id="section-community-health" class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold" style="color:#f1f5f9;">Community & Social Health</h1>
-        <p class="text-sm mt-1" style="color:#94a3b8;">February 2025 · 10,000 members</p>
+        <h1 class="text-xl font-bold" style="color:var(--text);">Community Health</h1>
+        <p class="text-sm mt-0.5" style="color:var(--muted);">Member connectivity, social engagement, and retention impact</p>
       </div>
+      <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#1e3a5f;color:#93c5fd;">Jan 2025</span>
     </div>
 
-    <!-- 4 Stat Cards -->
-    <div class="grid grid-cols-4 gap-4 mb-6">
-      <div class="stat-card">
-        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">Members Connected</div>
-        <div class="text-2xl font-bold" style="color:#f1f5f9;">4,840</div>
-        <div class="text-xs mt-1" style="color:#10b981;">48.4% of total</div>
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-4 gap-4">
+      <div class="rounded-xl p-4 border border-slate-700/60" style="background:var(--card);">
+        <div class="flex items-start justify-between mb-2">
+          <p class="text-xs font-medium" style="color:var(--muted);">Connected Members</p>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#1e3a5f;">
+            <i data-lucide="users" class="w-4 h-4" style="color:#6366f1;"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold" style="color:var(--text);">2,847</p>
+        <div class="mt-2 flex items-center gap-1.5">
+          <span class="text-xs px-1.5 py-0.5 rounded-full font-semibold" style="background:#052e16;color:#34d399;">+12.4%</span>
+          <span class="text-xs" style="color:var(--muted);">vs last month</span>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">Avg Connections</div>
-        <div class="text-2xl font-bold" style="color:#f1f5f9;">2.3</div>
-        <div class="text-xs mt-1" style="color:#94a3b8;">per member</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">In Challenges</div>
-        <div class="text-2xl font-bold" style="color:#f1f5f9;">1,840</div>
-        <div class="text-xs mt-1" style="color:#6366f1;">18.4% of total</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-xs font-semibold mb-1" style="color:#94a3b8;">Feed Activity</div>
-        <div class="text-2xl font-bold" style="color:#f1f5f9;">2,341</div>
-        <div class="text-xs mt-1" style="color:#94a3b8;">moments this week</div>
-      </div>
-    </div>
 
-    <!-- Connection vs Retention Chart -->
-    <div class="stat-card mb-6">
-      <div class="flex items-start justify-between mb-5">
-        <div>
-          <div class="font-semibold text-base" style="color:#f1f5f9;">Social Connections vs. Retention Rate</div>
-          <div class="text-xs mt-0.5" style="color:#94a3b8;">Retention by connection segment</div>
+      <div class="rounded-xl p-4 border border-slate-700/60" style="background:var(--card);">
+        <div class="flex items-start justify-between mb-2">
+          <p class="text-xs font-medium" style="color:var(--muted);">Connection Rate</p>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#1e1b4b;">
+            <i data-lucide="link" class="w-4 h-4" style="color:#6366f1;"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold" style="color:var(--text);">47.2%</p>
+        <div class="mt-2 flex items-center gap-1.5">
+          <span class="text-xs" style="color:var(--muted);">Industry avg:</span>
+          <span class="text-xs font-semibold" style="color:#f59e0b;">21%</span>
         </div>
       </div>
-      <div class="flex flex-col gap-4">
-        <div class="flex items-center gap-4">
-          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">0 connections</div>
-          <div class="flex-1 relative" style="height:28px;">
-            <div style="width:54%;height:100%;background:#ef4444;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
-              <span style="font-size:12px;font-weight:700;color:white;">54%</span>
-            </div>
+
+      <div class="rounded-xl p-4 border border-slate-700/60" style="background:var(--card);">
+        <div class="flex items-start justify-between mb-2">
+          <p class="text-xs font-medium" style="color:var(--muted);">Active in Challenges</p>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#042f2e;">
+            <i data-lucide="trophy" class="w-4 h-4" style="color:#10b981;"></i>
           </div>
-          <div class="text-xs shrink-0" style="color:#94a3b8;">5,160 members</div>
         </div>
-        <div class="flex items-center gap-4">
-          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">1–2 connections</div>
-          <div class="flex-1 relative" style="height:28px;">
-            <div style="width:71%;height:100%;background:#f59e0b;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
-              <span style="font-size:12px;font-weight:700;color:white;">71%</span>
-            </div>
-          </div>
-          <div class="text-xs shrink-0" style="color:#94a3b8;">2,740 members</div>
-        </div>
-        <div class="flex items-center gap-4">
-          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">3–4 connections</div>
-          <div class="flex-1 relative" style="height:28px;">
-            <div style="width:89%;height:100%;background:#6366f1;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
-              <span style="font-size:12px;font-weight:700;color:white;">89%</span>
-            </div>
-          </div>
-          <div class="text-xs shrink-0" style="color:#94a3b8;">1,680 members</div>
-        </div>
-        <div class="flex items-center gap-4">
-          <div class="text-xs font-medium w-36 shrink-0" style="color:#94a3b8;">5+ connections</div>
-          <div class="flex-1 relative" style="height:28px;">
-            <div style="width:94%;height:100%;background:#10b981;border-radius:6px;display:flex;align-items:center;padding-left:10px;">
-              <span style="font-size:12px;font-weight:700;color:white;">94%</span>
-            </div>
-          </div>
-          <div class="text-xs shrink-0" style="color:#94a3b8;">420 members</div>
+        <p class="text-2xl font-bold" style="color:var(--text);">1,204</p>
+        <div class="mt-2">
+          <span class="text-xs" style="color:var(--muted);">42.3% of all members</span>
         </div>
       </div>
-      <!-- Annotation -->
-      <div class="mt-5 rounded-xl p-4" style="background:#0f172a;border:1px solid #334155;">
-        <div class="flex items-start gap-3">
-          <div style="width:8px;height:8px;border-radius:50%;background:#6366f1;flex-shrink:0;margin-top:4px;"></div>
-          <p class="text-sm" style="color:#cbd5e1;">Members with <strong style="color:#a5b4fc;">3+ connections</strong> retain at <strong style="color:#10b981;">89%</strong> vs <strong style="color:#ef4444;">54%</strong> for isolated members — a <strong style="color:#f1f5f9;">35-point gap</strong>.</p>
+
+      <div class="rounded-xl p-4 border border-slate-700/60" style="background:var(--card);">
+        <div class="flex items-start justify-between mb-2">
+          <p class="text-xs font-medium" style="color:var(--muted);">Feed Posts This Week</p>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#1c1003;">
+            <i data-lucide="message-square" class="w-4 h-4" style="color:#f59e0b;"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold" style="color:var(--text);">892</p>
+        <div class="mt-2">
+          <span class="text-xs" style="color:var(--muted);">4,231 reactions</span>
         </div>
       </div>
     </div>
 
-    <!-- Community Health Score -->
-    <div class="stat-card mb-6">
-      <div class="flex items-start justify-between mb-5">
-        <div>
-          <div class="font-semibold text-base" style="color:#f1f5f9;">Community Health Score</div>
-          <div class="text-xs mt-0.5" style="color:#94a3b8;">Composite metric across connections, challenges & engagement</div>
+    <!-- Chart + Retention cards -->
+    <div class="grid grid-cols-3 gap-4">
+      <!-- Bar Chart -->
+      <div class="col-span-2 rounded-xl p-5 border border-slate-700/60" style="background:var(--card);">
+        <h2 class="text-sm font-semibold mb-4" style="color:var(--text);">Connection vs. Retention Rate</h2>
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-32 text-right flex-shrink-0" style="color:var(--muted);">0 connections</span>
+            <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:#0f172a;">
+              <div class="h-full rounded-full flex items-center justify-end pr-2" style="width:61.4%;background:#ef4444;">
+                <span class="text-xs font-bold text-white">61.4%</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-32 text-right flex-shrink-0" style="color:var(--muted);">1–2 connections</span>
+            <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:#0f172a;">
+              <div class="h-full rounded-full flex items-center justify-end pr-2" style="width:73.8%;background:#f59e0b;">
+                <span class="text-xs font-bold text-white">73.8%</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-32 text-right flex-shrink-0" style="color:var(--muted);">3–5 connections</span>
+            <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:#0f172a;">
+              <div class="h-full rounded-full flex items-center justify-end pr-2" style="width:84.2%;background:#6366f1;">
+                <span class="text-xs font-bold text-white">84.2%</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-32 text-right flex-shrink-0" style="color:var(--muted);">6+ connections</span>
+            <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:#0f172a;">
+              <div class="h-full rounded-full flex items-center justify-end pr-2" style="width:91.7%;background:#10b981;">
+                <span class="text-xs font-bold text-white">91.7%</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="text-right">
-          <div class="text-4xl font-black" style="color:#6366f1;">48</div>
-          <div class="text-sm" style="color:#94a3b8;">/ 100</div>
-        </div>
+        <p class="text-xs mt-4" style="color:var(--muted);">Annual retention rate by number of gym connections</p>
       </div>
-      <div class="progress-bar mb-5">
-        <div class="progress-fill" style="width:48%;background:#6366f1;"></div>
-      </div>
-      <div class="grid grid-cols-3 gap-4 mb-5">
-        <div>
-          <div class="flex justify-between text-xs mb-1">
-            <span style="color:#94a3b8;">Connections</span>
-            <span style="color:#f1f5f9;font-weight:600;">42/100</span>
+
+      <!-- Retention Metric Cards -->
+      <div class="flex flex-col gap-3">
+        <div class="rounded-xl p-4 border border-slate-700/60 flex-1" style="background:var(--card);">
+          <p class="text-xs font-medium mb-2" style="color:var(--muted);">Connected Member Retention</p>
+          <p class="text-3xl font-bold" style="color:#10b981;">87.3%</p>
+          <div class="mt-3 h-1.5 rounded-full overflow-hidden" style="background:#0f172a;">
+            <div class="h-full rounded-full" style="width:87.3%;background:#10b981;"></div>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:42%;background:#8b5cf6;"></div>
-          </div>
+          <p class="text-xs mt-2" style="color:var(--muted);">Members with 1+ connections</p>
         </div>
-        <div>
-          <div class="flex justify-between text-xs mb-1">
-            <span style="color:#94a3b8;">Challenges</span>
-            <span style="color:#f1f5f9;font-weight:600;">61/100</span>
+
+        <div class="rounded-xl p-4 border border-slate-700/60 flex-1" style="background:var(--card);">
+          <p class="text-xs font-medium mb-2" style="color:var(--muted);">Isolated Member Retention</p>
+          <p class="text-3xl font-bold" style="color:#ef4444;">61.4%</p>
+          <div class="mt-3 h-1.5 rounded-full overflow-hidden" style="background:#0f172a;">
+            <div class="h-full rounded-full" style="width:61.4%;background:#ef4444;"></div>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:61%;background:#6366f1;"></div>
-          </div>
+          <p class="text-xs mt-2" style="color:var(--muted);">Members with 0 connections</p>
         </div>
-        <div>
-          <div class="flex justify-between text-xs mb-1">
-            <span style="color:#94a3b8;">Engagement</span>
-            <span style="color:#f1f5f9;font-weight:600;">41/100</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:41%;background:#10b981;"></div>
-          </div>
+
+        <div class="rounded-xl p-3 border border-indigo-700/50 text-center" style="background:#1e1b4b;">
+          <p class="text-xs font-medium" style="color:#a5b4fc;">Retention Difference</p>
+          <p class="text-2xl font-bold mt-0.5" style="color:#6366f1;">+25.9%</p>
+          <p class="text-xs" style="color:#818cf8;">connected vs isolated</p>
         </div>
-      </div>
-      <div class="rounded-xl p-4" style="background:#0f172a;border:1px solid #334155;">
-        <p class="text-xs" style="color:#94a3b8;">💡 Increasing members with 3+ connections from <strong style="color:#f1f5f9;">21%</strong> to <strong style="color:#a5b4fc;">40%</strong> is estimated to retain <strong style="color:#10b981;">600–800 additional members/year</strong> (~$418K–$557K at $58/month)</p>
       </div>
     </div>
 
     <!-- ROI Insight Card -->
-    <div class="rounded-xl p-6" style="background:#1e1b4b;border-left:4px solid #6366f1;border:1px solid #3730a3;border-left:4px solid #6366f1;">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="text-lg">💡</span>
-        <div class="font-bold text-base" style="color:#f1f5f9;">Why Community Is Your Strongest Retention Tool</div>
-      </div>
-      <div class="grid grid-cols-3 gap-6 mb-4">
-        <div class="text-center p-4 rounded-xl" style="background:rgba(0,0,0,0.2);">
-          <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">5x</div>
-          <div class="text-xs" style="color:#c7d2fe;">higher retention for members with 3+ connections</div>
+    <div class="rounded-xl p-5 border border-indigo-800/50" style="background:#0d1b3e;border-left:4px solid #6366f1;">
+      <div class="flex items-start gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#1e1b4b;">
+          <i data-lucide="lightbulb" class="w-4 h-4" style="color:#818cf8;"></i>
         </div>
-        <div class="text-center p-4 rounded-xl" style="background:rgba(0,0,0,0.2);">
-          <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">35pt</div>
-          <div class="text-xs" style="color:#c7d2fe;">retention gap between connected and isolated members</div>
-        </div>
-        <div class="text-center p-4 rounded-xl" style="background:rgba(0,0,0,0.2);">
-          <div class="text-2xl font-black mb-1" style="color:#a5b4fc;">~$418K–$557K</div>
-          <div class="text-xs" style="color:#c7d2fe;">annual revenue retained with improved connections</div>
+        <div>
+          <p class="text-sm font-semibold mb-1" style="color:#c7d2fe;">ROI Insight</p>
+          <p class="text-sm" style="color:#a5b4fc;">Members with <strong class="text-white">3+ gym connections</strong> are <strong class="text-white">43% less likely to cancel</strong> their membership than isolated members.</p>
         </div>
       </div>
-      <div class="text-xs" style="color:#818cf8;">Source: Planet Fitness internal data + QArea analysis</div>
+      <div class="grid grid-cols-3 gap-4 pt-4 border-t border-indigo-800/50">
+        <div class="text-center">
+          <p class="text-xl font-bold" style="color:#6366f1;">$557K</p>
+          <p class="text-xs mt-1" style="color:#818cf8;">Annual value of raising connection rate from 21% to 40%</p>
+        </div>
+        <div class="text-center" style="border-left:1px solid #312e81;border-right:1px solid #312e81;">
+          <p class="text-xl font-bold" style="color:#6366f1;">318</p>
+          <p class="text-xs mt-1" style="color:#818cf8;">Buddy pairs formed this month</p>
+        </div>
+        <div class="text-center">
+          <p class="text-xl font-bold" style="color:#6366f1;">26%</p>
+          <p class="text-xs mt-1" style="color:#818cf8;">Higher retention lift from community challenges vs solo</p>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <!-- SECTION: CHALLENGES -->
-  <div class="section" id="section-challenges">
-    <div class="flex items-start justify-between mb-6">
+  <!-- ===== SECTION 2: Social Challenges ===== -->
+  <section id="section-social-challenges" class="p-6 space-y-6 hidden">
+    <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold" style="color:#f1f5f9;">Group Challenge Performance</h1>
-        <p class="text-sm mt-1" style="color:#94a3b8;">Track challenge participation and retention impact</p>
+        <h1 class="text-xl font-bold" style="color:var(--text);">Social Challenges</h1>
+        <p class="text-sm mt-0.5" style="color:var(--muted);">Create and manage member challenges to boost engagement and retention</p>
       </div>
-      <button class="btn-primary flex items-center gap-2" onclick="openCreatePanel()">
-        <i data-lucide="plus" style="width:16px;height:16px;"></i>
+      <button onclick="openChallengePanel()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90" style="background:#6366f1;color:white;">
+        <i data-lucide="plus" class="w-4 h-4"></i>
         Create New Challenge
       </button>
     </div>
 
-    <!-- Challenges Table -->
-    <div class="stat-card mb-6 overflow-hidden" style="padding:0;">
-      <table id="challengeTable">
+    <div class="rounded-xl border border-slate-700/60 overflow-hidden" style="background:var(--card);">
+      <table class="w-full text-sm">
         <thead>
-          <tr>
-            <th>Challenge</th>
-            <th>Participants</th>
-            <th>Completion Rate</th>
-            <th>Retention Lift</th>
-            <th>Status</th>
+          <tr style="background:#162032;border-bottom:1px solid #334155;">
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Challenge Name</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Type</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Participants</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Completion</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Retention Lift</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Status</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">End Date</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Actions</th>
           </tr>
         </thead>
-        <tbody id="challengeTableBody"></tbody>
+        <tbody id="challenges-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: Member Connections ===== -->
+  <section id="section-member-connections" class="p-6 space-y-6 hidden">
+    <div>
+      <h1 class="text-xl font-bold" style="color:var(--text);">Isolated Members — Churn Risk</h1>
+      <p class="text-sm mt-0.5" style="color:var(--muted);">Members with few or no connections are at elevated risk of cancellation</p>
+    </div>
+
+    <!-- Risk Filter Pills -->
+    <div class="flex items-center gap-2">
+      <button onclick="setRiskFilter('all')" id="filter-all"
+        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+        style="background:#6366f1;color:white;">All</button>
+      <button onclick="setRiskFilter('high')" id="filter-high"
+        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all border border-slate-600"
+        style="background:#1e293b;color:var(--muted);">High Risk (≥70)</button>
+      <button onclick="setRiskFilter('medium')" id="filter-medium"
+        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all border border-slate-600"
+        style="background:#1e293b;color:var(--muted);">Medium Risk (40–69)</button>
+      <button onclick="setRiskFilter('low')" id="filter-low"
+        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all border border-slate-600"
+        style="background:#1e293b;color:var(--muted);">Low Risk (&lt;40)</button>
+    </div>
+
+    <!-- Members Table -->
+    <div class="rounded-xl border border-slate-700/60 overflow-hidden" style="background:var(--card);">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="background:#162032;border-bottom:1px solid #334155;">
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Member</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Joined</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Total Visits</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Connections</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Risk Score</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Status</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--muted);">Action</th>
+          </tr>
+        </thead>
+        <tbody id="members-tbody"></tbody>
       </table>
     </div>
 
-    <!-- Challenge Impact Insight -->
-    <div class="rounded-xl p-5" style="background:#1e293b;border-left:4px solid #f59e0b;border:1px solid #78350f;border-left:4px solid #f59e0b;">
-      <div class="flex items-center gap-2 mb-2">
-        <span>⚡</span>
-        <div class="font-semibold text-sm" style="color:#fbbf24;">Challenge Impact Insight</div>
-      </div>
-      <p class="text-sm" style="color:#cbd5e1;">The <strong style="color:#f1f5f9;">Buddy Bonus</strong> challenge delivers the highest retention lift at <strong style="color:#10b981;">+31%</strong> — members who attend classes together are significantly more likely to renew. Consider increasing the challenge cap and promoting it with a "Bring a Buddy" campaign to maximize reach.</p>
+    <!-- Amber Insight -->
+    <div class="rounded-xl p-4 border border-amber-700/50 flex items-start gap-3" style="background:#1c1003;">
+      <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0 mt-0.5" style="color:#f59e0b;"></i>
+      <p class="text-sm" style="color:#fcd34d;">Members with <strong class="text-amber-300">zero connections in their first 60 days</strong> have <strong class="text-amber-300">3&times; the cancellation rate</strong> of connected members. Consider a structured buddy-matching programme at onboarding.</p>
     </div>
-  </div>
+  </section>
 
-  <!-- SECTION: ISOLATED MEMBERS -->
-  <div class="section" id="section-isolated">
-    <div class="flex items-start justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold" style="color:#f1f5f9;">Members With No Social Connections</h1>
-        <p class="text-sm mt-1" style="color:#94a3b8;">5,160 members have 0 connections · high churn risk</p>
-      </div>
-    </div>
+</main>
 
-    <!-- Stacked Bar -->
-    <div class="stat-card mb-6">
-      <div class="text-xs font-semibold mb-3" style="color:#94a3b8;">MEMBERSHIP BY CONNECTION SEGMENT</div>
-      <div style="height:36px;border-radius:10px;overflow:hidden;display:flex;width:100%;">
-        <div style="width:51.6%;background:#ef4444;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">51.6% — 0 conn.</div>
-        <div style="width:27.4%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">27.4%</div>
-        <div style="width:16.8%;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">16.8%</div>
-        <div style="width:4.2%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;">4.2%</div>
-      </div>
-      <div class="flex gap-5 mt-3">
-        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block;"></span>0 connections (5,160)</div>
-        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#f59e0b;border-radius:2px;display:inline-block;"></span>1–2 (2,740)</div>
-        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#6366f1;border-radius:2px;display:inline-block;"></span>3–4 (1,680)</div>
-        <div class="flex items-center gap-1.5 text-xs" style="color:#94a3b8;"><span style="width:10px;height:10px;background:#10b981;border-radius:2px;display:inline-block;"></span>5+ (420)</div>
-      </div>
-    </div>
-
-    <!-- Filter Pills -->
-    <div class="flex gap-2 mb-4" id="filterPills">
-      <button class="pill cursor-pointer" style="background:#6366f1;color:white;" onclick="filterIsolated('all',this)">All Isolated</button>
-      <button class="pill cursor-pointer" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;" onclick="filterIsolated('new',this)">New Members (≤60 days)</button>
-      <button class="pill cursor-pointer" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;" onclick="filterIsolated('longterm',this)">Long-term (6+ months)</button>
-    </div>
-
-    <!-- Isolated Members Table -->
-    <div class="stat-card mb-6 overflow-hidden" style="padding:0;">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Connections</th>
-            <th>Last Seen</th>
-            <th>Member Since</th>
-            <th>Risk Score</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="isolatedTableBody"></tbody>
-      </table>
-    </div>
-
-    <!-- Insight Box -->
-    <div class="rounded-xl p-5" style="background:#1e293b;border-left:4px solid #6366f1;border:1px solid #334155;border-left:4px solid #6366f1;">
-      <div class="flex items-center gap-2 mb-2">
-        <span>💡</span>
-        <div class="font-semibold text-sm" style="color:#a5b4fc;">Early Connection Insight</div>
-      </div>
-      <p class="text-sm" style="color:#cbd5e1;">New members who make their first gym connection within the <strong style="color:#f1f5f9;">first 30 days</strong> are <strong style="color:#a5b4fc;">3x more likely</strong> to still be members at month 6. Prioritize introductions for members who joined in the last 60 days.</p>
-    </div>
-  </div>
-
-</div><!-- end main -->
-
-<!-- TOAST -->
-<div class="toast-desktop" id="toastDesktop"></div>
-
-<!-- SLIDE PANEL: Create Challenge -->
-<div class="slide-panel" id="createPanel">
-  <div class="flex items-center justify-between mb-6">
-    <div class="font-bold text-base" style="color:#f1f5f9;">Create New Challenge</div>
-    <button onclick="closeCreatePanel()" style="background:none;border:none;cursor:pointer;color:#64748b;">
-      <i data-lucide="x" style="width:20px;height:20px;"></i>
+<!-- ===================== SLIDE PANEL: Create Challenge ===================== -->
+<div id="challenge-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeChallengePanel()"></div>
+<div id="challenge-panel" class="slide-panel fixed top-0 right-0 h-full w-96 z-50 border-l border-slate-700/60 flex flex-col" style="background:#1e293b;transform:translateX(100%);">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-slate-700/60">
+    <h2 class="font-semibold text-sm" style="color:var(--text);">Create New Challenge</h2>
+    <button onclick="closeChallengePanel()" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-700/60 transition-all" style="color:var(--muted);">
+      <i data-lucide="x" class="w-4 h-4"></i>
     </button>
   </div>
-  <div class="form-group">
-    <label>Challenge Name</label>
-    <input type="text" id="newChallengeName" placeholder="e.g. Spring Streak Challenge" />
-  </div>
-  <div class="form-group">
-    <label>Type</label>
-    <select id="newChallengeType">
-      <option>Group</option>
-      <option>Buddy-based</option>
-      <option>Individual</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>Description</label>
-    <textarea id="newChallengeDesc" rows="2" placeholder="Describe what members need to do..."></textarea>
-  </div>
-  <div class="grid grid-cols-2 gap-3">
-    <div class="form-group">
-      <label>Target</label>
-      <input type="number" id="newChallengeTarget" placeholder="e.g. 15" />
+  <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+    <div>
+      <label class="text-xs font-medium block mb-1.5" style="color:var(--muted);">Challenge Name</label>
+      <input id="new-name" type="text" placeholder="e.g. February Warriors"
+        class="w-full px-3 py-2 rounded-lg text-sm border border-slate-600/60 outline-none transition-all"
+        style="background:#0f172a;color:var(--text);" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(71,85,105,0.6)'" />
     </div>
-    <div class="form-group">
-      <label>Duration (days)</label>
-      <input type="number" id="newChallengeDuration" placeholder="e.g. 30" />
+    <div>
+      <label class="text-xs font-medium block mb-1.5" style="color:var(--muted);">Type</label>
+      <select id="new-type" class="w-full px-3 py-2 rounded-lg text-sm border border-slate-600/60 outline-none transition-all"
+        style="background:#0f172a;color:var(--text);">
+        <option>Group</option><option>Duo</option><option>Individual</option>
+      </select>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs font-medium block mb-1.5" style="color:var(--muted);">Start Date</label>
+        <input id="new-start" type="date" class="w-full px-3 py-2 rounded-lg text-sm border border-slate-600/60 outline-none transition-all"
+          style="background:#0f172a;color:var(--text);" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(71,85,105,0.6)'" />
+      </div>
+      <div>
+        <label class="text-xs font-medium block mb-1.5" style="color:var(--muted);">End Date</label>
+        <input id="new-end" type="date" class="w-full px-3 py-2 rounded-lg text-sm border border-slate-600/60 outline-none transition-all"
+          style="background:#0f172a;color:var(--text);" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(71,85,105,0.6)'" />
+      </div>
+    </div>
+    <div>
+      <label class="text-xs font-medium block mb-1.5" style="color:var(--muted);">Target Metric</label>
+      <select id="new-metric" class="w-full px-3 py-2 rounded-lg text-sm border border-slate-600/60 outline-none transition-all"
+        style="background:#0f172a;color:var(--text);">
+        <option>Visits</option><option>Streak</option><option>Classes</option>
+      </select>
+    </div>
+    <div>
+      <label class="text-xs font-medium block mb-1.5" style="color:var(--muted);">Min Participants</label>
+      <input id="new-min" type="number" min="2" placeholder="e.g. 20"
+        class="w-full px-3 py-2 rounded-lg text-sm border border-slate-600/60 outline-none transition-all"
+        style="background:#0f172a;color:var(--text);" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(71,85,105,0.6)'" />
+    </div>
+    <div>
+      <label class="text-xs font-medium block mb-1.5" style="color:var(--muted);">Description</label>
+      <textarea id="new-desc" rows="3" placeholder="Describe the challenge goals..."
+        class="w-full px-3 py-2 rounded-lg text-sm border border-slate-600/60 outline-none transition-all resize-none"
+        style="background:#0f172a;color:var(--text);" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(71,85,105,0.6)'"></textarea>
     </div>
   </div>
-  <div class="form-group">
-    <label>Reward Points</label>
-    <input type="number" id="newChallengeReward" placeholder="e.g. 200" />
+  <div class="px-5 py-4 border-t border-slate-700/60">
+    <button onclick="createChallenge()" class="w-full py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-all" style="background:#6366f1;color:white;">
+      Create Challenge
+    </button>
   </div>
-  <button class="btn-primary w-full mt-2" style="width:100%;" onclick="createChallenge()">Create Challenge</button>
 </div>
 
-<!-- MODAL: Suggest Buddy -->
-<div class="modal-overlay-desktop" id="buddyModal">
-  <div class="modal-box-desktop" id="buddyModalBox"></div>
-</div>
-
-<div class="border-t py-6 text-center text-xs" style="margin-left:240px;border-color:#334155;color:#475569;">
-  FitPulse Prototype · Problem 1e: Community & Social Features · Console View
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-5 right-5 z-[9999] pointer-events-none" style="display:none;">
+  <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium" style="background:#059669;color:white;min-width:230px;">
+    <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+    <span id="toast-msg"></span>
+  </div>
 </div>
 
 <script>
-const communityStats = { totalMembers:10000, membersWithConnections:4840, avgConnectionsPerMember:2.3, membersIn3PlusConnections:2100, activeInChallenges:1840, feedPostsThisWeek:2341, retentionWith3Plus:89, retentionIsolated:54 };
-const connectionRetention = [
-  { segment:"0 connections", retention:54, members:5160 },
-  { segment:"1–2 connections", retention:71, members:2740 },
-  { segment:"3–4 connections", retention:89, members:1680 },
-  { segment:"5+ connections", retention:94, members:420 }
-];
-let topChallengesByRetention = [
-  { name:"February Warrior", participants:287, completionRate:41, retentionLift:"+19%", status:"Active" },
-  { name:"Buddy Bonus", participants:94, completionRate:58, retentionLift:"+31%", status:"Active" },
-  { name:"Morning Crew", participants:156, completionRate:34, retentionLift:"+22%", status:"Active" }
-];
-const isolatedMembers = [
-  { name:"Oliver S.", connections:0, lastSeen:"8 days ago", joinDate:"Dec 2024", riskScore:74, nudgeSent:false },
-  { name:"Fatima A.", connections:0, lastSeen:"14 days ago", joinDate:"Jan 2025", riskScore:81, nudgeSent:false },
-  { name:"Ben C.", connections:1, lastSeen:"3 days ago", joinDate:"Nov 2024", riskScore:45, nudgeSent:false },
-  { name:"Yuki T.", connections:0, lastSeen:"5 days ago", joinDate:"Jan 2025", riskScore:62, nudgeSent:false },
-  { name:"Dan F.", connections:1, lastSeen:"1 day ago", joinDate:"Dec 2024", riskScore:38, nudgeSent:false }
-];
+  // ============================================================
+  // DATA
+  // ============================================================
+  let socialChallenges = [
+    { id:1, name:"January Warriors",   type:"Group", participants:342, completionRate:68, retentionLift:"+18%", status:"Active",    endDate:"Jan 31" },
+    { id:2, name:"Yoga 30-Day",        type:"Group", participants:156, completionRate:45, retentionLift:"+14%", status:"Active",    endDate:"Jan 31" },
+    { id:3, name:"Buddy Workout Week", type:"Duo",   participants:89,  completionRate:72, retentionLift:"+22%", status:"Active",    endDate:"Jan 26" },
+    { id:4, name:"December Finishers", type:"Group", participants:201, completionRate:81, retentionLift:"+19%", status:"Completed", endDate:"Dec 31" },
+    { id:5, name:"Morning Risers",     type:"Group", participants:134, completionRate:58, retentionLift:"+11%", status:"Draft",     endDate:"Feb 28" }
+  ];
 
-// Determine new vs long-term
-function isNewMember(joinDate) {
-  // Jan 2025 and Dec 2024 = new (within ~60 days of Feb 2025)
-  return joinDate === "Jan 2025" || joinDate === "Dec 2024";
-}
-function isLongterm(joinDate) {
-  return joinDate === "Nov 2024" || joinDate === "Oct 2024" || joinDate === "Sep 2024";
-}
+  let isolatedMembers = [
+    { id:1, name:"Kevin P.",  avatar:"K", joinDate:"Nov 2024", visits:8,  connections:0, riskScore:82, status:"No action"  },
+    { id:2, name:"Sandra H.", avatar:"S", joinDate:"Oct 2024", visits:12, connections:0, riskScore:77, status:"No action"  },
+    { id:3, name:"Brian T.",  avatar:"B", joinDate:"Dec 2024", visits:5,  connections:0, riskScore:91, status:"No action"  },
+    { id:4, name:"Megan L.",  avatar:"M", joinDate:"Jan 2025", visits:3,  connections:1, riskScore:65, status:"No action"  },
+    { id:5, name:"Derek W.",  avatar:"D", joinDate:"Sep 2024", visits:19, connections:1, riskScore:58, status:"Invite Sent"}
+  ];
 
-let currentFilter = 'all';
+  const avatarColors = {
+    K: { bg:"#1e1b4b", color:"#818cf8" },
+    S: { bg:"#2e1065", color:"#c4b5fd" },
+    B: { bg:"#022c22", color:"#34d399" },
+    M: { bg:"#1c1003", color:"#fbbf24" },
+    D: { bg:"#0c1a2e", color:"#60a5fa" }
+  };
 
-function switchSection(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('section-' + name).classList.add('active');
-  document.getElementById('nav-' + name).classList.add('active');
-}
+  let nextId = 6;
+  let riskFilter = "all";
 
-let toastTimer = null;
-function showToast(msg) {
-  const t = document.getElementById('toastDesktop');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
-}
+  // ============================================================
+  // NAVIGATION
+  // ============================================================
+  const sections = ["community-health","social-challenges","member-connections"];
 
-// ---- CHALLENGES TABLE ----
-function renderChallengeTable() {
-  const tbody = document.getElementById('challengeTableBody');
-  tbody.innerHTML = topChallengesByRetention.map((c, idx) => {
-    const isDraft = c.status === 'Draft';
-    const statusStyle = isDraft
-      ? 'background:#1e293b;color:#94a3b8;border:1px solid #475569;'
-      : 'background:#1e1b4b;color:#a5b4fc;';
-    return `
-      <tr>
-        <td><span class="font-semibold" style="color:#f1f5f9;">${c.name}</span></td>
-        <td><span style="color:#cbd5e1;">${c.participants}</span></td>
-        <td>
-          <div class="flex items-center gap-2">
-            <div style="width:80px;height:6px;background:#334155;border-radius:3px;overflow:hidden;">
-              <div style="width:${c.completionRate}%;height:100%;background:#6366f1;border-radius:3px;"></div>
-            </div>
-            <span class="text-xs" style="color:#94a3b8;">${c.completionRate}%</span>
-          </div>
-        </td>
-        <td><span class="pill" style="background:#064e3b;color:#10b981;">${c.retentionLift}</span></td>
-        <td><span class="pill" style="${statusStyle}">${c.status}</span></td>
+  function showSection(id) {
+    sections.forEach(s => {
+      document.getElementById("section-" + s).classList.add("hidden");
+      const n = document.getElementById("nav-" + s);
+      n.style.background    = "transparent";
+      n.style.color         = "var(--muted)";
+      n.style.borderLeft    = "2px solid transparent";
+      n.style.borderRadius  = "0.375rem";
+    });
+    document.getElementById("section-" + id).classList.remove("hidden");
+    const active = document.getElementById("nav-" + id);
+    active.style.background   = "#1e3a5f";
+    active.style.color        = "#a5b4fc";
+    active.style.borderLeft   = "2px solid #6366f1";
+    active.style.borderRadius = "0 0.375rem 0.375rem 0";
+    lucide.createIcons();
+  }
+
+  // ============================================================
+  // CHALLENGES TABLE
+  // ============================================================
+  function statusPill(s) {
+    if (s === "Active")    return `<span style="background:#052e16;color:#34d399;"    class="px-2 py-0.5 rounded-full text-xs font-semibold">Active</span>`;
+    if (s === "Completed") return `<span style="background:#1e293b;color:#64748b;"    class="px-2 py-0.5 rounded-full text-xs font-semibold">Completed</span>`;
+    if (s === "Draft")     return `<span style="background:#1c1003;color:#fbbf24;"    class="px-2 py-0.5 rounded-full text-xs font-semibold">Draft</span>`;
+    return s;
+  }
+
+  function completionPill(r) {
+    if (r >= 70) return `<span style="background:#052e16;color:#34d399;" class="px-2 py-0.5 rounded-full text-xs font-semibold">${r}%</span>`;
+    if (r >= 50) return `<span style="background:#1c1003;color:#fbbf24;" class="px-2 py-0.5 rounded-full text-xs font-semibold">${r}%</span>`;
+    return       `<span style="background:#2d0909;color:#f87171;"         class="px-2 py-0.5 rounded-full text-xs font-semibold">${r}%</span>`;
+  }
+
+  function challengeAction(c) {
+    if (c.status === "Active")
+      return `<button class="px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 transition-all" style="background:#1e1b4b;color:#818cf8;">View Analytics</button>`;
+    if (c.status === "Draft")
+      return `<button onclick="activateChallenge(${c.id})" class="px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-all" style="background:#059669;color:white;">Activate</button>`;
+    if (c.status === "Completed")
+      return `<button disabled class="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-not-allowed" style="background:#1e293b;color:#475569;">View Report</button>`;
+    return "";
+  }
+
+  function renderChallenges() {
+    const tbody = document.getElementById("challenges-tbody");
+    tbody.innerHTML = socialChallenges.map(c => `
+      <tr class="border-b border-slate-700/40 hover:bg-slate-700/20 transition-all">
+        <td class="px-4 py-3 font-medium" style="color:var(--text);">${c.name}</td>
+        <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#1e1b4b;color:#a5b4fc;">${c.type}</span></td>
+        <td class="px-4 py-3" style="color:var(--text);">${c.participants.toLocaleString()}</td>
+        <td class="px-4 py-3">${completionPill(c.completionRate)}</td>
+        <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="background:#1e1b4b;color:#818cf8;">${c.retentionLift}</span></td>
+        <td class="px-4 py-3">${statusPill(c.status)}</td>
+        <td class="px-4 py-3 text-sm" style="color:var(--muted);">${c.endDate}</td>
+        <td class="px-4 py-3">${challengeAction(c)}</td>
       </tr>
-    `;
-  }).join('');
-}
-
-// ---- CREATE PANEL ----
-function openCreatePanel() {
-  document.getElementById('createPanel').classList.add('open');
-}
-function closeCreatePanel() {
-  document.getElementById('createPanel').classList.remove('open');
-}
-
-function createChallenge() {
-  const name = document.getElementById('newChallengeName').value.trim() || 'New Challenge';
-  const type = document.getElementById('newChallengeType').value;
-  const desc = document.getElementById('newChallengeDesc').value.trim();
-  const target = document.getElementById('newChallengeTarget').value || '10';
-  const duration = document.getElementById('newChallengeDuration').value || '30';
-  const reward = document.getElementById('newChallengeReward').value || '100';
-
-  topChallengesByRetention.push({
-    name,
-    participants: 0,
-    completionRate: 0,
-    retentionLift: "—",
-    status: "Draft"
-  });
-
-  renderChallengeTable();
-  closeCreatePanel();
-  showToast('Challenge created and saved as draft');
-
-  // Reset form
-  ['newChallengeName','newChallengeDesc','newChallengeTarget','newChallengeDuration','newChallengeReward'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-}
-
-// ---- ISOLATED MEMBERS TABLE ----
-function getRiskPill(score) {
-  if (score >= 70) return `<span class="pill" style="background:#450a0a;color:#ef4444;">${score}</span>`;
-  if (score >= 40) return `<span class="pill" style="background:#451a03;color:#f59e0b;">${score}</span>`;
-  return `<span class="pill" style="background:#052e16;color:#10b981;">${score}</span>`;
-}
-
-function renderIsolatedTable(filter) {
-  currentFilter = filter;
-  const tbody = document.getElementById('isolatedTableBody');
-  let members = [...isolatedMembers];
-
-  if (filter === 'new') {
-    members = members.filter(m => isNewMember(m.joinDate));
-  } else if (filter === 'longterm') {
-    members = members.filter(m => isLongterm(m.joinDate));
+    `).join("");
+    lucide.createIcons();
   }
 
-  if (members.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:32px;">No members match this filter.</td></tr>`;
-    return;
+  function activateChallenge(id) {
+    const c = socialChallenges.find(x => x.id === id);
+    if (c) { c.status = "Active"; renderChallenges(); showToast(`"${c.name}" is now Active`); }
   }
 
-  tbody.innerHTML = members.map((m, idx) => {
-    const origIdx = isolatedMembers.findIndex(om => om.name === m.name);
-    if (m.nudgeSent) {
-      return `
-        <tr id="iso-row-${origIdx}">
-          <td><span class="font-semibold" style="color:#f1f5f9;">${m.name}</span></td>
-          <td><span style="color:#cbd5e1;">${m.connections}</span></td>
-          <td><span style="color:#94a3b8;">${m.lastSeen}</span></td>
-          <td><span style="color:#94a3b8;">${m.joinDate}</span></td>
-          <td>${getRiskPill(m.riskScore)}</td>
-          <td><span class="text-xs font-semibold" style="color:#10b981;">✅ Introduction Sent</span></td>
-        </tr>
-      `;
+  // ============================================================
+  // CHALLENGE PANEL
+  // ============================================================
+  function openChallengePanel() {
+    document.getElementById("challenge-panel").style.transform = "translateX(0)";
+    document.getElementById("challenge-overlay").classList.remove("hidden");
+    lucide.createIcons();
+  }
+
+  function closeChallengePanel() {
+    document.getElementById("challenge-panel").style.transform = "translateX(100%)";
+    document.getElementById("challenge-overlay").classList.add("hidden");
+    ["new-name","new-start","new-end","new-min","new-desc"].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = "";
+    });
+    document.getElementById("new-type").selectedIndex = 0;
+    document.getElementById("new-metric").selectedIndex = 0;
+  }
+
+  function createChallenge() {
+    const name = document.getElementById("new-name").value.trim();
+    if (!name) { document.getElementById("new-name").focus(); return; }
+    const type = document.getElementById("new-type").value;
+    const endRaw = document.getElementById("new-end").value;
+    let endLabel = "TBD";
+    if (endRaw) {
+      const d = new Date(endRaw + "T00:00:00");
+      endLabel = d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
     }
-    return `
-      <tr id="iso-row-${origIdx}">
-        <td><span class="font-semibold" style="color:#f1f5f9;">${m.name}</span></td>
-        <td><span style="color:#cbd5e1;">${m.connections}</span></td>
-        <td><span style="color:#94a3b8;">${m.lastSeen}</span></td>
-        <td><span style="color:#94a3b8;">${m.joinDate}</span></td>
-        <td>${getRiskPill(m.riskScore)}</td>
-        <td><button class="btn-outline-sm" onclick="openBuddyModal(${origIdx})">Suggest a Buddy</button></td>
+    socialChallenges.push({ id:nextId++, name, type, participants:0, completionRate:0, retentionLift:"—", status:"Draft", endDate:endLabel });
+    renderChallenges();
+    closeChallengePanel();
+    showToast("Challenge created as Draft");
+  }
+
+  // ============================================================
+  // MEMBERS TABLE
+  // ============================================================
+  function riskPill(score) {
+    if (score >= 70) return `<span style="background:#2d0909;color:#f87171;" class="px-2 py-0.5 rounded-full text-xs font-semibold">${score}</span>`;
+    if (score >= 40) return `<span style="background:#1c1003;color:#fbbf24;" class="px-2 py-0.5 rounded-full text-xs font-semibold">${score}</span>`;
+    return                  `<span style="background:#052e16;color:#34d399;" class="px-2 py-0.5 rounded-full text-xs font-semibold">${score}</span>`;
+  }
+
+  function avatarCircle(initial) {
+    const c = avatarColors[initial] || { bg:"#1e293b", color:"#94a3b8" };
+    return `<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:${c.bg};color:${c.color};">${initial}</div>`;
+  }
+
+  function memberAction(m) {
+    if (m.status === "Invite Sent")
+      return `<button disabled class="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-not-allowed flex items-center gap-1" style="background:#1e293b;color:#475569;">Invite Sent <i data-lucide="check" class="w-3 h-3 inline"></i></button>`;
+    return `<button onclick="sendInvite(${m.id})" class="px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-all" style="background:#1e1b4b;color:#818cf8;">Send Buddy Invite</button>`;
+  }
+
+  function renderMembers() {
+    let list = isolatedMembers;
+    if (riskFilter === "high")   list = list.filter(m => m.riskScore >= 70);
+    if (riskFilter === "medium") list = list.filter(m => m.riskScore >= 40 && m.riskScore < 70);
+    if (riskFilter === "low")    list = list.filter(m => m.riskScore < 40);
+
+    const tbody = document.getElementById("members-tbody");
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-sm" style="color:var(--muted);">No members match this filter.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(m => `
+      <tr class="border-b border-slate-700/40 hover:bg-slate-700/20 transition-all">
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-3">${avatarCircle(m.avatar)}<span class="font-medium text-sm" style="color:var(--text);">${m.name}</span></div>
+        </td>
+        <td class="px-4 py-3 text-sm" style="color:var(--muted);">${m.joinDate}</td>
+        <td class="px-4 py-3 text-sm" style="color:var(--text);">${m.visits}</td>
+        <td class="px-4 py-3 text-sm" style="color:var(--text);">${m.connections}</td>
+        <td class="px-4 py-3">${riskPill(m.riskScore)}</td>
+        <td class="px-4 py-3 text-sm" style="color:var(--muted);">${m.status}</td>
+        <td class="px-4 py-3">${memberAction(m)}</td>
       </tr>
-    `;
-  }).join('');
-}
+    `).join("");
+    lucide.createIcons();
+  }
 
-function filterIsolated(filter, btn) {
-  document.querySelectorAll('#filterPills .pill').forEach(p => {
-    p.style.background = '#1e293b';
-    p.style.color = '#94a3b8';
-    p.style.border = '1px solid #334155';
-  });
-  btn.style.background = '#6366f1';
-  btn.style.color = 'white';
-  btn.style.border = 'none';
-  renderIsolatedTable(filter);
-}
+  function sendInvite(id) {
+    const m = isolatedMembers.find(x => x.id === id);
+    if (m) { m.status = "Invite Sent"; renderMembers(); showToast(`Buddy invite sent to ${m.name}`); }
+  }
 
-// ---- BUDDY MODAL ----
-function openBuddyModal(idx) {
-  const m = isolatedMembers[idx];
-  document.getElementById('buddyModalBox').innerHTML = `
-    <div class="text-base font-bold mb-1" style="color:#f1f5f9;">Suggest a gym buddy for ${m.name}</div>
-    <div class="text-xs mb-5" style="color:#94a3b8;">Auto-matched based on schedule, attendance patterns & join date</div>
-    <div class="flex flex-col gap-3 mb-6">
-      <div class="flex items-start gap-4 p-4 rounded-xl" style="background:#0f172a;border:1px solid #334155;">
-        <div style="width:38px;height:38px;border-radius:50%;background:#d97706;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0;">A</div>
-        <div>
-          <div class="font-semibold text-sm mb-0.5" style="color:#f1f5f9;">Anna K.</div>
-          <div class="text-xs" style="color:#94a3b8;">Attends same classes · 2 mutual check-in times</div>
-        </div>
-      </div>
-      <div class="flex items-start gap-4 p-4 rounded-xl" style="background:#0f172a;border:1px solid #334155;">
-        <div style="width:38px;height:38px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0;">T</div>
-        <div>
-          <div class="font-semibold text-sm mb-0.5" style="color:#f1f5f9;">Tom H.</div>
-          <div class="text-xs" style="color:#94a3b8;">Joined the same month · similar schedule</div>
-        </div>
-      </div>
-    </div>
-    <div class="flex gap-3">
-      <button class="btn-outline-sm flex-1" onclick="closeBuddyModal()">Cancel</button>
-      <button class="btn-primary flex-1" onclick="sendIntroduction(${idx})">Send Introduction</button>
-    </div>
-  `;
-  document.getElementById('buddyModal').style.display = 'flex';
-}
+  function setRiskFilter(f) {
+    riskFilter = f;
+    ["all","high","medium","low"].forEach(key => {
+      const btn = document.getElementById("filter-" + key);
+      if (key === f) { btn.style.background = "#6366f1"; btn.style.color = "white"; btn.style.border = "none"; }
+      else           { btn.style.background = "#1e293b"; btn.style.color = "var(--muted)"; btn.style.border = "1px solid #334155"; }
+    });
+    renderMembers();
+  }
 
-function closeBuddyModal() {
-  document.getElementById('buddyModal').style.display = 'none';
-}
+  // ============================================================
+  // TOAST
+  // ============================================================
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById("toast");
+    document.getElementById("toast-msg").textContent = msg;
+    el.style.display = "block";
+    el.classList.remove("toast-show");
+    void el.offsetWidth; // reflow
+    el.classList.add("toast-show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.style.display = "none"; }, 2500);
+    lucide.createIcons();
+  }
 
-function sendIntroduction(idx) {
-  isolatedMembers[idx].nudgeSent = true;
-  const name = isolatedMembers[idx].name;
-  closeBuddyModal();
-  renderIsolatedTable(currentFilter);
-  showToast(`Buddy suggestion sent to ${name}`);
-}
-
-// ---- INIT ----
-function init() {
-  renderChallengeTable();
-  renderIsolatedTable('all');
+  // ============================================================
+  // INIT
+  // ============================================================
+  renderChallenges();
+  renderMembers();
   lucide.createIcons();
-}
-
-init();
 </script>
 </body>
 </html>
