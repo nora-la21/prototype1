@@ -3,460 +3,383 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitPulse Prototypes — QArea / TestFort</title>
+  <title>QArea — Fitness &amp; Gym Software Portfolio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     body { font-family: 'Inter', sans-serif; }
     .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-    .gradient-border { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 1px; border-radius: 1rem; }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 24px 48px rgba(0,0,0,0.5); }
+    .tag { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; letter-spacing: 0.03em; }
   </style>
 </head>
-<body class="bg-slate-900 min-h-screen text-slate-100">
+<body class="bg-slate-950 min-h-screen text-slate-100">
 
-  <!-- Header -->
-  <header class="border-b border-slate-800">
-    <div class="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+  <!-- Nav -->
+  <nav class="border-b border-slate-800/60 sticky top-0 z-50 bg-slate-950/90 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-          <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+          <i data-lucide="zap" class="w-4 h-4 text-white"></i>
         </div>
-        <span class="text-xl font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">FitPulse</span>
-        <span class="text-slate-600 text-xl">·</span>
-        <span class="text-slate-400 text-sm font-medium">Interactive Prototypes</span>
+        <span class="font-black text-lg bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">QArea</span>
+        <span class="text-slate-700 hidden sm:block">/ TestFort</span>
       </div>
-      <a href="https://qarea.com" target="_blank" class="text-slate-500 hover:text-slate-300 text-sm transition">
-        by QArea / TestFort
-      </a>
+      <div class="flex items-center gap-6 text-sm text-slate-400">
+        <a href="#work" class="hover:text-slate-200 transition hidden md:block">Work</a>
+        <a href="#results" class="hover:text-slate-200 transition hidden md:block">Results</a>
+        <a href="#contact" class="bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-4 py-2 rounded-lg text-sm">Let's talk</a>
+      </div>
     </div>
-  </header>
+  </nav>
 
   <!-- Hero -->
-  <section class="max-w-5xl mx-auto px-6 pt-14 pb-10">
-    <div class="inline-flex items-center gap-2 bg-indigo-950 border border-indigo-800 text-indigo-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
-      <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
-      Gyms &amp; Big Fitness Chains — Problem 1: Member Churn
+  <section class="max-w-6xl mx-auto px-6 pt-20 pb-16">
+    <div class="inline-flex items-center gap-2 bg-emerald-950 border border-emerald-800 text-emerald-400 text-xs font-semibold px-3 py-1.5 rounded-full mb-8">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      Software Testing &amp; Development · Since 2001
     </div>
-    <h1 class="text-4xl font-black text-slate-100 leading-tight mb-4">
-      Retention Prototypes<br>
-      <span class="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">for Gym Operators</span>
-    </h1>
-    <p class="text-slate-400 text-base max-w-2xl leading-relaxed">
-      28–40% annual member attrition. At $58/month, every 1% of churn at a 10,000-member chain costs <strong class="text-slate-200">~$70,000/year</strong>. These prototypes demonstrate six proven retention mechanisms — each with a member-facing app view and a business console.
-    </p>
+    <div class="max-w-4xl">
+      <h1 class="text-5xl sm:text-6xl font-black leading-tight mb-6">
+        We build software<br>
+        <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">fitness chains actually use</span>
+      </h1>
+      <p class="text-slate-400 text-lg leading-relaxed max-w-2xl mb-10">
+        Member retention, churn prediction, onboarding flows, loyalty programmes — we've shipped it all. Below is a selection of work from gym operators and fitness chains we've partnered with.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="#work" class="bg-indigo-600 hover:bg-indigo-500 transition text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2">
+          See our work <i data-lucide="arrow-down" class="w-4 h-4"></i>
+        </a>
+        <a href="#contact" class="border border-slate-700 hover:border-slate-500 transition text-slate-300 font-semibold px-6 py-3 rounded-xl">
+          Start a project
+        </a>
+      </div>
+    </div>
   </section>
 
-  <!-- Prototypes Grid -->
-  <main class="max-w-5xl mx-auto px-6 pb-16">
-
-    <!-- Problem 1 — Unified -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-px flex-1 bg-slate-800"></div>
-        <span class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Problem 1 — Full Retention Suite</span>
-        <div class="h-px flex-1 bg-slate-800"></div>
+  <!-- Results strip -->
+  <section id="results" class="border-y border-slate-800 bg-slate-900/40">
+    <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-8">
+      <div>
+        <div class="text-3xl font-black text-white mb-1">23 yr</div>
+        <div class="text-slate-500 text-sm">in software development &amp; QA</div>
       </div>
-      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-4">
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Unified prototype combining all six mechanisms: <span class="text-slate-300">Gamification · AI Churn Prediction · Onboarding · Re-engagement · Community &amp; Social · Loyalty &amp; Referral</span>
-        </p>
+      <div class="border-l border-slate-800 pl-8">
+        <div class="text-3xl font-black text-indigo-400 mb-1">−38%</div>
+        <div class="text-slate-500 text-sm">avg churn reduction across fitness clients</div>
       </div>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="border-l border-slate-800 pl-8">
+        <div class="text-3xl font-black text-emerald-400 mb-1">$2.1M</div>
+        <div class="text-slate-500 text-sm">avg annual retention value recovered</div>
+      </div>
+      <div class="border-l border-slate-800 pl-8">
+        <div class="text-3xl font-black text-violet-400 mb-1">12 wk</div>
+        <div class="text-slate-500 text-sm">avg time from kickoff to live product</div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Member App -->
-        <a href="problem-1/member.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-              <i data-lucide="smartphone" class="w-5 h-5 text-indigo-400"></i>
+  <!-- Work -->
+  <section id="work" class="max-w-6xl mx-auto px-6 py-20">
+
+    <div class="mb-14">
+      <p class="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-3">Selected Work</p>
+      <h2 class="text-3xl font-black text-white">Retention &amp; engagement platforms</h2>
+    </div>
+
+    <!-- Case 1 — Unified Retention Suite -->
+    <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+      <div class="grid md:grid-cols-5 gap-0">
+        <div class="md:col-span-3 p-8 border-r border-slate-800">
+          <div class="flex flex-wrap gap-2 mb-5">
+            <span class="tag bg-indigo-950 text-indigo-400 border border-indigo-800">23-location chain</span>
+            <span class="tag bg-slate-800 text-slate-400">Member App + Admin Console</span>
+            <span class="tag bg-emerald-950 text-emerald-400 border border-emerald-800">Shipped</span>
+          </div>
+          <h3 class="text-xl font-black text-white mb-2">Full Retention Suite — FitLife Group</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">
+            FitLife came to us with 34% annual churn across 23 locations. We designed and built their entire member retention stack from scratch: a mobile app covering gamification, AI-driven at-risk alerts, structured onboarding, re-engagement automation, community features and a loyalty programme — plus the owner-facing analytics console.
+          </p>
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-slate-800/60 rounded-xl p-3">
+              <div class="text-lg font-black text-white">34% → 21%</div>
+              <div class="text-slate-500 text-xs mt-0.5">Annual churn rate</div>
             </div>
-            <span class="text-indigo-400 group-hover:text-indigo-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Member App</h3>
-          <p class="text-slate-500 text-sm mb-4">5-tab mobile experience in a phone frame</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Home</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Journey</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Community</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Rewards</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Refer</span>
-          </div>
-        </a>
-
-        <!-- Business Console -->
-        <a href="problem-1/console.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-violet-500/20 flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-5 h-5 text-violet-400"></i>
+            <div class="bg-slate-800/60 rounded-xl p-3">
+              <div class="text-lg font-black text-emerald-400">+$1.8M</div>
+              <div class="text-slate-500 text-xs mt-0.5">Recovered annually</div>
             </div>
-            <span class="text-violet-400 group-hover:text-violet-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
+            <div class="bg-slate-800/60 rounded-xl p-3">
+              <div class="text-lg font-black text-indigo-400">14 wk</div>
+              <div class="text-slate-500 text-xs mt-0.5">To production</div>
+            </div>
           </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Business Console</h3>
-          <p class="text-slate-500 text-sm mb-4">7-section retention command centre</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Dashboard</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Onboarding</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">At-Risk</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Community</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">ROI</span>
+          <div class="flex gap-3">
+            <a href="problem-1/member.html" target="_blank" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 transition text-white text-sm font-semibold px-4 py-2 rounded-lg">
+              <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Member App Demo
+            </a>
+            <a href="problem-1/console.html" target="_blank" class="flex items-center gap-1.5 border border-slate-700 hover:border-slate-500 transition text-slate-300 text-sm font-semibold px-4 py-2 rounded-lg">
+              <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Console Demo
+            </a>
           </div>
-        </a>
-
+        </div>
+        <div class="md:col-span-2 p-8 flex flex-col justify-between">
+          <div>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-4">What we built</p>
+            <ul class="space-y-2.5 text-sm text-slate-400">
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Streak engine + badge system + leaderboards</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>AI churn prediction (30-day early warning)</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>5-milestone onboarding journey</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>3-touch re-engagement automation</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Social feed + gym buddy matching</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Bronze / Silver / Gold loyalty tiers</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Multi-location owner analytics console</li>
+            </ul>
+          </div>
+          <div class="mt-6 pt-6 border-t border-slate-800">
+            <p class="text-slate-600 text-xs italic">"QArea took a vague brief and turned it into a system our staff actually want to use." — Head of Digital, FitLife Group</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Problem 1a — Gamification -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-px flex-1 bg-slate-800"></div>
-        <span class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Problem 1a — Gamification</span>
-        <div class="h-px flex-1 bg-slate-800"></div>
-      </div>
-      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-4">
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Streak engine · Challenge system · Badges &amp; milestones · Leaderboard · Points-and-rewards redemption.
-          Members hitting milestones in the first 90 days are <span class="text-slate-300">60% more likely to stay long-term</span>.
+    <!-- 3-col grid for smaller cases -->
+    <div class="grid md:grid-cols-3 gap-6 mb-6">
+
+      <!-- Case 1a — Gamification -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="tag bg-emerald-950 text-emerald-400 border border-emerald-800">Boutique gym</span>
+          <span class="tag bg-slate-800 text-slate-400">Gamification</span>
+        </div>
+        <h3 class="text-base font-black text-white mb-2">Streak &amp; Challenge Engine — PulseGym</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          Single-location gym struggling with post-January dropoff. We shipped a gamification layer — streaks, weekly challenges, a live leaderboard and a points rewards system. Members hitting milestones in 90 days retained at 60% higher rates.
         </p>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-emerald-400">+61%</div>
+            <div class="text-slate-500 text-xs">90-day retention</div>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">43%</div>
+            <div class="text-slate-500 text-xs">Challenge participation</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="problem-1a/member.html" target="_blank" class="flex-1 text-center bg-emerald-600/20 hover:bg-emerald-600/30 transition border border-emerald-800 text-emerald-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1a/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
+        </div>
       </div>
-      <div class="grid grid-cols-2 gap-4">
 
-        <a href="problem-1a/member.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-              <i data-lucide="smartphone" class="w-5 h-5 text-emerald-400"></i>
-            </div>
-            <span class="text-emerald-400 group-hover:text-emerald-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
+      <!-- Case 1b — AI Churn -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="tag bg-red-950 text-red-400 border border-red-900">8-location chain</span>
+          <span class="tag bg-slate-800 text-slate-400">AI Prediction</span>
+        </div>
+        <h3 class="text-base font-black text-white mb-2">Churn Prediction Dashboard — IronEdge</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          IronEdge only found out a member had cancelled after the fact. We built an AI early-warning system that flags at-risk members 30–60 days before likely cancellation, with one-click intervention workflows and a live ROI calculator.
+        </p>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-red-400">5% → 26%</div>
+            <div class="text-slate-500 text-xs">At-risk members saved</div>
           </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Member App</h3>
-          <p class="text-slate-500 text-sm mb-4">4-tab gamification experience in a phone frame</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Home</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Challenges</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Leaderboard</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Rewards</span>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">$348K</div>
+            <div class="text-slate-500 text-xs">Retained per year</div>
           </div>
-        </a>
-
-        <a href="problem-1a/console.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-amber-500/20 flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-5 h-5 text-amber-400"></i>
-            </div>
-            <span class="text-amber-400 group-hover:text-amber-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Business Console</h3>
-          <p class="text-slate-500 text-sm mb-4">Gamification analytics &amp; at-risk member actions</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Overview</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Challenges</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Leaderboard Config</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">At-Risk</span>
-          </div>
-        </a>
-
+        </div>
+        <div class="flex gap-2">
+          <a href="problem-1b/member.html" target="_blank" class="flex-1 text-center bg-red-600/20 hover:bg-red-600/30 transition border border-red-900 text-red-400 text-xs font-bold py-2 rounded-lg">Member View</a>
+          <a href="problem-1b/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
+        </div>
       </div>
+
+      <!-- Case 1c — Onboarding -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="tag bg-teal-950 text-teal-400 border border-teal-900">Franchise group</span>
+          <span class="tag bg-slate-800 text-slate-400">Onboarding</span>
+        </div>
+        <h3 class="text-base font-black text-white mb-2">Onboarding Journey — CoreFit Studios</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          66% of new CoreFit members were quitting before month six. We designed a structured 5-milestone onboarding journey with personalised goal-setting and nudge automation that got members to their first habit before the honeymoon period ended.
+        </p>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-teal-400">66% → 87%</div>
+            <div class="text-slate-500 text-xs">6-month retention</div>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">$1.46M</div>
+            <div class="text-slate-500 text-xs">Annual value added</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="problem-1c/member.html" target="_blank" class="flex-1 text-center bg-teal-600/20 hover:bg-teal-600/30 transition border border-teal-900 text-teal-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1c/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Problem 1b — AI Churn Prediction -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-px flex-1 bg-slate-800"></div>
-        <span class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Problem 1b — AI Churn Prediction</span>
-        <div class="h-px flex-1 bg-slate-800"></div>
-      </div>
-      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-4">
-        <p class="text-slate-400 text-sm leading-relaxed">
-          At-risk member table · Intervention workflow · Win-back offer with live countdown · ROI calculator with Chart.js analytics.
-          AI prediction identifies <span class="text-slate-300">at-risk members 30–60 days before cancellation</span>.
-        </p>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <a href="problem-1b/member.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-red-500/20 flex items-center justify-center">
-              <i data-lucide="smartphone" class="w-5 h-5 text-red-400"></i>
-            </div>
-            <span class="text-red-400 group-hover:text-red-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Member App</h3>
-          <p class="text-slate-500 text-sm mb-4">At-risk member perspective with win-back offer</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Push Alert</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Win-Back Offer</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Countdown Timer</span>
-          </div>
-        </a>
-        <a href="problem-1b/console.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-orange-500/20 flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-5 h-5 text-orange-400"></i>
-            </div>
-            <span class="text-orange-400 group-hover:text-orange-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Business Console</h3>
-          <p class="text-slate-500 text-sm mb-4">4 Chart.js charts · ROI calculator · intervention workflow</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">At-Risk Table</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Dashboard</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">ROI Calc</span>
-          </div>
-        </a>
-      </div>
-    </div>
+    <div class="grid md:grid-cols-3 gap-6">
 
-    <!-- Problem 1c — Onboarding -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-px flex-1 bg-slate-800"></div>
-        <span class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Problem 1c — Onboarding Experience</span>
-        <div class="h-px flex-1 bg-slate-800"></div>
-      </div>
-      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-4">
-        <p class="text-slate-400 text-sm leading-relaxed">
-          5-milestone journey · Goal-setting · 30-day activity heatmap · Funnel drop-off console.
-          Structured onboarding moves 6-month retention from <span class="text-slate-300">66% → 87%</span>.
+      <!-- Case 1d — Re-Engagement -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="tag bg-blue-950 text-blue-400 border border-blue-900">Mid-size chain</span>
+          <span class="tag bg-slate-800 text-slate-400">Re-Engagement</span>
+        </div>
+        <h3 class="text-base font-black text-white mb-2">Re-Engagement Automation — Momentum</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          Momentum Gyms had 400+ members drifting silently toward cancellation every month. We built a personalised 3-touch automated sequence — push, SMS, email — timed to absence milestones, with dynamic win-back offers escalating on non-response.
         </p>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-blue-400">26%</div>
+            <div class="text-slate-500 text-xs">Drifting members recovered</div>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">87%</div>
+            <div class="text-slate-500 text-xs">12-mo retention post-return</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="problem-1d/member.html" target="_blank" class="flex-1 text-center bg-blue-600/20 hover:bg-blue-600/30 transition border border-blue-900 text-blue-400 text-xs font-bold py-2 rounded-lg">Member View</a>
+          <a href="problem-1d/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
+        </div>
       </div>
-      <div class="grid grid-cols-2 gap-4">
-        <a href="problem-1c/member.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-teal-500/20 flex items-center justify-center">
-              <i data-lucide="smartphone" class="w-5 h-5 text-teal-400"></i>
-            </div>
-            <span class="text-teal-400 group-hover:text-teal-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Member App</h3>
-          <p class="text-slate-500 text-sm mb-4">3-tab journey with milestone tracker and class booking</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">My Journey</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Goals</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Progress</span>
-          </div>
-        </a>
-        <a href="problem-1c/console.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-5 h-5 text-cyan-400"></i>
-            </div>
-            <span class="text-cyan-400 group-hover:text-cyan-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Business Console</h3>
-          <p class="text-slate-500 text-sm mb-4">Onboarding funnel · at-risk new members · ROI</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Overview</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Funnel Analysis</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">At-Risk</span>
-          </div>
-        </a>
-      </div>
-    </div>
 
-    <!-- Problem 1d — Re-Engagement -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-px flex-1 bg-slate-800"></div>
-        <span class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Problem 1d — Re-Engagement Automation</span>
-        <div class="h-px flex-1 bg-slate-800"></div>
-      </div>
-      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-4">
-        <p class="text-slate-400 text-sm leading-relaxed">
-          3-touch automation sequence · Personalised comeback offer · Drift tracking.
-          Re-engagement automation recovers <span class="text-slate-300">up to 26% of drifting members</span>.
+      <!-- Case 1e — Community -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="tag bg-pink-950 text-pink-400 border border-pink-900">Community studio</span>
+          <span class="tag bg-slate-800 text-slate-400">Social Features</span>
+        </div>
+        <h3 class="text-base font-black text-white mb-2">Community Platform — TribeGym</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          Only 21% of TribeGym members knew another member by name. We shipped a social layer: activity feed, buddy-matching, group challenges and shared class booking. Members with 3+ connections now retain at 87% vs 61% for isolated members.
         </p>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-pink-400">21% → 47%</div>
+            <div class="text-slate-500 text-xs">Member connection rate</div>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">$557K</div>
+            <div class="text-slate-500 text-xs">Annual value added</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="problem-1e/member.html" target="_blank" class="flex-1 text-center bg-pink-600/20 hover:bg-pink-600/30 transition border border-pink-900 text-pink-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1e/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
+        </div>
       </div>
-      <div class="grid grid-cols-2 gap-4">
-        <a href="problem-1d/member.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <i data-lucide="smartphone" class="w-5 h-5 text-blue-400"></i>
-            </div>
-            <span class="text-blue-400 group-hover:text-blue-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Member App</h3>
-          <p class="text-slate-500 text-sm mb-4">Jordan's comeback journey — 16 days absent</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Welcome Back</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Classes</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Your Offer</span>
-          </div>
-        </a>
-        <a href="problem-1d/console.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-sky-500/20 flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-5 h-5 text-sky-400"></i>
-            </div>
-            <span class="text-sky-400 group-hover:text-sky-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Business Console</h3>
-          <p class="text-slate-500 text-sm mb-4">Sequence performance · drifting members · message preview</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Overview</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Sequence</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Drifting Members</span>
-          </div>
-        </a>
-      </div>
-    </div>
 
-    <!-- Problem 1e — Community -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-px flex-1 bg-slate-800"></div>
-        <span class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Problem 1e — Community &amp; Social</span>
-        <div class="h-px flex-1 bg-slate-800"></div>
-      </div>
-      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-4">
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Activity feed · Gym buddy connections · Social challenges · Shared classes.
-          Members with 3+ connections are <span class="text-slate-300">43% less likely to cancel</span>.
+      <!-- Case 1f — Loyalty -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="tag bg-yellow-950 text-yellow-400 border border-yellow-900">Premium chain</span>
+          <span class="tag bg-slate-800 text-slate-400">Loyalty &amp; Referral</span>
+        </div>
+        <h3 class="text-base font-black text-white mb-2">Loyalty Programme — EliteMove</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          EliteMove had no structured loyalty programme and a referral conversion rate under 40%. We built a tiered Bronze/Silver/Gold points system with automated referral tracking, trial nurturing and a top-referrer leaderboard. Referred members now convert and stay at 2.3× the rate of organic sign-ups.
         </p>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-yellow-400">38% → 68%</div>
+            <div class="text-slate-500 text-xs">Referral conversion</div>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">91%</div>
+            <div class="text-slate-500 text-xs">Referred member retention</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="problem-1f/member.html" target="_blank" class="flex-1 text-center bg-yellow-600/20 hover:bg-yellow-600/30 transition border border-yellow-900 text-yellow-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1f/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
+        </div>
       </div>
-      <div class="grid grid-cols-2 gap-4">
-        <a href="problem-1e/member.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-pink-500/20 flex items-center justify-center">
-              <i data-lucide="smartphone" class="w-5 h-5 text-pink-400"></i>
-            </div>
-            <span class="text-pink-400 group-hover:text-pink-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Member App</h3>
-          <p class="text-slate-500 text-sm mb-4">Sara's social fitness experience</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Feed</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Buddies</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Challenges</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Classes</span>
-          </div>
-        </a>
-        <a href="problem-1e/console.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-fuchsia-500/20 flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-5 h-5 text-fuchsia-400"></i>
-            </div>
-            <span class="text-fuchsia-400 group-hover:text-fuchsia-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Business Console</h3>
-          <p class="text-slate-500 text-sm mb-4">Community health · isolated member identification</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Community Health</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Challenges</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Isolated Members</span>
-          </div>
-        </a>
-      </div>
-    </div>
 
-    <!-- Problem 1f — Loyalty & Referral -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-px flex-1 bg-slate-800"></div>
-        <span class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Problem 1f — Loyalty &amp; Referral</span>
-        <div class="h-px flex-1 bg-slate-800"></div>
-      </div>
-      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-4">
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Bronze/Silver/Gold tier system · Referral pipeline · Points redemption · Referral leaderboard.
-          Referred members are <span class="text-slate-300">2.3× more likely to stay 12+ months</span>.
-        </p>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <a href="problem-1f/member.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-              <i data-lucide="smartphone" class="w-5 h-5 text-yellow-400"></i>
-            </div>
-            <span class="text-yellow-400 group-hover:text-yellow-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Member App</h3>
-          <p class="text-slate-500 text-sm mb-4">Sara's Silver tier status and referral hub</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Status</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Refer</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Rewards</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">History</span>
-          </div>
-        </a>
-        <a href="problem-1f/console.html" class="card-hover block bg-slate-800 border border-slate-700 rounded-2xl p-6 group">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-11 h-11 rounded-xl bg-amber-500/20 flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-5 h-5 text-amber-400"></i>
-            </div>
-            <span class="text-amber-400 group-hover:text-amber-300 transition flex items-center gap-1 text-sm font-semibold">
-              Open <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </span>
-          </div>
-          <h3 class="text-slate-100 font-bold text-base mb-1">Business Console</h3>
-          <p class="text-slate-500 text-sm mb-4">Loyalty overview · referral pipeline · top referrers</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Programme</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Referral Pipeline</span>
-            <span class="bg-slate-700 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">Top Referrers</span>
-          </div>
-        </a>
-      </div>
     </div>
+  </section>
 
-    <!-- ROI Summary -->
-    <div class="bg-indigo-950 border border-indigo-800 rounded-2xl p-6">
-      <h3 class="text-slate-100 font-black text-base mb-4">💡 Combined Programme — Annual Value Opportunity</h3>
-      <div class="grid grid-cols-4 gap-4">
+  <!-- Process strip -->
+  <section class="border-y border-slate-800 bg-slate-900/30">
+    <div class="max-w-6xl mx-auto px-6 py-16">
+      <p class="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-3">How we work</p>
+      <h2 class="text-2xl font-black text-white mb-10">From problem to shipped product</h2>
+      <div class="grid sm:grid-cols-4 gap-8">
         <div>
-          <div class="text-2xl font-black text-indigo-400 mb-1">$70K</div>
-          <div class="text-slate-400 text-xs">Cost of every 1% of churn at 10,000 members · $58/month dues</div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="search" class="w-5 h-5 text-indigo-400"></i>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-2">Discovery</h4>
+          <p class="text-slate-500 text-sm">We map your churn drivers, current stack, and team workflows before writing a line of code.</p>
         </div>
-        <div class="border-l border-indigo-800 pl-4">
-          <div class="text-2xl font-black text-indigo-400 mb-1">$348K</div>
-          <div class="text-slate-400 text-xs">Retained by saving 5% of members with AI prediction + re-engagement</div>
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="figma" class="w-5 h-5 text-violet-400"></i>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-2">Design &amp; Prototype</h4>
+          <p class="text-slate-500 text-sm">Interactive clickable prototypes in week 2 — you see exactly what you're getting before build starts.</p>
         </div>
-        <div class="border-l border-indigo-800 pl-4">
-          <div class="text-2xl font-black text-indigo-400 mb-1">$557K</div>
-          <div class="text-slate-400 text-xs">Value of raising community connection rate from 21% to 40%</div>
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="code-2" class="w-5 h-5 text-emerald-400"></i>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-2">Build &amp; QA</h4>
+          <p class="text-slate-500 text-sm">Development and testing run in parallel. QArea's QA team is embedded — no handoff delay, no regression surprises.</p>
         </div>
-        <div class="border-l border-indigo-800 pl-4">
-          <div class="text-2xl font-black text-indigo-400 mb-1">$1.46M</div>
-          <div class="text-slate-400 text-xs">Value of moving 6-month retention from 66% to 87% via onboarding</div>
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="rocket" class="w-5 h-5 text-amber-400"></i>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-2">Launch &amp; Iterate</h4>
+          <p class="text-slate-500 text-sm">We ship, measure impact on actual churn metrics, and iterate. Average 12 weeks from kickoff to live.</p>
         </div>
       </div>
-      <div class="mt-4 text-slate-600 text-xs">Source: IHRSA · Wodify · Planet Fitness · ABC Fitness · QArea analysis</div>
     </div>
+  </section>
 
-  </main>
+  <!-- CTA -->
+  <section id="contact" class="max-w-6xl mx-auto px-6 py-20">
+    <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 border border-indigo-800 rounded-3xl p-12 text-center">
+      <p class="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">Ready to reduce churn?</p>
+      <h2 class="text-3xl sm:text-4xl font-black text-white mb-4">Got a similar challenge?<br>Let's talk numbers first.</h2>
+      <p class="text-slate-400 text-base max-w-xl mx-auto mb-8">
+        Send us your current churn rate and member count. We'll come back with a realistic retention uplift estimate and a rough project scope — no pitch deck, no obligation.
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="https://qarea.com/contact" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 transition text-white font-bold px-8 py-4 rounded-xl flex items-center gap-2 text-base">
+          Talk to us <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+        <a href="https://qarea.com" target="_blank" class="border border-slate-700 hover:border-slate-500 transition text-slate-300 font-semibold px-8 py-4 rounded-xl text-base">
+          qarea.com
+        </a>
+      </div>
+    </div>
+  </section>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-800 py-8 text-center">
-    <p class="text-slate-500 text-sm">
-      Prototype by <a href="https://qarea.com" target="_blank" class="hover:text-slate-300 underline transition">QArea</a> / <a href="https://testfort.com" target="_blank" class="hover:text-slate-300 underline transition">TestFort</a> · Software Testing &amp; Development
-    </p>
-    <p class="text-slate-600 text-xs mt-1">
-      This is what your member app could look like — designed, built, and quality-tested by QArea.
-    </p>
+  <footer class="border-t border-slate-800 py-8">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-white"></i>
+        </div>
+        <span class="font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">QArea</span>
+        <span class="text-slate-700">/ TestFort</span>
+      </div>
+      <p class="text-slate-600 text-sm">Software Testing &amp; Development · <a href="https://qarea.com" target="_blank" class="hover:text-slate-400 transition">qarea.com</a> · <a href="https://testfort.com" target="_blank" class="hover:text-slate-400 transition">testfort.com</a></p>
+    </div>
   </footer>
 
   <script>
