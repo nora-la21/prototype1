@@ -8,252 +8,75 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-    * { font-family: 'Inter', sans-serif; }
-
-    body {
-      background-color: #0d0605;
-      color: #f5f5f5;
-    }
-
-    /* Grid background texture */
-    .grid-bg {
-      background-color: #0d0605;
-      background-image:
-        linear-gradient(rgba(220,50,30,0.07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(220,50,30,0.07) 1px, transparent 1px);
-      background-size: 48px 48px;
-    }
-
-    .accent { color: #e8341c; }
-    .accent-bg { background-color: #e8341c; }
-    .accent-border { border-color: #e8341c; }
-
-    .card {
-      background: #1a0f0d;
-      border: 1px solid #2a1510;
-    }
-    .card-hover {
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-    .card-hover:hover {
-      transform: translateY(-3px);
-      border-color: #e8341c44;
-      box-shadow: 0 20px 48px rgba(232,52,28,0.12);
-    }
-
-    .btn-primary {
-      background: #e8341c;
-      color: #fff;
-      font-weight: 700;
-      border-radius: 9999px;
-      transition: background 0.15s ease, transform 0.15s ease;
-    }
-    .btn-primary:hover { background: #ff4422; transform: translateY(-1px); }
-
-    .btn-secondary {
-      background: transparent;
-      color: #f5f5f5;
-      font-weight: 600;
-      border: 1px solid #3a2020;
-      border-radius: 9999px;
-      transition: border-color 0.15s ease;
-    }
-    .btn-secondary:hover { border-color: #e8341c88; }
-
-    .tag-red {
-      background: rgba(232,52,28,0.12);
-      border: 1px solid rgba(232,52,28,0.35);
-      color: #f07060;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 10px;
-      border-radius: 9999px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .tag-dim {
-      background: #221410;
-      color: #886055;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 10px;
-      border-radius: 9999px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .tag-green {
-      background: rgba(20,160,80,0.12);
-      border: 1px solid rgba(20,160,80,0.3);
-      color: #4eca80;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 10px;
-      border-radius: 9999px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .stat-num { font-size: 2rem; font-weight: 900; line-height: 1; }
-    .divider { border-color: #2a1510; }
-
-    /* Phone mockup */
-    .phone-frame {
-      background: #1a0f0d;
-      border: 2px solid #3a2020;
-      border-radius: 2rem;
-      overflow: hidden;
-    }
-    .phone-screen-red {
-      background: linear-gradient(160deg, #c42d18 0%, #8a1a0a 100%);
-    }
+    body { font-family: 'Inter', sans-serif; }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 24px 48px rgba(0,0,0,0.5); }
+    .tag { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; letter-spacing: 0.03em; }
   </style>
 </head>
-<body>
+<body class="bg-slate-950 min-h-screen text-slate-100">
 
   <!-- Nav -->
-  <nav style="border-bottom: 1px solid #2a1510; background: rgba(13,6,5,0.9);" class="sticky top-0 z-50 backdrop-blur">
+  <nav class="border-b border-slate-800/60 sticky top-0 z-50 bg-slate-950/90 backdrop-blur">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <!-- QArea logo -->
       <div class="flex items-center gap-3">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="8" fill="#e8341c"/>
-          <path d="M16 7C11.03 7 7 11.03 7 16C7 20.97 11.03 25 16 25C18.3 25 20.4 24.14 22 22.72L24.28 25L25.7 23.58L23.42 21.3C24.73 19.77 25.5 17.77 25.5 16C25.5 11.03 21.47 7 16 7ZM16 23C12.13 23 9 19.87 9 16C9 12.13 12.13 9 16 9C19.87 9 23 12.13 23 16C23 17.64 22.46 19.15 21.55 20.37L19.41 18.23C19.78 17.56 20 16.8 20 16C20 13.79 18.21 12 16 12C13.79 12 12 13.79 12 16C12 18.21 13.79 20 16 20C16.97 20 17.86 19.67 18.57 19.11L20.71 21.25C19.43 22.35 17.79 23 16 23ZM18 16C18 17.1 17.1 18 16 18C14.9 18 14 17.1 14 16C14 14.9 14.9 14 16 14C17.1 14 18 14.9 18 16Z" fill="white"/>
-        </svg>
-        <span style="font-size:1.2rem; font-weight:900; letter-spacing:-0.01em;" class="text-white">QArea</span>
-        <span style="color:#3a2020; font-size:1.1rem;">|</span>
-        <span style="color:#886055; font-size:0.85rem; font-weight:500;">TestFort</span>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+          <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+        </div>
+        <span class="font-black text-lg bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">QArea</span>
+        <span class="text-slate-700 hidden sm:block">/ TestFort</span>
       </div>
-      <div class="flex items-center gap-6">
-        <a href="#work" style="color:#886055; font-size:0.9rem;" class="hover:text-white transition hidden md:block">Work</a>
-        <a href="#results" style="color:#886055; font-size:0.9rem;" class="hover:text-white transition hidden md:block">Results</a>
-        <a href="#contact" class="btn-primary px-5 py-2 text-sm">Let's talk →</a>
+      <div class="flex items-center gap-6 text-sm text-slate-400">
+        <a href="#work" class="hover:text-slate-200 transition hidden md:block">Work</a>
+        <a href="#results" class="hover:text-slate-200 transition hidden md:block">Results</a>
+        <a href="#contact" class="bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-4 py-2 rounded-lg text-sm">Let's talk</a>
       </div>
     </div>
   </nav>
 
   <!-- Hero -->
-  <section class="grid-bg">
-    <div class="max-w-6xl mx-auto px-6 pt-20 pb-24">
-      <div class="grid md:grid-cols-2 gap-12 items-center">
-
-        <div>
-          <div class="inline-flex items-center gap-2 mb-8" style="background:rgba(232,52,28,0.1); border:1px solid rgba(232,52,28,0.3); border-radius:9999px; padding:6px 14px;">
-            <span style="width:7px;height:7px;border-radius:50%;background:#e8341c;" class="animate-pulse"></span>
-            <span style="color:#f07060; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">Software Testing &amp; Development</span>
-          </div>
-
-          <h1 style="font-size:3.6rem; font-weight:900; line-height:1.0; letter-spacing:-0.02em; text-transform:uppercase;" class="mb-6">
-            GYM SOFTWARE<br>
-            <span class="accent">THAT CUTS<br>CHURN.</span>
-          </h1>
-
-          <p style="color:#aa7060; font-size:1.05rem; line-height:1.7; max-width:480px;" class="mb-10">
-            QArea builds member retention platforms for fitness chains — mobile apps that keep members coming back and owner consoles that turn attendance data into action.
-          </p>
-
-          <div class="flex flex-wrap gap-3 mb-12">
-            <a href="#work" class="btn-primary px-7 py-3.5 flex items-center gap-2">
-              See our work <i data-lucide="arrow-down" class="w-4 h-4"></i>
-            </a>
-            <a href="#contact" class="btn-secondary px-7 py-3.5">
-              Start a project
-            </a>
-          </div>
-
-          <div class="flex gap-8" style="border-top:1px solid #2a1510; padding-top:1.5rem;">
-            <div>
-              <div class="text-white font-black text-xl">23 yr</div>
-              <div style="color:#886055; font-size:0.78rem;">in development &amp; QA</div>
-            </div>
-            <div style="border-left:1px solid #2a1510;" class="pl-8">
-              <div class="text-white font-black text-xl">−38%</div>
-              <div style="color:#886055; font-size:0.78rem;">avg churn reduction</div>
-            </div>
-            <div style="border-left:1px solid #2a1510;" class="pl-8">
-              <div class="text-white font-black text-xl">12 wk</div>
-              <div style="color:#886055; font-size:0.78rem;">kickoff to live</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mock phone + console -->
-        <div class="hidden md:flex items-end justify-center gap-4">
-          <div class="phone-frame w-44 shadow-2xl" style="height:320px;">
-            <div class="phone-screen-red h-36 flex flex-col justify-end p-4">
-              <div style="font-size:11px;color:rgba(255,255,255,0.7); margin-bottom:4px;">14:27</div>
-              <div style="font-size:1.3rem;font-weight:900;color:#fff;line-height:1.1;">HI,<br>SARA!</div>
-              <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,0.3);border-radius:9999px;padding:3px 10px;margin-top:8px;width:fit-content;">
-                <span>🔥</span><span style="font-size:10px;font-weight:700;color:#fff;">3 weeks streak</span>
-              </div>
-            </div>
-            <div style="padding:14px; flex:1;">
-              <div style="font-size:8px;font-weight:700;color:#886055;letter-spacing:0.08em;margin-bottom:6px;">NEXT CLASS</div>
-              <div style="font-size:12px;font-weight:800;color:#fff;">Yoga Flow · 18:00</div>
-              <div style="height:1px;background:#2a1510;margin:10px 0;"></div>
-              <div style="font-size:8px;color:#886055;margin-bottom:4px;">Your streak</div>
-              <div class="flex gap-1">
-                <div style="width:10px;height:10px;border-radius:2px;background:#e8341c;"></div>
-                <div style="width:10px;height:10px;border-radius:2px;background:#e8341c;"></div>
-                <div style="width:10px;height:10px;border-radius:2px;background:#e8341c;"></div>
-                <div style="width:10px;height:10px;border-radius:2px;background:#2a1510;"></div>
-                <div style="width:10px;height:10px;border-radius:2px;background:#2a1510;"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card rounded-2xl p-4 w-52 shadow-2xl">
-            <div style="font-size:9px;font-weight:700;color:#886055;letter-spacing:0.1em;margin-bottom:12px;">OWNER DASHBOARD</div>
-            <div class="flex gap-2 mb-3">
-              <div style="background:#221410;border-radius:8px;padding:8px;flex:1;">
-                <div style="font-size:8px;color:#886055;margin-bottom:2px;">Active today</div>
-                <div style="font-size:1.1rem;font-weight:900;color:#fff;">312</div>
-              </div>
-              <div style="background:#2a0f0a;border-radius:8px;padding:8px;flex:1;">
-                <div style="font-size:8px;color:#886055;margin-bottom:2px;">Revenue</div>
-                <div style="font-size:1.1rem;font-weight:900;color:#e8341c;">€84K</div>
-              </div>
-            </div>
-            <div style="font-size:8px;color:#886055;margin-bottom:6px;">Attendance trend</div>
-            <svg viewBox="0 0 160 50" class="w-full" fill="none">
-              <polyline points="0,40 28,32 56,36 84,20 112,14 140,8 160,4" stroke="#e8341c" stroke-width="2" stroke-linejoin="round"/>
-              <polyline points="0,40 28,32 56,36 84,20 112,14 140,8 160,4" stroke="url(#rg)" stroke-width="0" fill="url(#rg)" opacity="0.15"/>
-              <defs>
-                <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#e8341c"/>
-                  <stop offset="100%" stop-color="transparent"/>
-                </linearGradient>
-              </defs>
-            </svg>
-            <div style="display:flex;align-items:center;gap:4px;margin-top:8px;">
-              <i data-lucide="alert-triangle" style="width:10px;height:10px;color:#e8341c;"></i>
-              <span style="font-size:9px;color:#886055;">28 members at risk</span>
-            </div>
-          </div>
-        </div>
-
+  <section class="max-w-6xl mx-auto px-6 pt-20 pb-16">
+    <div class="inline-flex items-center gap-2 bg-emerald-950 border border-emerald-800 text-emerald-400 text-xs font-semibold px-3 py-1.5 rounded-full mb-8">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      Software Testing &amp; Development · Since 2001
+    </div>
+    <div class="max-w-4xl">
+      <h1 class="text-5xl sm:text-6xl font-black leading-tight mb-6">
+        We build software<br>
+        <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">fitness chains actually use</span>
+      </h1>
+      <p class="text-slate-400 text-lg leading-relaxed max-w-2xl mb-10">
+        Member retention, churn prediction, onboarding flows, loyalty programmes — we've shipped it all. Below is a selection of work from gym operators and fitness chains we've partnered with.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="#work" class="bg-indigo-600 hover:bg-indigo-500 transition text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2">
+          See our work <i data-lucide="arrow-down" class="w-4 h-4"></i>
+        </a>
+        <a href="#contact" class="border border-slate-700 hover:border-slate-500 transition text-slate-300 font-semibold px-6 py-3 rounded-xl">
+          Start a project
+        </a>
       </div>
     </div>
   </section>
 
   <!-- Results strip -->
-  <section id="results" style="border-top:1px solid #2a1510; border-bottom:1px solid #2a1510; background:#110807;">
+  <section id="results" class="border-y border-slate-800 bg-slate-900/40">
     <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-8">
       <div>
-        <div class="stat-num text-white mb-1">$2.1M</div>
-        <div style="color:#886055; font-size:0.82rem;">avg annual retention value recovered per client</div>
+        <div class="text-3xl font-black text-white mb-1">23 yr</div>
+        <div class="text-slate-500 text-sm">in software development &amp; QA</div>
       </div>
-      <div style="border-left:1px solid #2a1510;" class="pl-8">
-        <div class="stat-num accent mb-1">−38%</div>
-        <div style="color:#886055; font-size:0.82rem;">average churn reduction across fitness clients</div>
+      <div class="border-l border-slate-800 pl-8">
+        <div class="text-3xl font-black text-indigo-400 mb-1">−38%</div>
+        <div class="text-slate-500 text-sm">avg churn reduction across fitness clients</div>
       </div>
-      <div style="border-left:1px solid #2a1510;" class="pl-8">
-        <div class="stat-num text-white mb-1">87%</div>
-        <div style="color:#886055; font-size:0.82rem;">12-month retention for referred members</div>
+      <div class="border-l border-slate-800 pl-8">
+        <div class="text-3xl font-black text-emerald-400 mb-1">$2.1M</div>
+        <div class="text-slate-500 text-sm">avg annual retention value recovered</div>
       </div>
-      <div style="border-left:1px solid #2a1510;" class="pl-8">
-        <div class="stat-num text-white mb-1">12 wk</div>
-        <div style="color:#886055; font-size:0.82rem;">average time from kickoff to live product</div>
+      <div class="border-l border-slate-800 pl-8">
+        <div class="text-3xl font-black text-violet-400 mb-1">12 wk</div>
+        <div class="text-slate-500 text-sm">avg time from kickoff to live product</div>
       </div>
     </div>
   </section>
@@ -262,289 +85,283 @@
   <section id="work" class="max-w-6xl mx-auto px-6 py-20">
 
     <div class="mb-14">
-      <p style="color:#e8341c; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;" class="mb-3">Selected Work</p>
-      <h2 style="font-size:2rem; font-weight:900; text-transform:uppercase; letter-spacing:-0.01em;" class="text-white">Retention &amp; engagement platforms</h2>
+      <p class="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-3">Selected Work</p>
+      <h2 class="text-3xl font-black text-white">Retention &amp; engagement platforms</h2>
     </div>
 
-    <!-- Flagship case -->
-    <div class="card card-hover rounded-2xl overflow-hidden mb-6">
-      <div class="grid md:grid-cols-5">
-        <div class="md:col-span-3 p-8" style="border-right:1px solid #2a1510;">
+    <!-- Case 1 — Unified Retention Suite -->
+    <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+      <div class="grid md:grid-cols-5 gap-0">
+        <div class="md:col-span-3 p-8 border-r border-slate-800">
           <div class="flex flex-wrap gap-2 mb-5">
-            <span class="tag-red">23-location chain</span>
-            <span class="tag-dim">Member App + Admin Console</span>
-            <span class="tag-green">Shipped</span>
+            <span class="tag bg-indigo-950 text-indigo-400 border border-indigo-800">23-location chain</span>
+            <span class="tag bg-slate-800 text-slate-400">Member App + Admin Console</span>
+            <span class="tag bg-emerald-950 text-emerald-400 border border-emerald-800">Shipped</span>
           </div>
-          <h3 style="font-size:1.2rem; font-weight:900; text-transform:uppercase;" class="text-white mb-3">Full Retention Suite — FitLife Group</h3>
-          <p style="color:#aa7060; font-size:0.9rem; line-height:1.7;" class="mb-6">
-            FitLife came to us with 34% annual churn across 23 locations. We designed and built their entire member retention stack: a mobile app covering gamification, AI-driven at-risk alerts, structured onboarding, re-engagement automation, community features and a loyalty programme — plus the owner analytics console.
+          <h3 class="text-xl font-black text-white mb-2">Full Retention Suite — FitLife Group</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">
+            FitLife came to us with 34% annual churn across 23 locations. We designed and built their entire member retention stack from scratch: a mobile app covering gamification, AI-driven at-risk alerts, structured onboarding, re-engagement automation, community features and a loyalty programme — plus the owner-facing analytics console.
           </p>
-          <div class="grid grid-cols-3 gap-3 mb-7">
-            <div style="background:#221410; border-radius:12px; padding:14px;">
-              <div style="font-size:1.1rem; font-weight:900; color:#fff;">34% → 21%</div>
-              <div style="color:#886055; font-size:0.75rem; margin-top:2px;">Annual churn</div>
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-slate-800/60 rounded-xl p-3">
+              <div class="text-lg font-black text-white">34% → 21%</div>
+              <div class="text-slate-500 text-xs mt-0.5">Annual churn rate</div>
             </div>
-            <div style="background:#221410; border-radius:12px; padding:14px;">
-              <div style="font-size:1.1rem; font-weight:900;" class="accent">+$1.8M</div>
-              <div style="color:#886055; font-size:0.75rem; margin-top:2px;">Recovered / year</div>
+            <div class="bg-slate-800/60 rounded-xl p-3">
+              <div class="text-lg font-black text-emerald-400">+$1.8M</div>
+              <div class="text-slate-500 text-xs mt-0.5">Recovered annually</div>
             </div>
-            <div style="background:#221410; border-radius:12px; padding:14px;">
-              <div style="font-size:1.1rem; font-weight:900; color:#fff;">14 wk</div>
-              <div style="color:#886055; font-size:0.75rem; margin-top:2px;">To production</div>
+            <div class="bg-slate-800/60 rounded-xl p-3">
+              <div class="text-lg font-black text-indigo-400">14 wk</div>
+              <div class="text-slate-500 text-xs mt-0.5">To production</div>
             </div>
           </div>
           <div class="flex gap-3">
-            <a href="problem-1/member.html" target="_blank" class="btn-primary px-5 py-2.5 text-sm flex items-center gap-1.5">
+            <a href="problem-1/member.html" target="_blank" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 transition text-white text-sm font-semibold px-4 py-2 rounded-lg">
               <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Member App Demo
             </a>
-            <a href="problem-1/console.html" target="_blank" class="btn-secondary px-5 py-2.5 text-sm flex items-center gap-1.5">
+            <a href="problem-1/console.html" target="_blank" class="flex items-center gap-1.5 border border-slate-700 hover:border-slate-500 transition text-slate-300 text-sm font-semibold px-4 py-2 rounded-lg">
               <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Console Demo
             </a>
           </div>
         </div>
         <div class="md:col-span-2 p-8 flex flex-col justify-between">
           <div>
-            <p style="color:#886055; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;" class="mb-5">What we built</p>
-            <ul class="space-y-3" style="font-size:0.875rem; color:#aa7060;">
-              <li class="flex gap-2.5"><span class="accent font-black mt-0.5">→</span>Streak engine + badge system + leaderboards</li>
-              <li class="flex gap-2.5"><span class="accent font-black mt-0.5">→</span>AI churn prediction (30-day early warning)</li>
-              <li class="flex gap-2.5"><span class="accent font-black mt-0.5">→</span>5-milestone onboarding journey</li>
-              <li class="flex gap-2.5"><span class="accent font-black mt-0.5">→</span>3-touch re-engagement automation</li>
-              <li class="flex gap-2.5"><span class="accent font-black mt-0.5">→</span>Social feed + gym buddy matching</li>
-              <li class="flex gap-2.5"><span class="accent font-black mt-0.5">→</span>Bronze / Silver / Gold loyalty tiers</li>
-              <li class="flex gap-2.5"><span class="accent font-black mt-0.5">→</span>Multi-location owner analytics console</li>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-4">What we built</p>
+            <ul class="space-y-2.5 text-sm text-slate-400">
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Streak engine + badge system + leaderboards</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>AI churn prediction (30-day early warning)</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>5-milestone onboarding journey</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>3-touch re-engagement automation</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Social feed + gym buddy matching</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Bronze / Silver / Gold loyalty tiers</li>
+              <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i>Multi-location owner analytics console</li>
             </ul>
           </div>
-          <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid #2a1510;">
-            <p style="color:#5a3528; font-size:0.8rem; font-style:italic;">"QArea took a vague brief and turned it into a system our staff actually want to use." — Head of Digital, FitLife Group</p>
+          <div class="mt-6 pt-6 border-t border-slate-800">
+            <p class="text-slate-600 text-xs italic">"QArea took a vague brief and turned it into a system our staff actually want to use." — Head of Digital, FitLife Group</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 3-col grid -->
-    <div class="grid md:grid-cols-3 gap-5 mb-5">
+    <!-- 3-col grid for smaller cases -->
+    <div class="grid md:grid-cols-3 gap-6 mb-6">
 
-      <!-- 1a Gamification -->
-      <div class="card card-hover rounded-2xl p-6 flex flex-col">
+      <!-- Case 1a — Gamification -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
         <div class="flex flex-wrap gap-2 mb-4">
-          <span class="tag-green">Boutique gym</span>
-          <span class="tag-dim">Gamification</span>
+          <span class="tag bg-emerald-950 text-emerald-400 border border-emerald-800">Boutique gym</span>
+          <span class="tag bg-slate-800 text-slate-400">Gamification</span>
         </div>
-        <h3 style="font-size:1rem; font-weight:900; text-transform:uppercase;" class="text-white mb-2">Streak &amp; Challenge Engine — PulseGym</h3>
-        <p style="color:#aa7060; font-size:0.85rem; line-height:1.6;" class="mb-5 flex-1">
-          Single-location gym losing members after January. We shipped a gamification layer — streaks, weekly challenges, live leaderboard and points rewards. Members hitting 90-day milestones retained at 60% higher rates.
+        <h3 class="text-base font-black text-white mb-2">Streak &amp; Challenge Engine — PulseGym</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          Single-location gym struggling with post-January dropoff. We shipped a gamification layer — streaks, weekly challenges, a live leaderboard and a points rewards system. Members hitting milestones in 90 days retained at 60% higher rates.
         </p>
-        <div class="grid grid-cols-2 gap-2 mb-5">
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">+61%</div>
-            <div style="color:#886055; font-size:0.72rem;">90-day retention</div>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-emerald-400">+61%</div>
+            <div class="text-slate-500 text-xs">90-day retention</div>
           </div>
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">43%</div>
-            <div style="color:#886055; font-size:0.72rem;">Challenge participation</div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">43%</div>
+            <div class="text-slate-500 text-xs">Challenge participation</div>
           </div>
         </div>
         <div class="flex gap-2">
-          <a href="problem-1a/member.html" target="_blank" class="btn-primary flex-1 text-center py-2 text-xs">Member App</a>
-          <a href="problem-1a/console.html" target="_blank" class="btn-secondary flex-1 text-center py-2 text-xs">Console</a>
+          <a href="problem-1a/member.html" target="_blank" class="flex-1 text-center bg-emerald-600/20 hover:bg-emerald-600/30 transition border border-emerald-800 text-emerald-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1a/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
         </div>
       </div>
 
-      <!-- 1b AI Churn -->
-      <div class="card card-hover rounded-2xl p-6 flex flex-col">
+      <!-- Case 1b — AI Churn -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
         <div class="flex flex-wrap gap-2 mb-4">
-          <span class="tag-red">8-location chain</span>
-          <span class="tag-dim">AI Prediction</span>
+          <span class="tag bg-red-950 text-red-400 border border-red-900">8-location chain</span>
+          <span class="tag bg-slate-800 text-slate-400">AI Prediction</span>
         </div>
-        <h3 style="font-size:1rem; font-weight:900; text-transform:uppercase;" class="text-white mb-2">Churn Prediction Dashboard — IronEdge</h3>
-        <p style="color:#aa7060; font-size:0.85rem; line-height:1.6;" class="mb-5 flex-1">
-          IronEdge only found out a member cancelled after the fact. We built an AI early-warning system flagging at-risk members 30–60 days before cancellation, with one-click intervention workflows and a live ROI calculator.
+        <h3 class="text-base font-black text-white mb-2">Churn Prediction Dashboard — IronEdge</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          IronEdge only found out a member had cancelled after the fact. We built an AI early-warning system that flags at-risk members 30–60 days before likely cancellation, with one-click intervention workflows and a live ROI calculator.
         </p>
-        <div class="grid grid-cols-2 gap-2 mb-5">
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900;" class="accent">5%→26%</div>
-            <div style="color:#886055; font-size:0.72rem;">At-risk saved</div>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-red-400">5% → 26%</div>
+            <div class="text-slate-500 text-xs">At-risk members saved</div>
           </div>
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">$348K</div>
-            <div style="color:#886055; font-size:0.72rem;">Retained / year</div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">$348K</div>
+            <div class="text-slate-500 text-xs">Retained per year</div>
           </div>
         </div>
         <div class="flex gap-2">
-          <a href="problem-1b/member.html" target="_blank" class="btn-primary flex-1 text-center py-2 text-xs">Member View</a>
-          <a href="problem-1b/console.html" target="_blank" class="btn-secondary flex-1 text-center py-2 text-xs">Console</a>
+          <a href="problem-1b/member.html" target="_blank" class="flex-1 text-center bg-red-600/20 hover:bg-red-600/30 transition border border-red-900 text-red-400 text-xs font-bold py-2 rounded-lg">Member View</a>
+          <a href="problem-1b/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
         </div>
       </div>
 
-      <!-- 1c Onboarding -->
-      <div class="card card-hover rounded-2xl p-6 flex flex-col">
+      <!-- Case 1c — Onboarding -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
         <div class="flex flex-wrap gap-2 mb-4">
-          <span class="tag-green">Franchise group</span>
-          <span class="tag-dim">Onboarding</span>
+          <span class="tag bg-teal-950 text-teal-400 border border-teal-900">Franchise group</span>
+          <span class="tag bg-slate-800 text-slate-400">Onboarding</span>
         </div>
-        <h3 style="font-size:1rem; font-weight:900; text-transform:uppercase;" class="text-white mb-2">Onboarding Journey — CoreFit Studios</h3>
-        <p style="color:#aa7060; font-size:0.85rem; line-height:1.6;" class="mb-5 flex-1">
-          66% of new CoreFit members quit before month six. We designed a 5-milestone onboarding journey with goal-setting and nudge automation to build habits before the honeymoon period ended.
+        <h3 class="text-base font-black text-white mb-2">Onboarding Journey — CoreFit Studios</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          66% of new CoreFit members were quitting before month six. We designed a structured 5-milestone onboarding journey with personalised goal-setting and nudge automation that got members to their first habit before the honeymoon period ended.
         </p>
-        <div class="grid grid-cols-2 gap-2 mb-5">
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">66%→87%</div>
-            <div style="color:#886055; font-size:0.72rem;">6-month retention</div>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-teal-400">66% → 87%</div>
+            <div class="text-slate-500 text-xs">6-month retention</div>
           </div>
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">$1.46M</div>
-            <div style="color:#886055; font-size:0.72rem;">Annual value added</div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">$1.46M</div>
+            <div class="text-slate-500 text-xs">Annual value added</div>
           </div>
         </div>
         <div class="flex gap-2">
-          <a href="problem-1c/member.html" target="_blank" class="btn-primary flex-1 text-center py-2 text-xs">Member App</a>
-          <a href="problem-1c/console.html" target="_blank" class="btn-secondary flex-1 text-center py-2 text-xs">Console</a>
+          <a href="problem-1c/member.html" target="_blank" class="flex-1 text-center bg-teal-600/20 hover:bg-teal-600/30 transition border border-teal-900 text-teal-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1c/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
         </div>
       </div>
 
     </div>
 
-    <div class="grid md:grid-cols-3 gap-5">
+    <div class="grid md:grid-cols-3 gap-6">
 
-      <!-- 1d Re-Engagement -->
-      <div class="card card-hover rounded-2xl p-6 flex flex-col">
+      <!-- Case 1d — Re-Engagement -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
         <div class="flex flex-wrap gap-2 mb-4">
-          <span class="tag-dim">Mid-size chain</span>
-          <span class="tag-dim">Re-Engagement</span>
+          <span class="tag bg-blue-950 text-blue-400 border border-blue-900">Mid-size chain</span>
+          <span class="tag bg-slate-800 text-slate-400">Re-Engagement</span>
         </div>
-        <h3 style="font-size:1rem; font-weight:900; text-transform:uppercase;" class="text-white mb-2">Re-Engagement Automation — Momentum</h3>
-        <p style="color:#aa7060; font-size:0.85rem; line-height:1.6;" class="mb-5 flex-1">
-          400+ members drifting silently toward cancellation every month. We built a personalised 3-touch automated sequence — push, SMS, email — with dynamic win-back offers escalating on non-response.
+        <h3 class="text-base font-black text-white mb-2">Re-Engagement Automation — Momentum</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          Momentum Gyms had 400+ members drifting silently toward cancellation every month. We built a personalised 3-touch automated sequence — push, SMS, email — timed to absence milestones, with dynamic win-back offers escalating on non-response.
         </p>
-        <div class="grid grid-cols-2 gap-2 mb-5">
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">26%</div>
-            <div style="color:#886055; font-size:0.72rem;">Drifting recovered</div>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-blue-400">26%</div>
+            <div class="text-slate-500 text-xs">Drifting members recovered</div>
           </div>
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">87%</div>
-            <div style="color:#886055; font-size:0.72rem;">Retention post-return</div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">87%</div>
+            <div class="text-slate-500 text-xs">12-mo retention post-return</div>
           </div>
         </div>
         <div class="flex gap-2">
-          <a href="problem-1d/member.html" target="_blank" class="btn-primary flex-1 text-center py-2 text-xs">Member View</a>
-          <a href="problem-1d/console.html" target="_blank" class="btn-secondary flex-1 text-center py-2 text-xs">Console</a>
+          <a href="problem-1d/member.html" target="_blank" class="flex-1 text-center bg-blue-600/20 hover:bg-blue-600/30 transition border border-blue-900 text-blue-400 text-xs font-bold py-2 rounded-lg">Member View</a>
+          <a href="problem-1d/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
         </div>
       </div>
 
-      <!-- 1e Community -->
-      <div class="card card-hover rounded-2xl p-6 flex flex-col">
+      <!-- Case 1e — Community -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
         <div class="flex flex-wrap gap-2 mb-4">
-          <span class="tag-green">Community studio</span>
-          <span class="tag-dim">Social Features</span>
+          <span class="tag bg-pink-950 text-pink-400 border border-pink-900">Community studio</span>
+          <span class="tag bg-slate-800 text-slate-400">Social Features</span>
         </div>
-        <h3 style="font-size:1rem; font-weight:900; text-transform:uppercase;" class="text-white mb-2">Community Platform — TribeGym</h3>
-        <p style="color:#aa7060; font-size:0.85rem; line-height:1.6;" class="mb-5 flex-1">
-          Only 21% of members knew another member by name. We shipped a social layer: activity feed, buddy-matching, group challenges and shared class booking. Connected members retain at 87% vs 61%.
+        <h3 class="text-base font-black text-white mb-2">Community Platform — TribeGym</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          Only 21% of TribeGym members knew another member by name. We shipped a social layer: activity feed, buddy-matching, group challenges and shared class booking. Members with 3+ connections now retain at 87% vs 61% for isolated members.
         </p>
-        <div class="grid grid-cols-2 gap-2 mb-5">
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">21%→47%</div>
-            <div style="color:#886055; font-size:0.72rem;">Connection rate</div>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-pink-400">21% → 47%</div>
+            <div class="text-slate-500 text-xs">Member connection rate</div>
           </div>
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">$557K</div>
-            <div style="color:#886055; font-size:0.72rem;">Annual value added</div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">$557K</div>
+            <div class="text-slate-500 text-xs">Annual value added</div>
           </div>
         </div>
         <div class="flex gap-2">
-          <a href="problem-1e/member.html" target="_blank" class="btn-primary flex-1 text-center py-2 text-xs">Member App</a>
-          <a href="problem-1e/console.html" target="_blank" class="btn-secondary flex-1 text-center py-2 text-xs">Console</a>
+          <a href="problem-1e/member.html" target="_blank" class="flex-1 text-center bg-pink-600/20 hover:bg-pink-600/30 transition border border-pink-900 text-pink-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1e/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
         </div>
       </div>
 
-      <!-- 1f Loyalty -->
-      <div class="card card-hover rounded-2xl p-6 flex flex-col">
+      <!-- Case 1f — Loyalty -->
+      <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
         <div class="flex flex-wrap gap-2 mb-4">
-          <span class="tag-red">Premium chain</span>
-          <span class="tag-dim">Loyalty &amp; Referral</span>
+          <span class="tag bg-yellow-950 text-yellow-400 border border-yellow-900">Premium chain</span>
+          <span class="tag bg-slate-800 text-slate-400">Loyalty &amp; Referral</span>
         </div>
-        <h3 style="font-size:1rem; font-weight:900; text-transform:uppercase;" class="text-white mb-2">Loyalty Programme — EliteMove</h3>
-        <p style="color:#aa7060; font-size:0.85rem; line-height:1.6;" class="mb-5 flex-1">
-          No structured loyalty, referral conversion under 40%. We built Bronze/Silver/Gold tier points with automated referral tracking and trial nurturing. Referred members now convert and stay at 2.3× the rate.
+        <h3 class="text-base font-black text-white mb-2">Loyalty Programme — EliteMove</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+          EliteMove had no structured loyalty programme and a referral conversion rate under 40%. We built a tiered Bronze/Silver/Gold points system with automated referral tracking, trial nurturing and a top-referrer leaderboard. Referred members now convert and stay at 2.3× the rate of organic sign-ups.
         </p>
-        <div class="grid grid-cols-2 gap-2 mb-5">
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900;" class="accent">38%→68%</div>
-            <div style="color:#886055; font-size:0.72rem;">Referral conversion</div>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-yellow-400">38% → 68%</div>
+            <div class="text-slate-500 text-xs">Referral conversion</div>
           </div>
-          <div style="background:#221410; border-radius:10px; padding:10px;">
-            <div style="font-weight:900; color:#fff;">91%</div>
-            <div style="color:#886055; font-size:0.72rem;">Referred retention</div>
+          <div class="bg-slate-800/60 rounded-lg p-3">
+            <div class="text-base font-black text-white">91%</div>
+            <div class="text-slate-500 text-xs">Referred member retention</div>
           </div>
         </div>
         <div class="flex gap-2">
-          <a href="problem-1f/member.html" target="_blank" class="btn-primary flex-1 text-center py-2 text-xs">Member App</a>
-          <a href="problem-1f/console.html" target="_blank" class="btn-secondary flex-1 text-center py-2 text-xs">Console</a>
+          <a href="problem-1f/member.html" target="_blank" class="flex-1 text-center bg-yellow-600/20 hover:bg-yellow-600/30 transition border border-yellow-900 text-yellow-400 text-xs font-bold py-2 rounded-lg">Member App</a>
+          <a href="problem-1f/console.html" target="_blank" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition text-slate-300 text-xs font-bold py-2 rounded-lg">Console</a>
         </div>
       </div>
 
     </div>
   </section>
 
-  <!-- Process -->
-  <section style="border-top:1px solid #2a1510; border-bottom:1px solid #2a1510; background:#110807;">
+  <!-- Process strip -->
+  <section class="border-y border-slate-800 bg-slate-900/30">
     <div class="max-w-6xl mx-auto px-6 py-16">
-      <p style="color:#e8341c; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;" class="mb-3">How we work</p>
-      <h2 style="font-size:1.8rem; font-weight:900; text-transform:uppercase;" class="text-white mb-12">From problem to shipped product</h2>
-      <div class="grid sm:grid-cols-4 gap-10">
+      <p class="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-3">How we work</p>
+      <h2 class="text-2xl font-black text-white mb-10">From problem to shipped product</h2>
+      <div class="grid sm:grid-cols-4 gap-8">
         <div>
-          <div style="width:36px;height:36px;border-radius:8px;background:rgba(232,52,28,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
-            <i data-lucide="search" style="width:18px;height:18px;color:#e8341c;"></i>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="search" class="w-5 h-5 text-indigo-400"></i>
           </div>
-          <div style="font-size:10px;font-weight:700;color:#e8341c;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">01</div>
-          <h4 style="font-weight:800;color:#fff;margin-bottom:8px;">Discovery</h4>
-          <p style="color:#886055;font-size:0.85rem;line-height:1.6;">We map your churn drivers, current stack and workflows before writing a line of code.</p>
+          <h4 class="font-bold text-white text-sm mb-2">Discovery</h4>
+          <p class="text-slate-500 text-sm">We map your churn drivers, current stack, and team workflows before writing a line of code.</p>
         </div>
         <div>
-          <div style="width:36px;height:36px;border-radius:8px;background:rgba(232,52,28,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
-            <i data-lucide="figma" style="width:18px;height:18px;color:#e8341c;"></i>
+          <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="figma" class="w-5 h-5 text-violet-400"></i>
           </div>
-          <div style="font-size:10px;font-weight:700;color:#e8341c;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">02</div>
-          <h4 style="font-weight:800;color:#fff;margin-bottom:8px;">Design &amp; Prototype</h4>
-          <p style="color:#886055;font-size:0.85rem;line-height:1.6;">Clickable interactive prototypes in week 2 — you see exactly what you're getting before build starts.</p>
+          <h4 class="font-bold text-white text-sm mb-2">Design &amp; Prototype</h4>
+          <p class="text-slate-500 text-sm">Interactive clickable prototypes in week 2 — you see exactly what you're getting before build starts.</p>
         </div>
         <div>
-          <div style="width:36px;height:36px;border-radius:8px;background:rgba(232,52,28,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
-            <i data-lucide="code-2" style="width:18px;height:18px;color:#e8341c;"></i>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="code-2" class="w-5 h-5 text-emerald-400"></i>
           </div>
-          <div style="font-size:10px;font-weight:700;color:#e8341c;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">03</div>
-          <h4 style="font-weight:800;color:#fff;margin-bottom:8px;">Build &amp; QA</h4>
-          <p style="color:#886055;font-size:0.85rem;line-height:1.6;">Development and testing run in parallel. QArea's QA team is embedded — no handoff delay, no regressions.</p>
+          <h4 class="font-bold text-white text-sm mb-2">Build &amp; QA</h4>
+          <p class="text-slate-500 text-sm">Development and testing run in parallel. QArea's QA team is embedded — no handoff delay, no regression surprises.</p>
         </div>
         <div>
-          <div style="width:36px;height:36px;border-radius:8px;background:rgba(232,52,28,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
-            <i data-lucide="rocket" style="width:18px;height:18px;color:#e8341c;"></i>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="rocket" class="w-5 h-5 text-amber-400"></i>
           </div>
-          <div style="font-size:10px;font-weight:700;color:#e8341c;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">04</div>
-          <h4 style="font-weight:800;color:#fff;margin-bottom:8px;">Launch &amp; Iterate</h4>
-          <p style="color:#886055;font-size:0.85rem;line-height:1.6;">We ship, measure impact on real churn metrics and iterate. Average 12 weeks from kickoff to live.</p>
+          <h4 class="font-bold text-white text-sm mb-2">Launch &amp; Iterate</h4>
+          <p class="text-slate-500 text-sm">We ship, measure impact on actual churn metrics, and iterate. Average 12 weeks from kickoff to live.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- CTA -->
-  <section id="contact" class="grid-bg">
-    <div class="max-w-6xl mx-auto px-6 py-24 text-center">
-      <p style="color:#e8341c; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;" class="mb-4">Ready to reduce churn?</p>
-      <h2 style="font-size:2.8rem; font-weight:900; text-transform:uppercase; letter-spacing:-0.01em; line-height:1.05;" class="text-white mb-5">
-        GOT A SIMILAR<br><span class="accent">CHALLENGE?</span>
-      </h2>
-      <p style="color:#aa7060; font-size:1rem; line-height:1.7; max-width:520px;" class="mx-auto mb-10">
-        Send us your current churn rate and member count. We'll come back with a realistic retention uplift estimate and rough project scope — no pitch deck, no obligation.
+  <section id="contact" class="max-w-6xl mx-auto px-6 py-20">
+    <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 border border-indigo-800 rounded-3xl p-12 text-center">
+      <p class="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">Ready to reduce churn?</p>
+      <h2 class="text-3xl sm:text-4xl font-black text-white mb-4">Got a similar challenge?<br>Let's talk numbers first.</h2>
+      <p class="text-slate-400 text-base max-w-xl mx-auto mb-8">
+        Send us your current churn rate and member count. We'll come back with a realistic retention uplift estimate and a rough project scope — no pitch deck, no obligation.
       </p>
       <div class="flex flex-wrap gap-4 justify-center">
-        <a href="https://qarea.com/contact" target="_blank" class="btn-primary px-8 py-4 text-base flex items-center gap-2">
+        <a href="https://qarea.com/contact" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 transition text-white font-bold px-8 py-4 rounded-xl flex items-center gap-2 text-base">
           Talk to us <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
-        <a href="https://qarea.com" target="_blank" class="btn-secondary px-8 py-4 text-base">
+        <a href="https://qarea.com" target="_blank" class="border border-slate-700 hover:border-slate-500 transition text-slate-300 font-semibold px-8 py-4 rounded-xl text-base">
           qarea.com
         </a>
       </div>
@@ -552,21 +369,16 @@
   </section>
 
   <!-- Footer -->
-  <footer style="border-top:1px solid #2a1510; background:#0a0403;">
-    <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+  <footer class="border-t border-slate-800 py-8">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="8" fill="#e8341c"/>
-          <path d="M16 7C11.03 7 7 11.03 7 16C7 20.97 11.03 25 16 25C18.3 25 20.4 24.14 22 22.72L24.28 25L25.7 23.58L23.42 21.3C24.73 19.77 25.5 17.77 25.5 16C25.5 11.03 21.47 7 16 7ZM16 23C12.13 23 9 19.87 9 16C9 12.13 12.13 9 16 9C19.87 9 23 12.13 23 16C23 17.64 22.46 19.15 21.55 20.37L19.41 18.23C19.78 17.56 20 16.8 20 16C20 13.79 18.21 12 16 12C13.79 12 12 13.79 12 16C12 18.21 13.79 20 16 20C16.97 20 17.86 19.67 18.57 19.11L20.71 21.25C19.43 22.35 17.79 23 16 23ZM18 16C18 17.1 17.1 18 16 18C14.9 18 14 17.1 14 16C14 14.9 14.9 14 16 14C17.1 14 18 14.9 18 16Z" fill="white"/>
-        </svg>
-        <span style="font-weight:900; color:#fff;">QArea</span>
-        <span style="color:#3a2020;">/ TestFort</span>
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-white"></i>
+        </div>
+        <span class="font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">QArea</span>
+        <span class="text-slate-700">/ TestFort</span>
       </div>
-      <p style="color:#5a3528; font-size:0.8rem;">
-        Software Testing &amp; Development ·
-        <a href="https://qarea.com" target="_blank" style="color:#886055;" class="hover:text-white transition">qarea.com</a> ·
-        <a href="https://testfort.com" target="_blank" style="color:#886055;" class="hover:text-white transition">testfort.com</a>
-      </p>
+      <p class="text-slate-600 text-sm">Software Testing &amp; Development · <a href="https://qarea.com" target="_blank" class="hover:text-slate-400 transition">qarea.com</a> · <a href="https://testfort.com" target="_blank" class="hover:text-slate-400 transition">testfort.com</a></p>
     </div>
   </footer>
 
